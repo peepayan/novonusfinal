@@ -9,7 +9,7 @@ import {
   type ReactNode,
 } from "react";
 import Image from "next/image";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useScroll, useTransform } from "framer-motion";
 import {
   Cpu,
   Workflow,
@@ -537,120 +537,177 @@ const fadeUp = {
 function Hero() {
   const { phase } = useIntro();
   const heroReady = phase === "hero" || phase === "done";
+  const sectionRef = useRef<HTMLElement | null>(null);
+
+  /* Scroll-pin: section is 200svh tall with a sticky 100svh viewport inside.
+     Progress goes 0 → 1 over the 100svh of pinned scrolling — that drives
+     the red fill. Once it completes the section unpins and the page
+     continues scrolling normally to the stats / next sections. */
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start start", "end end"],
+  });
+
+  const fillHeight = useTransform(scrollYProgress, [0, 0.92], ["0%", "100%"]);
+  const fillOpacity = useTransform(
+    scrollYProgress,
+    [0, 0.04, 0.92, 1],
+    [0, 1, 1, 1],
+  );
 
   return (
-    <section className="relative overflow-hidden bg-ink min-h-[100svh] pt-16 pb-16 md:min-h-0 md:pt-24 md:pb-24">
-      <div className="bg-grid absolute inset-0 opacity-50" />
-      <div className="glow-accent absolute left-1/2 top-1/2 h-[900px] w-[900px] -translate-x-1/2 -translate-y-1/2" />
-      <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-ink" />
+    <>
+      <section
+        ref={sectionRef}
+        className="relative bg-ink"
+        style={{ height: "200svh" }}
+      >
+        <div className="sticky top-0 h-[100svh] overflow-hidden">
+          <div className="bg-grid absolute inset-0 opacity-50" />
+          <div className="glow-accent absolute left-1/2 top-1/2 h-[900px] w-[900px] -translate-x-1/2 -translate-y-1/2" />
+          <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-ink" />
 
-      <div className="relative mx-auto flex max-w-[1400px] flex-col items-center px-6 md:px-10">
-        <motion.p
-          variants={fadeUp}
-          initial="hidden"
-          animate="visible"
-          custom={0}
-          className="eyebrow absolute right-6 top-0 md:right-10 z-30"
-        >
-          ◆ Somatic Control Stack
-        </motion.p>
+          <div className="relative mx-auto flex h-full max-w-[1400px] flex-col items-center justify-center px-6 md:px-10">
+            <motion.p
+              variants={fadeUp}
+              initial="hidden"
+              animate="visible"
+              custom={0}
+              className="eyebrow absolute right-6 top-6 md:right-10 md:top-10 z-30"
+            >
+              ◆ Somatic Control Stack
+            </motion.p>
 
-        {/* Hero image container — graceful reveal after intro docking */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.96, y: 24 }}
-          animate={{
-            opacity: heroReady ? 1 : 0,
-            scale: heroReady ? 1 : 0.96,
-            y: heroReady ? 0 : 24,
-          }}
-          transition={{
-            duration: 0.9,
-            ease: [0.22, 1, 0.36, 1],
-          }}
-          className="hero-stack relative aspect-[16/10] w-full max-w-[1100px] mix-blend-screen select-none"
-          style={{ WebkitUserSelect: "none", userSelect: "none" }}
-        >
-          {/* LAYER 1 (BACK): Cyan brain outline glow — sits BEHIND hero image.
-              Precisely positioned to match the brain inside the robot head.
-              The neon glow bleeds out from behind the hero. */}
+            {/* Hero image container — graceful reveal after intro docking */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96, y: 24 }}
+              animate={{
+                opacity: heroReady ? 1 : 0,
+                scale: heroReady ? 1 : 0.96,
+                y: heroReady ? 0 : 24,
+              }}
+              transition={{
+                duration: 0.9,
+                ease: [0.22, 1, 0.36, 1],
+              }}
+              className="hero-stack relative aspect-[16/10] w-full max-w-[1100px] mix-blend-screen select-none"
+              style={{ WebkitUserSelect: "none", userSelect: "none" }}
+            >
+              {/* LAYER 1 (BACK): Cyan brain outline glow */}
+              <motion.div
+                aria-hidden
+                className="pointer-events-none absolute mix-blend-screen z-0"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: heroReady ? 1 : 0 }}
+                transition={{
+                  duration: 1.6,
+                  ease: [0.22, 1, 0.36, 1],
+                  delay: heroReady ? 0.3 : 0,
+                }}
+                style={{
+                  left: "29%",
+                  top: "6.5%",
+                  width: "35%",
+                  height: "47%",
+                }}
+              >
+                <Image
+                  src="/brain_outline.png"
+                  alt=""
+                  fill
+                  sizes="(min-width: 1280px) 1100px, (min-width: 768px) 80vw, 95vw"
+                  className="object-fill neon-reveal-cyan"
+                />
+              </motion.div>
+
+              {/* LAYER 2 (MIDDLE): Base hero image */}
+              <Image
+                src="/hero-image.png"
+                alt="Novonus yard intelligence"
+                fill
+                priority
+                sizes="(min-width: 1280px) 1100px, (min-width: 768px) 80vw, 95vw"
+                className="feathered-mask object-contain mix-blend-screen"
+              />
+
+              {/* LAYER 2.5: Scroll-driven red fill — rises from the bottom of
+                  the helmet bounding box as the user scrolls. Soft-edged so
+                  it blends with the existing red outline glow. */}
+              <div
+                aria-hidden
+                className="pointer-events-none absolute z-[15] overflow-hidden"
+                style={{
+                  left: "19.38%",
+                  top: "2.43%",
+                  width: "48.70%",
+                  height: "70.66%",
+                }}
+              >
+                <motion.div
+                  className="absolute inset-x-0 bottom-0"
+                  style={{
+                    height: fillHeight,
+                    opacity: fillOpacity,
+                    background:
+                      "linear-gradient(to top, rgba(255, 25, 50, 0.7) 0%, rgba(255, 60, 90, 0.55) 55%, rgba(255, 110, 140, 0.18) 88%, rgba(255, 140, 160, 0) 100%)",
+                    filter: "blur(10px)",
+                    WebkitMaskImage:
+                      "radial-gradient(ellipse 75% 95% at 50% 55%, black 55%, transparent 92%)",
+                    maskImage:
+                      "radial-gradient(ellipse 75% 95% at 50% 55%, black 55%, transparent 92%)",
+                    mixBlendMode: "screen",
+                  }}
+                />
+              </div>
+
+              {/* LAYER 3 (FRONT): Red neon outline */}
+              <motion.div
+                aria-hidden
+                className="pointer-events-none absolute mix-blend-screen z-20"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: heroReady ? 1 : 0 }}
+                transition={{
+                  duration: 1.4,
+                  ease: [0.22, 1, 0.36, 1],
+                  delay: heroReady ? 0.4 : 0,
+                }}
+                style={{
+                  left: "19.38%",
+                  top: "2.43%",
+                  width: "48.70%",
+                  height: "70.66%",
+                }}
+              >
+                <Image
+                  src="/hero-lines-overlay.png"
+                  alt=""
+                  fill
+                  sizes="(min-width: 1280px) 540px, (min-width: 768px) 40vw, 47vw"
+                  className="object-fill neon-reveal"
+                />
+              </motion.div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Stats — visible after the pinned hero releases */}
+      <section className="relative bg-ink py-16 md:py-24">
+        <div className="mx-auto max-w-[1400px] px-6 md:px-10">
           <motion.div
-            aria-hidden
-            className="pointer-events-none absolute mix-blend-screen z-0"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: heroReady ? 1 : 0 }}
-            transition={{
-              duration: 1.6,
-              ease: [0.22, 1, 0.36, 1],
-              delay: heroReady ? 0.3 : 0,
-            }}
-            style={{
-              left: "29%",
-              top: "6.5%",
-              width: "35%",
-              height: "47%",
-            }}
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            className="grid w-full gap-8 border-t border-paper/10 pt-10 md:grid-cols-3 md:gap-12"
           >
-            <Image
-              src="/brain_outline.png"
-              alt=""
-              fill
-              sizes="(min-width: 1280px) 1100px, (min-width: 768px) 80vw, 95vw"
-              className="object-fill neon-reveal-cyan"
-            />
+            <Stat label="Loads orchestrated" digits={[8, 4, 2]} suffix="K+" />
+            <Stat label="Reduction in dwell time" digits={[3, 7]} suffix="%" />
+            <Stat label="Yards going live" digits={[2, 4]} suffix="/wk" />
           </motion.div>
-
-          {/* LAYER 2 (MIDDLE): Base hero image — covers the brain outline,
-              only the glow bleeds through from behind */}
-          <Image
-            src="/hero-image.png"
-            alt="Novonus yard intelligence"
-            fill
-            priority
-            sizes="(min-width: 1280px) 1100px, (min-width: 768px) 80vw, 95vw"
-            className="feathered-mask object-contain mix-blend-screen"
-          />
-
-          {/* LAYER 3 (FRONT): Red neon face overlay — on top of everything */}
-          <motion.div
-            aria-hidden
-            className="pointer-events-none absolute mix-blend-screen z-20"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: heroReady ? 1 : 0 }}
-            transition={{
-              duration: 1.4,
-              ease: [0.22, 1, 0.36, 1],
-              delay: heroReady ? 0.4 : 0,
-            }}
-            style={{
-              left: "19.38%",
-              top: "2.43%",
-              width: "48.70%",
-              height: "70.66%",
-            }}
-          >
-            <Image
-              src="/hero-lines-overlay.png"
-              alt=""
-              fill
-              sizes="(min-width: 1280px) 540px, (min-width: 768px) 40vw, 47vw"
-              className="object-fill neon-reveal"
-            />
-          </motion.div>
-        </motion.div>
-
-        <motion.div
-          variants={fadeUp}
-          initial="hidden"
-          animate="visible"
-          custom={3}
-          className="mt-[34vw] grid w-full gap-8 border-t border-paper/10 pt-10 md:mt-12 md:grid-cols-3 md:gap-12"
-        >
-          <Stat label="Loads orchestrated" digits={[8, 4, 2]} suffix="K+" />
-          <Stat label="Reduction in dwell time" digits={[3, 7]} suffix="%" />
-          <Stat label="Yards going live" digits={[2, 4]} suffix="/wk" />
-        </motion.div>
-      </div>
-    </section>
+        </div>
+      </section>
+    </>
   );
 }
 
