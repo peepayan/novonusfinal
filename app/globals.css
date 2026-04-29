@@ -22,6 +22,8 @@
   --font-sans: var(--font-inter);
   --font-mono: var(--font-geist-mono);
   --font-brand: var(--font-inclusive);
+
+  --animate-neon-pulse: neon-pulse 2.4s ease-in-out infinite;
 }
 
 html,
@@ -108,4 +110,30 @@ body {
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+}
+
+/* Neon-red drop-shadow for the hero lines overlay */
+@utility drop-shadow-neon-red {
+  filter:
+    drop-shadow(0 0 10px rgba(255, 0, 0, 0.8))
+    drop-shadow(0 0 25px rgba(255, 0, 0, 0.6))
+    drop-shadow(0 0 50px rgba(255, 0, 0, 0.35));
+}
+
+/* Pulsing neon glow animation */
+@keyframes neon-pulse {
+  0%, 100% {
+    opacity: 0.82;
+    filter:
+      drop-shadow(0 0 10px rgba(255, 0, 0, 0.8))
+      drop-shadow(0 0 25px rgba(255, 0, 0, 0.6))
+      drop-shadow(0 0 50px rgba(255, 0, 0, 0.35));
+  }
+  50% {
+    opacity: 1;
+    filter:
+      drop-shadow(0 0 14px rgba(255, 0, 0, 0.95))
+      drop-shadow(0 0 35px rgba(255, 0, 0, 0.75))
+      drop-shadow(0 0 60px rgba(255, 0, 0, 0.5));
+  }
 }

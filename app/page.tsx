@@ -371,6 +371,7 @@ function Hero() {
           custom={1}
           className="relative aspect-[16/10] w-full max-w-[1100px]"
         >
+          {/* Base hero image */}
           <Image
             src="/hero-image.png"
             alt="Novonus yard intelligence"
@@ -378,6 +379,16 @@ function Hero() {
             priority
             sizes="(min-width: 1280px) 1100px, (min-width: 768px) 80vw, 95vw"
             className="feathered-mask object-contain mix-blend-screen"
+          />
+
+          {/* Neon-glow overlay — red lines with pulsing drop-shadow */}
+          <Image
+            src="/hero-lines-overlay.png"
+            alt=""
+            fill
+            aria-hidden="true"
+            sizes="(min-width: 1280px) 1100px, (min-width: 768px) 80vw, 95vw"
+            className="pointer-events-none feathered-mask object-contain mix-blend-screen drop-shadow-neon-red animate-neon-pulse"
           />
         </motion.div>
 
