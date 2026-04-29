@@ -1,0 +1,111 @@
+@import "tailwindcss";
+
+:root {
+  /* Neural-interface palette — strict five-hue system */
+  --ink: #000000;          /* deep black: backgrounds */
+  --paper: #ffffff;        /* pure white: primary text */
+  --cyan: #22d3ee;         /* bright cyan: primary accent */
+  --royal: #2563eb;        /* royal blue: depth / gradient */
+  --turq: #5eead4;         /* bright turquoise: highlights */
+  --background: var(--ink);
+  --foreground: var(--paper);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-ink: var(--ink);
+  --color-paper: var(--paper);
+  --color-cyan: var(--cyan);
+  --color-royal: var(--royal);
+  --color-turq: var(--turq);
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-geist-mono);
+  --font-brand: var(--font-inclusive);
+}
+
+html,
+body {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+body {
+  font-family: var(--font-inter), ui-sans-serif, system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-feature-settings: "ss01", "cv11";
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--cyan);
+  color: var(--ink);
+}
+
+/* Faint cyan grid backdrop for the hero */
+.bg-grid {
+  background-image:
+    linear-gradient(to right, rgba(34, 211, 238, 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(34, 211, 238, 0.06) 1px, transparent 1px);
+  background-size: 56px 56px;
+}
+
+/* Multi-stop gradient glow used as ambient lighting */
+.glow-accent {
+  background: radial-gradient(
+    60% 60% at 50% 50%,
+    rgba(34, 211, 238, 0.22) 0%,
+    rgba(37, 99, 235, 0.12) 40%,
+    rgba(94, 234, 212, 0) 70%
+  );
+}
+
+/* Slow scan-line marquee */
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.animate-marquee {
+  animation: marquee 32s linear infinite;
+}
+
+/* Mono uppercase eyebrow tinted with cyan accent */
+.eyebrow {
+  font-family: var(--font-mono), ui-monospace, SFMono-Regular, monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(34, 211, 238, 0.8);
+}
+
+/* Radial mask used to feather the hero image edges into the dark background */
+.feathered-mask {
+  -webkit-mask-image: radial-gradient(
+    ellipse at center,
+    black 45%,
+    transparent 75%
+  );
+  mask-image: radial-gradient(
+    ellipse at center,
+    black 45%,
+    transparent 75%
+  );
+}
+
+/* Gradient text utility for the brand spectrum */
+.text-gradient {
+  background: linear-gradient(
+    90deg,
+    var(--cyan) 0%,
+    var(--royal) 50%,
+    var(--turq) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
