@@ -381,15 +381,26 @@ function Hero() {
             className="feathered-mask object-contain mix-blend-screen"
           />
 
-          {/* Neon-glow overlay — red lines with pulsing drop-shadow */}
-          <Image
-            src="/hero-lines-overlay.png"
-            alt=""
-            fill
-            aria-hidden="true"
-            sizes="(min-width: 1280px) 1100px, (min-width: 768px) 80vw, 95vw"
-            className="pointer-events-none feathered-mask object-contain mix-blend-screen drop-shadow-neon-red animate-neon-pulse"
-          />
+          {/* Neon overlay — sized/positioned so its red outline lands on the red helmet
+              in the base image; values derived from the red bboxes of both PNGs. */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute"
+            style={{
+              left: "19.38%",
+              top: "2.43%",
+              width: "48.70%",
+              height: "70.66%",
+            }}
+          >
+            <Image
+              src="/hero-lines-overlay.png"
+              alt=""
+              fill
+              sizes="(min-width: 1280px) 540px, (min-width: 768px) 40vw, 47vw"
+              className="object-fill mix-blend-screen drop-shadow-neon-red animate-neon-pulse"
+            />
+          </div>
         </motion.div>
 
         <motion.div
