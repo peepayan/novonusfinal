@@ -657,7 +657,7 @@ function Hero() {
                     height: fillHeight,
                     opacity: fillOpacity,
                     background:
-                      "linear-gradient(to top, rgba(255, 25, 50, 0.78) 0%, rgba(255, 55, 85, 0.62) 55%, rgba(255, 110, 140, 0.22) 88%, rgba(255, 140, 160, 0) 100%)",
+                      "linear-gradient(to top, rgba(255, 25, 50, 0.82) 0%, rgba(255, 35, 65, 0.78) 55%, rgba(255, 55, 85, 0.62) 78%, rgba(255, 90, 120, 0.28) 92%, rgba(255, 130, 155, 0) 100%)",
                     mixBlendMode: "screen",
                   }}
                 />
