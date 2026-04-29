@@ -539,7 +539,7 @@ function Hero() {
   const heroReady = phase === "hero" || phase === "done";
 
   return (
-    <section className="relative overflow-hidden bg-ink pt-16 pb-16 md:pt-24 md:pb-24">
+    <section className="relative overflow-hidden bg-ink min-h-[100svh] pt-16 pb-16 md:min-h-0 md:pt-24 md:pb-24">
       <div className="bg-grid absolute inset-0 opacity-50" />
       <div className="glow-accent absolute left-1/2 top-1/2 h-[900px] w-[900px] -translate-x-1/2 -translate-y-1/2" />
       <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-ink" />
@@ -567,7 +567,7 @@ function Hero() {
             duration: 0.9,
             ease: [0.22, 1, 0.36, 1],
           }}
-          className="relative aspect-[16/10] w-full max-w-[1100px] mix-blend-screen select-none"
+          className="hero-stack relative aspect-[16/10] w-full max-w-[1100px] mix-blend-screen select-none"
           style={{ WebkitUserSelect: "none", userSelect: "none" }}
         >
           {/* LAYER 1 (BACK): Cyan brain outline glow — sits BEHIND hero image.
@@ -643,7 +643,7 @@ function Hero() {
           initial="hidden"
           animate="visible"
           custom={3}
-          className="mt-12 grid w-full gap-8 border-t border-paper/10 pt-10 md:grid-cols-3 md:gap-12"
+          className="mt-[34vw] grid w-full gap-8 border-t border-paper/10 pt-10 md:mt-12 md:grid-cols-3 md:gap-12"
         >
           <Stat label="Loads orchestrated" digits={[8, 4, 2]} suffix="K+" />
           <Stat label="Reduction in dwell time" digits={[3, 7]} suffix="%" />

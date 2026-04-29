@@ -214,23 +214,43 @@ body {
    CURSOR HALO — bright blue light around the pointer that lifts the grid
    ========================================================================== */
 .cursor-glow {
-  width: 1100px;
-  height: 1100px;
+  width: 680px;
+  height: 680px;
   border-radius: 50%;
   background:
     radial-gradient(
       circle at center,
-      rgba(160, 215, 255, 0.20) 0%,
-      rgba(125, 195, 255, 0.16) 16%,
-      rgba(95, 175, 255, 0.11) 34%,
-      rgba(65, 145, 240, 0.06) 54%,
-      rgba(35, 95, 215, 0.025) 72%,
+      rgba(160, 215, 255, 0.13) 0%,
+      rgba(125, 195, 255, 0.10) 16%,
+      rgba(95, 175, 255, 0.07) 34%,
+      rgba(65, 145, 240, 0.04) 54%,
+      rgba(35, 95, 215, 0.018) 72%,
       rgba(0, 0, 0, 0) 92%
     );
-  filter: blur(60px);
+  filter: blur(40px);
   mix-blend-mode: screen;
   will-change: transform, opacity;
   transition: opacity 300ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Touch / no-hover devices: kill the cursor halo entirely. */
+@media (hover: none), (pointer: coarse) {
+  .cursor-glow {
+    display: none !important;
+  }
+}
+
+/* Mobile hero stack — scale up so the robot/brain composition fills the
+   phone viewport on first load. Container percentages keep all overlay
+   layers perfectly aligned through the scale. */
+.hero-stack {
+  transform: scale(2.1);
+  transform-origin: center center;
+}
+@media (min-width: 768px) {
+  .hero-stack {
+    transform: none;
+  }
 }
 
 /* ============================================================================
