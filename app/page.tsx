@@ -631,8 +631,8 @@ function Hero() {
               />
 
               {/* LAYER 2.5: Scroll-driven red fill — rises from the bottom of
-                  the helmet bounding box as the user scrolls. Soft-edged so
-                  it blends with the existing red outline glow. */}
+                  the helmet, clipped to the outline silhouette so it stays
+                  inside the enclosed area defined by hero-lines-overlay.png. */}
               <div
                 aria-hidden
                 className="pointer-events-none absolute z-[15] overflow-hidden"
@@ -641,6 +641,14 @@ function Hero() {
                   top: "2.43%",
                   width: "48.70%",
                   height: "70.66%",
+                  WebkitMaskImage: "url(/helmet-silhouette.png)",
+                  maskImage: "url(/helmet-silhouette.png)",
+                  WebkitMaskSize: "100% 100%",
+                  maskSize: "100% 100%",
+                  WebkitMaskRepeat: "no-repeat",
+                  maskRepeat: "no-repeat",
+                  WebkitMaskPosition: "center",
+                  maskPosition: "center",
                 }}
               >
                 <motion.div
@@ -649,12 +657,7 @@ function Hero() {
                     height: fillHeight,
                     opacity: fillOpacity,
                     background:
-                      "linear-gradient(to top, rgba(255, 25, 50, 0.7) 0%, rgba(255, 60, 90, 0.55) 55%, rgba(255, 110, 140, 0.18) 88%, rgba(255, 140, 160, 0) 100%)",
-                    filter: "blur(10px)",
-                    WebkitMaskImage:
-                      "radial-gradient(ellipse 75% 95% at 50% 55%, black 55%, transparent 92%)",
-                    maskImage:
-                      "radial-gradient(ellipse 75% 95% at 50% 55%, black 55%, transparent 92%)",
+                      "linear-gradient(to top, rgba(255, 25, 50, 0.78) 0%, rgba(255, 55, 85, 0.62) 55%, rgba(255, 110, 140, 0.22) 88%, rgba(255, 140, 160, 0) 100%)",
                     mixBlendMode: "screen",
                   }}
                 />
