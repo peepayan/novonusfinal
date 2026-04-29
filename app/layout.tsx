@@ -23,9 +23,9 @@ const inclusiveSans = Inclusive_Sans({
 
 export const metadata: Metadata = {
   title:
-    "Novonus Yard Operating System | The New Industry Standard in Yard Operations",
+    "Novonus Somatic Control Stack | The New Industry Standard in Yard Operations",
   description:
-    "Max throughput. Easy-to-use. Rapid ROI. Novonus Yard Operating System is the only AI-native, fully-integrated platform for the yard of the future.",
+    "Max throughput. Easy-to-use. Rapid ROI. Novonus Somatic Control Stack is the only AI-native, fully-integrated platform for the yard of the future.",
 };
 
 export default function RootLayout({

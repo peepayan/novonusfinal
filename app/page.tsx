@@ -4,6 +4,7 @@ import {
   createContext,
   useContext,
   useEffect,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -24,16 +25,17 @@ import {
    INTRO PROVIDER — cinematic preloader phase machine
    ========================================================================== */
 
-type IntroPhase = "pop" | "dock" | "reveal" | "done";
+type IntroPhase = "pop" | "text" | "dock" | "hero" | "done";
 
-const POP_MS = 450;
-const HOLD_MS = 900;
-const DOCK_MS = 1000;
-const REVEAL_MS = 250;
-const MORPH_S = 0.95;
-const POP_S = 0.55;
-const TEXT_DELAY_S = POP_MS / 1000 + 0.1;
-const TEXT_SLIDE_S = 0.7;
+const POP_MS = 400;        /* logo scales in */
+const HOLD_MS = 500;       /* hold logo alone at center */
+const TEXT_MS = 700;       /* logo shifts left, text slides right */
+const TEXT_HOLD_MS = 400;  /* hold the centralized lockup */
+const DOCK_MS = 800;       /* logo+text fly to top bar, site fades in */
+const HERO_DELAY_MS = 200; /* small pause before hero reveal */
+const HERO_MS = 900;       /* hero reveal duration */
+const MORPH_S = 0.75;
+const POP_S = 0.45;
 const EASE_MORPH = [0.65, 0, 0.35, 1] as const;
 const EASE_POP = [0.34, 1.56, 0.64, 1] as const;
 const EASE_FADE = [0.22, 1, 0.36, 1] as const;
@@ -51,26 +53,26 @@ function IntroProvider({
   const [phase, setPhase] = useState<IntroPhase>("pop");
 
   useEffect(() => {
-    const t1 = window.setTimeout(() => setPhase("dock"), POP_MS + HOLD_MS);
-    const t2 = window.setTimeout(
-      () => setPhase("reveal"),
-      POP_MS + HOLD_MS + DOCK_MS,
-    );
-    const t3 = window.setTimeout(
-      () => setPhase("done"),
-      POP_MS + HOLD_MS + DOCK_MS + REVEAL_MS,
-    );
-    return () => {
-      window.clearTimeout(t1);
-      window.clearTimeout(t2);
-      window.clearTimeout(t3);
-    };
+    const t0 = POP_MS + HOLD_MS;
+    const t1 = t0 + TEXT_MS + TEXT_HOLD_MS;
+    const t2 = t1 + DOCK_MS + HERO_DELAY_MS;
+    const t3 = t2 + HERO_MS;
+
+    const timers = [
+      window.setTimeout(() => setPhase("text"), t0),
+      window.setTimeout(() => setPhase("dock"), t1),
+      window.setTimeout(() => setPhase("hero"), t2),
+      window.setTimeout(() => setPhase("done"), t3),
+    ];
+    return () => timers.forEach(window.clearTimeout);
   }, []);
 
-  const siteVisible = phase !== "pop";
+  /* Website content (excluding hero) fades in during the dock phase */
+  const siteVisible = phase === "dock" || phase === "hero" || phase === "done";
 
   return (
     <IntroContext.Provider value={{ phase }}>
+      <CursorGlow />
       <Preloader />
       <BrandLockup />
       {sidebar}
@@ -87,30 +89,93 @@ function IntroProvider({
 }
 
 /* ============================================================================
+   CURSOR GLOW — soft blue light that follows the cursor and reveals the grid
+   ========================================================================== */
+
+function CursorGlow() {
+  const ref = useRef<HTMLDivElement | null>(null);
+  const target = useRef({ x: 0, y: 0 });
+  const current = useRef({ x: 0, y: 0 });
+  const visible = useRef(0);
+  const targetVisible = useRef(0);
+  const raf = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    target.current = {
+      x: window.innerWidth / 2,
+      y: window.innerHeight / 2,
+    };
+    current.current = { ...target.current };
+
+    const handleMove = (e: PointerEvent) => {
+      target.current.x = e.clientX;
+      target.current.y = e.clientY;
+      targetVisible.current = 1;
+    };
+    const handleLeave = () => {
+      targetVisible.current = 0;
+    };
+    const handleEnter = () => {
+      targetVisible.current = 1;
+    };
+
+    window.addEventListener("pointermove", handleMove, { passive: true });
+    window.addEventListener("pointerleave", handleLeave);
+    window.addEventListener("pointerenter", handleEnter);
+
+    const tick = () => {
+      const lerp = 0.85;
+      current.current.x += (target.current.x - current.current.x) * lerp;
+      current.current.y += (target.current.y - current.current.y) * lerp;
+      visible.current += (targetVisible.current - visible.current) * 0.4;
+
+      const el = ref.current;
+      if (el) {
+        el.style.transform = `translate3d(${current.current.x}px, ${current.current.y}px, 0) translate(-50%, -50%)`;
+        el.style.opacity = String(visible.current);
+      }
+      raf.current = window.requestAnimationFrame(tick);
+    };
+    raf.current = window.requestAnimationFrame(tick);
+
+    return () => {
+      window.removeEventListener("pointermove", handleMove);
+      window.removeEventListener("pointerleave", handleLeave);
+      window.removeEventListener("pointerenter", handleEnter);
+      if (raf.current !== null) window.cancelAnimationFrame(raf.current);
+    };
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      aria-hidden
+      className="cursor-glow pointer-events-none fixed left-0 top-0 z-[60]"
+      style={{ opacity: 0 }}
+    />
+  );
+}
+
+/* ============================================================================
    LOGO MARK
    ========================================================================== */
 
 function LogoMark({ glass = false }: { glass?: boolean }) {
+  void glass;
   return (
     <span className="relative inline-flex h-full w-full select-none">
-      <motion.span
-        className="block h-full w-full"
-        initial={{ filter: "saturate(0.55)" }}
-        animate={{ filter: glass ? "saturate(0.55)" : "saturate(1)" }}
-        transition={{ duration: MORPH_S, ease: EASE_MORPH }}
-      >
-        <Image
-          src="/novonus-logo.png"
-          alt="Novonus"
-          width={288}
-          height={288}
-          priority
-          draggable={false}
-          className="object-contain select-none"
-          style={{ width: "100%", height: "100%" }}
-        />
-      </motion.span>
-      <LogoGlass glass={glass} />
+      <Image
+        src="/novonus-logo.png"
+        alt="Novonus"
+        width={288}
+        height={288}
+        priority
+        draggable={false}
+        className="object-contain select-none"
+        style={{ width: "100%", height: "100%", opacity: 0.85 }}
+      />
     </span>
   );
 }
@@ -185,35 +250,36 @@ function LogoGlass({ glass }: { glass: boolean }) {
 
 function Preloader() {
   const { phase } = useIntro();
+  const overlayVisible = phase === "pop" || phase === "text";
 
   return (
     <AnimatePresence>
-      {phase !== "done" && (
+      {phase !== "done" && phase !== "hero" && (
         <motion.div
           key="preloader-overlay"
           aria-hidden
           initial={{ opacity: 1 }}
-          animate={{ opacity: phase === "pop" ? 1 : 0 }}
+          animate={{ opacity: overlayVisible ? 1 : 0 }}
           exit={{ opacity: 0 }}
           transition={{ duration: MORPH_S * 0.9, ease: EASE_FADE }}
           className="fixed inset-0 z-[100] bg-ink"
-          style={{ pointerEvents: phase === "pop" ? "auto" : "none" }}
+          style={{ pointerEvents: overlayVisible ? "auto" : "none" }}
         >
           <div className="bg-grid absolute inset-0 opacity-25" />
           <div className="glow-accent absolute left-1/2 top-1/2 h-[700px] w-[700px] -translate-x-1/2 -translate-y-1/2" />
         </motion.div>
       )}
 
-      {/* Cyan halo — anchored at screen center, never morphs to the menu bar. */}
-      {phase !== "reveal" && phase !== "done" && (
+      {/* Cyan halo — anchored at screen center during pop phase */}
+      {(phase === "pop" || phase === "text") && (
         <motion.div
           key="halo"
           aria-hidden
           className="pointer-events-none fixed left-1/2 top-1/2 z-[105] -translate-x-1/2 -translate-y-1/2"
           initial={{ opacity: 0, scale: 0.6 }}
           animate={{
-            opacity: phase === "pop" ? 1 : 0,
-            scale: phase === "pop" ? 1 : 1.7,
+            opacity: phase === "pop" ? 1 : 0.6,
+            scale: phase === "pop" ? 1 : 1.2,
           }}
           exit={{ opacity: 0, scale: 1.9 }}
           transition={{
@@ -223,12 +289,12 @@ function Preloader() {
         >
           <div
             style={{
-              width: 360,
-              height: 360,
+              width: 240,
+              height: 240,
               borderRadius: "50%",
               background:
                 "radial-gradient(circle, rgba(34,211,238,0.65), rgba(120,200,255,0.25) 45%, transparent 72%)",
-              filter: "blur(48px)",
+              filter: "blur(24px)",
             }}
           />
         </motion.div>
@@ -243,28 +309,43 @@ function Preloader() {
 
 function BrandLockup() {
   const { phase } = useIntro();
-  const popped = phase === "pop";
+  const centered = phase === "pop" || phase === "text";
+  const docked = !centered;
   const morph = { duration: MORPH_S, ease: EASE_MORPH };
+
+  /* Phase-dependent values */
+  const logoSize = centered ? 144 : 38;
+
+  /* The gap + text are INSIDE the overflow:hidden wrapper so the wipe
+     first reveals empty space (gap), then the text — looks like it all
+     comes from behind the logo in one continuous sweep.
+     pop  → width:0  (nothing visible, logo stays centred)
+     text → paddingLeft:4 + textWidth:~164 = 168
+     dock → paddingLeft:2  + textWidth:~80  = 84              */
+  const wrapperWidth = phase === "pop" ? 0 : docked ? 84 : 168;
+  const innerPad = docked ? 2 : 4;
+  const textOpacity = phase === "pop" ? 0 : 1;
 
   return (
     <motion.div
       className="pointer-events-none fixed left-1/2 z-[120] flex items-center"
-      initial={{ top: "50%", x: "-50%", y: "-50%", gap: 18 }}
+      initial={{ top: "50%", x: "-50%", y: "-50%" }}
       animate={{
-        top: popped ? "50%" : "1.25rem",
+        top: docked ? "1.25rem" : "50%",
         x: "-50%",
-        y: popped ? "-50%" : "0%",
-        gap: popped ? 18 : 10,
+        y: docked ? "0%" : "-50%",
       }}
       transition={morph}
     >
+      {/* Logo — pops in center during "pop", smoothly shifts left as
+          the wrapper width grows during "text" phase. */}
       <motion.div
         className="relative shrink-0"
         style={{ zIndex: 2 }}
         initial={{ width: 144, height: 144, scale: 0, opacity: 0 }}
         animate={{
-          width: popped ? 144 : 36,
-          height: popped ? 144 : 36,
+          width: logoSize,
+          height: logoSize,
           scale: 1,
           opacity: 1,
         }}
@@ -272,28 +353,40 @@ function BrandLockup() {
           width: morph,
           height: morph,
           scale: { duration: POP_S, ease: EASE_POP },
-          opacity: { duration: 0.4, ease: "easeOut" },
+          opacity: { duration: 0.35, ease: "easeOut" },
         }}
       >
-        <LogoMark glass={popped} />
+        <LogoMark glass={phase === "pop" || phase === "text"} />
       </motion.div>
-      <motion.span
-        className="relative font-brand tracking-[0.02em] text-paper select-none"
-        style={{ zIndex: 1 }}
-        initial={{ fontSize: 36, opacity: 0, x: -72 }}
-        animate={{
-          fontSize: popped ? 36 : 16,
-          opacity: 1,
-          x: 0,
-        }}
-        transition={{
-          fontSize: morph,
-          opacity: { delay: TEXT_DELAY_S, duration: 0.25, ease: EASE_FADE },
-          x: { delay: TEXT_DELAY_S, duration: TEXT_SLIDE_S, ease: EASE_MORPH },
-        }}
+
+      {/* Text wrapper — width wipe from 0.
+          paddingLeft is INSIDE, so the wipe first reveals the gap
+          (empty space), then the text. Feels like one continuous
+          reveal emerging from behind the logo. */}
+      <motion.div
+        style={{ overflow: "hidden", zIndex: 1, flexShrink: 0 }}
+        initial={{ width: 0, y: 0 }}
+        animate={{ width: wrapperWidth, y: docked ? 6 : 0 }}
+        transition={{ width: morph, y: morph }}
       >
-        Novonus
-      </motion.span>
+        <motion.span
+          className="block font-sans font-semibold tracking-[0.02em] text-paper select-none"
+          style={{ whiteSpace: "nowrap" }}
+          initial={{ paddingLeft: 4, fontSize: "34px", opacity: 0 }}
+          animate={{
+            paddingLeft: innerPad,
+            fontSize: docked ? "14px" : "34px",
+            opacity: textOpacity * (centered ? 0.85 : 1),
+          }}
+          transition={{
+            paddingLeft: morph,
+            fontSize: morph,
+            opacity: { duration: 0.5, ease: EASE_FADE },
+          }}
+        >
+          Novonus
+        </motion.span>
+      </motion.div>
     </motion.div>
   );
 }
@@ -306,7 +399,7 @@ const NAV_ITEMS = ["System", "Markets", "Insights", "Resources", "About"];
 
 function Sidebar() {
   const { phase } = useIntro();
-  const visible = phase === "reveal" || phase === "done";
+  const visible = phase === "hero" || phase === "done";
 
   return (
     <motion.aside
@@ -317,11 +410,11 @@ function Sidebar() {
         ease: [0.22, 1, 0.36, 1],
         delay: visible ? 0.1 : 0,
       }}
-      className="fixed left-6 top-1/2 z-40 hidden -translate-y-1/2 md:block"
+      className="liquid-glass fixed left-6 top-1/2 z-40 hidden -translate-y-1/2 md:block"
       aria-label="Primary navigation"
     >
-      <div className="flex flex-col items-stretch gap-1 rounded-3xl border border-white/10 bg-black/20 p-3 shadow-[0_24px_64px_-32px_rgba(0,0,0,0.8)] backdrop-blur-2xl">
-        <span className="px-3 pb-2 pt-1 font-mono text-[10px] uppercase tracking-[0.22em] text-paper/40">
+      <div className="liquid-glass-panel relative flex flex-col items-stretch gap-1 p-3">
+        <span className="px-3 pb-2 pt-1 font-mono text-[10px] uppercase tracking-[0.22em] text-paper/55">
           Navigate
         </span>
         <nav className="flex flex-col gap-1">
@@ -329,20 +422,20 @@ function Sidebar() {
             <a
               key={item}
               href={`#${item.toLowerCase()}`}
-              className="group flex items-center justify-between rounded-full px-4 py-2.5 text-sm text-paper/75 transition-colors hover:bg-white/10 hover:text-paper"
+              className="liquid-glass-btn group relative flex items-center justify-between px-4 py-2.5 text-sm text-paper/85"
             >
-              <span>{item}</span>
-              <span className="h-1.5 w-1.5 rounded-full bg-cyan/0 transition-colors group-hover:bg-cyan" />
+              <span className="relative z-10">{item}</span>
+              <span className="relative z-10 h-1.5 w-1.5 rounded-full bg-cyan/0 transition-colors group-hover:bg-cyan" />
             </a>
           ))}
         </nav>
         <div className="mt-2 border-t border-white/10 pt-3">
           <a
             href="#contact"
-            className="group flex items-center justify-between rounded-full bg-cyan/90 px-4 py-2.5 text-sm font-medium text-ink transition-all hover:bg-cyan"
+            className="liquid-glass-btn liquid-glass-cta group relative flex items-center justify-between px-4 py-2.5 text-sm font-medium text-ink"
           >
-            Contact
-            <Arrow className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+            <span className="relative z-10">Contact</span>
+            <Arrow className="relative z-10 h-3 w-3 transition-transform group-hover:translate-x-0.5" />
           </a>
         </div>
       </div>
@@ -442,8 +535,11 @@ const fadeUp = {
 };
 
 function Hero() {
+  const { phase } = useIntro();
+  const heroReady = phase === "hero" || phase === "done";
+
   return (
-    <section className="relative overflow-hidden bg-ink pt-32 pb-24 md:pt-40 md:pb-32">
+    <section className="relative overflow-hidden bg-ink pt-16 pb-16 md:pt-24 md:pb-24">
       <div className="bg-grid absolute inset-0 opacity-50" />
       <div className="glow-accent absolute left-1/2 top-1/2 h-[900px] w-[900px] -translate-x-1/2 -translate-y-1/2" />
       <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-ink" />
@@ -454,19 +550,57 @@ function Hero() {
           initial="hidden"
           animate="visible"
           custom={0}
-          className="eyebrow mb-10"
+          className="eyebrow absolute right-6 top-0 md:right-10 z-30"
         >
-          ◆ Yard Operating System
+          ◆ Somatic Control Stack
         </motion.p>
 
+        {/* Hero image container — graceful reveal after intro docking */}
         <motion.div
-          variants={fadeUp}
-          initial="hidden"
-          animate="visible"
-          custom={1}
-          className="relative aspect-[16/10] w-full max-w-[1100px]"
+          initial={{ opacity: 0, scale: 0.96, y: 24 }}
+          animate={{
+            opacity: heroReady ? 1 : 0,
+            scale: heroReady ? 1 : 0.96,
+            y: heroReady ? 0 : 24,
+          }}
+          transition={{
+            duration: 0.9,
+            ease: [0.22, 1, 0.36, 1],
+          }}
+          className="relative aspect-[16/10] w-full max-w-[1100px] mix-blend-screen select-none"
+          style={{ WebkitUserSelect: "none", userSelect: "none" }}
         >
-          {/* Base hero image */}
+          {/* LAYER 1 (BACK): Cyan brain outline glow — sits BEHIND hero image.
+              Precisely positioned to match the brain inside the robot head.
+              The neon glow bleeds out from behind the hero. */}
+          <motion.div
+            aria-hidden
+            className="pointer-events-none absolute mix-blend-screen z-0"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: heroReady ? 1 : 0 }}
+            transition={{
+              duration: 1.6,
+              ease: [0.22, 1, 0.36, 1],
+              delay: heroReady ? 0.3 : 0,
+            }}
+            style={{
+              left: "29%",
+              top: "6.5%",
+              width: "35%",
+              height: "47%",
+            }}
+          >
+            <Image
+              src="/brain_outline.png"
+              alt=""
+              fill
+              sizes="(min-width: 1280px) 1100px, (min-width: 768px) 80vw, 95vw"
+              className="object-fill neon-reveal-cyan"
+            />
+          </motion.div>
+
+          {/* LAYER 2 (MIDDLE): Base hero image — covers the brain outline,
+              only the glow bleeds through from behind */}
           <Image
             src="/hero-image.png"
             alt="Novonus yard intelligence"
@@ -476,11 +610,17 @@ function Hero() {
             className="feathered-mask object-contain mix-blend-screen"
           />
 
-          {/* Neon overlay — sized/positioned so its red outline lands on the red helmet
-              in the base image; values derived from the red bboxes of both PNGs. */}
-          <div
+          {/* LAYER 3 (FRONT): Red neon face overlay — on top of everything */}
+          <motion.div
             aria-hidden
-            className="pointer-events-none absolute"
+            className="pointer-events-none absolute mix-blend-screen z-20"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: heroReady ? 1 : 0 }}
+            transition={{
+              duration: 1.4,
+              ease: [0.22, 1, 0.36, 1],
+              delay: heroReady ? 0.4 : 0,
+            }}
             style={{
               left: "19.38%",
               top: "2.43%",
@@ -493,9 +633,9 @@ function Hero() {
               alt=""
               fill
               sizes="(min-width: 1280px) 540px, (min-width: 768px) 40vw, 47vw"
-              className="object-fill mix-blend-screen drop-shadow-neon-red animate-neon-pulse"
+              className="object-fill neon-reveal"
             />
-          </div>
+          </motion.div>
         </motion.div>
 
         <motion.div
@@ -591,7 +731,7 @@ function FeatureList() {
             That&apos;s the
           </p>
           <h2 className="text-balance text-[44px] font-medium leading-[0.95] tracking-[-0.02em] text-paper md:text-[96px]">
-            <SpacedReveal text="Yard Operating System." />
+            <SpacedReveal text="Somatic Control Stack." />
           </h2>
           <p className="mt-4 font-mono text-2xl tracking-[0.4em] text-cyan md:text-4xl">
             YOS™
@@ -1083,7 +1223,7 @@ const COLS: { title: string; items: string[] }[] = [
     title: "Technology",
     items: [
       "Homepage",
-      "Yard Operating System",
+      "Somatic Control Stack",
       "The Agentic AI Yard",
       "Yard Efficiency Calculator",
     ],
