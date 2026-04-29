@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import Image from "next/image";
-import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   Cpu,
   Workflow,
@@ -26,10 +26,17 @@ import {
 
 type IntroPhase = "pop" | "dock" | "reveal" | "done";
 
-const POP_MS = 400;
-const HOLD_MS = 700;
-const DOCK_MS = 650;
-const REVEAL_MS = 450;
+const POP_MS = 450;
+const HOLD_MS = 900;
+const DOCK_MS = 1000;
+const REVEAL_MS = 250;
+const MORPH_S = 0.95;
+const POP_S = 0.55;
+const TEXT_DELAY_S = POP_MS / 1000 + 0.1;
+const TEXT_SLIDE_S = 0.7;
+const EASE_MORPH = [0.65, 0, 0.35, 1] as const;
+const EASE_POP = [0.34, 1.56, 0.64, 1] as const;
+const EASE_FADE = [0.22, 1, 0.36, 1] as const;
 
 const IntroContext = createContext<{ phase: IntroPhase }>({ phase: "done" });
 const useIntro = () => useContext(IntroContext);
@@ -60,23 +67,21 @@ function IntroProvider({
     };
   }, []);
 
-  const siteVisible = phase === "reveal" || phase === "done";
+  const siteVisible = phase !== "pop";
 
   return (
     <IntroContext.Provider value={{ phase }}>
-      <LayoutGroup>
-        <Preloader />
-        <BrandLockup />
-        {sidebar}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: siteVisible ? 1 : 0 }}
-          transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-          aria-hidden={!siteVisible}
-        >
-          {children}
-        </motion.div>
-      </LayoutGroup>
+      <Preloader />
+      <BrandLockup />
+      {sidebar}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: siteVisible ? 1 : 0 }}
+        transition={{ duration: MORPH_S * 0.9, ease: EASE_FADE }}
+        aria-hidden={!siteVisible}
+      >
+        {children}
+      </motion.div>
     </IntroContext.Provider>
   );
 }
@@ -85,24 +90,92 @@ function IntroProvider({
    LOGO MARK
    ========================================================================== */
 
-function LogoMark({
-  size = 32,
-  className = "",
-}: {
-  size?: number;
-  className?: string;
-}) {
+function LogoMark({ glass = false }: { glass?: boolean }) {
   return (
-    <Image
-      src="/novonus-logo.png"
-      alt="Novonus"
-      width={size}
-      height={size}
-      priority
-      draggable={false}
-      className={`object-contain select-none ${className}`}
-      style={{ width: size, height: size }}
-    />
+    <span className="relative inline-flex h-full w-full select-none">
+      <motion.span
+        className="block h-full w-full"
+        initial={{ filter: "saturate(0.55)" }}
+        animate={{ filter: glass ? "saturate(0.55)" : "saturate(1)" }}
+        transition={{ duration: MORPH_S, ease: EASE_MORPH }}
+      >
+        <Image
+          src="/novonus-logo.png"
+          alt="Novonus"
+          width={288}
+          height={288}
+          priority
+          draggable={false}
+          className="object-contain select-none"
+          style={{ width: "100%", height: "100%" }}
+        />
+      </motion.span>
+      <LogoGlass glass={glass} />
+    </span>
+  );
+}
+
+/* LogoGlass — liquid-glass overlays masked to the logo silhouette. Mounts at
+   full intensity and dissolves to 0 when `glass` is false; halo is rendered
+   separately in <Preloader> so it stays anchored at screen center. */
+
+function LogoGlass({ glass }: { glass: boolean }) {
+  const mask = {
+    WebkitMaskImage: "url(/novonus-logo.png)",
+    maskImage: "url(/novonus-logo.png)",
+    WebkitMaskSize: "contain",
+    maskSize: "contain",
+    WebkitMaskRepeat: "no-repeat",
+    maskRepeat: "no-repeat",
+    WebkitMaskPosition: "center",
+    maskPosition: "center",
+  } as const;
+  const morph = { duration: MORPH_S, ease: EASE_MORPH };
+  return (
+    <>
+      {/* Cyan→royal tint on the logo body */}
+      <motion.span
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        style={{
+          ...mask,
+          background:
+            "linear-gradient(135deg, rgba(125,224,255,0.85) 0%, rgba(34,211,238,0.7) 45%, rgba(70,130,255,0.55) 100%)",
+          mixBlendMode: "screen",
+        }}
+        initial={{ opacity: 0.85 }}
+        animate={{ opacity: glass ? 0.85 : 0 }}
+        transition={morph}
+      />
+      {/* Specular sweep — light catching the top-left edge */}
+      <motion.span
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        style={{
+          ...mask,
+          background:
+            "linear-gradient(135deg, rgba(255,255,255,1) 0%, rgba(255,255,255,0.45) 18%, transparent 45%)",
+          mixBlendMode: "overlay",
+        }}
+        initial={{ opacity: 1 }}
+        animate={{ opacity: glass ? 1 : 0 }}
+        transition={morph}
+      />
+      {/* Bottom-right depth shadow — gives the glass volume */}
+      <motion.span
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        style={{
+          ...mask,
+          background:
+            "linear-gradient(135deg, transparent 55%, rgba(10,30,60,0.35) 100%)",
+          mixBlendMode: "multiply",
+        }}
+        initial={{ opacity: 0.7 }}
+        animate={{ opacity: glass ? 0.7 : 0 }}
+        transition={morph}
+      />
+    </>
   );
 }
 
@@ -120,9 +193,9 @@ function Preloader() {
           key="preloader-overlay"
           aria-hidden
           initial={{ opacity: 1 }}
-          animate={{ opacity: phase === "reveal" ? 0 : 1 }}
+          animate={{ opacity: phase === "pop" ? 1 : 0 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: MORPH_S * 0.9, ease: EASE_FADE }}
           className="fixed inset-0 z-[100] bg-ink"
           style={{ pointerEvents: phase === "pop" ? "auto" : "none" }}
         >
@@ -131,25 +204,34 @@ function Preloader() {
         </motion.div>
       )}
 
-      {phase === "pop" && (
-        <div
-          key="preloader-stage"
-          className="pointer-events-none fixed inset-0 z-[110] flex items-center justify-center"
+      {/* Cyan halo — anchored at screen center, never morphs to the menu bar. */}
+      {phase !== "reveal" && phase !== "done" && (
+        <motion.div
+          key="halo"
+          aria-hidden
+          className="pointer-events-none fixed left-1/2 top-1/2 z-[105] -translate-x-1/2 -translate-y-1/2"
+          initial={{ opacity: 0, scale: 0.6 }}
+          animate={{
+            opacity: phase === "pop" ? 1 : 0,
+            scale: phase === "pop" ? 1 : 1.7,
+          }}
+          exit={{ opacity: 0, scale: 1.9 }}
+          transition={{
+            duration: phase === "pop" ? 0.6 : MORPH_S,
+            ease: EASE_FADE,
+          }}
         >
-          <motion.div
-            layoutId="primary-logo"
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1.5, opacity: 1 }}
-            transition={{
-              scale: { duration: 0.4, ease: [0.34, 1.56, 0.64, 1] },
-              opacity: { duration: 0.3, ease: "easeOut" },
-              layout: { duration: 0.65, ease: [0.65, 0, 0.35, 1] },
+          <div
+            style={{
+              width: 360,
+              height: 360,
+              borderRadius: "50%",
+              background:
+                "radial-gradient(circle, rgba(34,211,238,0.65), rgba(120,200,255,0.25) 45%, transparent 72%)",
+              filter: "blur(48px)",
             }}
-            className="flex items-center justify-center"
-          >
-            <LogoMark size={72} />
-          </motion.div>
-        </div>
+          />
+        </motion.div>
       )}
     </AnimatePresence>
   );
@@ -161,45 +243,58 @@ function Preloader() {
 
 function BrandLockup() {
   const { phase } = useIntro();
-  const showLogo = phase !== "pop";
-  const showText = phase === "reveal" || phase === "done";
+  const popped = phase === "pop";
+  const morph = { duration: MORPH_S, ease: EASE_MORPH };
 
   return (
-    <div
-      className="pointer-events-none fixed left-1/2 top-5 z-[120] -translate-x-1/2"
-      aria-hidden={!showText}
+    <motion.div
+      className="pointer-events-none fixed left-1/2 z-[120] flex items-center"
+      initial={{ top: "50%", x: "-50%", y: "-50%", gap: 18 }}
+      animate={{
+        top: popped ? "50%" : "1.25rem",
+        x: "-50%",
+        y: popped ? "-50%" : "0%",
+        gap: popped ? 18 : 10,
+      }}
+      transition={morph}
     >
-      <div className="flex items-center gap-2.5">
-        <span className="relative inline-flex h-9 w-9 items-center justify-center">
-          {showLogo && (
-            <motion.span
-              layoutId="primary-logo"
-              transition={{
-                layout: { duration: 0.65, ease: [0.65, 0, 0.35, 1] },
-              }}
-              className="inline-flex items-center justify-center"
-            >
-              <LogoMark size={36} />
-            </motion.span>
-          )}
-        </span>
-        <motion.span
-          initial={{ opacity: 0, x: -6 }}
-          animate={{
-            opacity: showText ? 1 : 0,
-            x: showText ? 0 : -6,
-          }}
-          transition={{
-            duration: 0.45,
-            ease: [0.22, 1, 0.36, 1],
-            delay: showText ? 0.05 : 0,
-          }}
-          className="font-brand text-base tracking-[0.02em] text-paper"
-        >
-          Novonus
-        </motion.span>
-      </div>
-    </div>
+      <motion.div
+        className="relative shrink-0"
+        style={{ zIndex: 2 }}
+        initial={{ width: 144, height: 144, scale: 0, opacity: 0 }}
+        animate={{
+          width: popped ? 144 : 36,
+          height: popped ? 144 : 36,
+          scale: 1,
+          opacity: 1,
+        }}
+        transition={{
+          width: morph,
+          height: morph,
+          scale: { duration: POP_S, ease: EASE_POP },
+          opacity: { duration: 0.4, ease: "easeOut" },
+        }}
+      >
+        <LogoMark glass={popped} />
+      </motion.div>
+      <motion.span
+        className="relative font-brand tracking-[0.02em] text-paper select-none"
+        style={{ zIndex: 1 }}
+        initial={{ fontSize: 36, opacity: 0, x: -72 }}
+        animate={{
+          fontSize: popped ? 36 : 16,
+          opacity: 1,
+          x: 0,
+        }}
+        transition={{
+          fontSize: morph,
+          opacity: { delay: TEXT_DELAY_S, duration: 0.25, ease: EASE_FADE },
+          x: { delay: TEXT_DELAY_S, duration: TEXT_SLIDE_S, ease: EASE_MORPH },
+        }}
+      >
+        Novonus
+      </motion.span>
+    </motion.div>
   );
 }
 
@@ -866,6 +961,7 @@ function Contact() {
                 <button
                   type="button"
                   onClick={() => setOption(o)}
+                  suppressHydrationWarning
                   className={`flex w-full items-center justify-between rounded-2xl border px-5 py-4 text-left transition-colors ${
                     option === o
                       ? "border-cyan bg-cyan/10 text-paper"
@@ -925,6 +1021,7 @@ function Contact() {
                 className="rounded-xl border border-paper/15 bg-ink px-4 py-3 text-sm text-paper outline-none transition-colors focus:border-cyan"
                 value={option}
                 onChange={(e) => setOption(e.target.value)}
+                suppressHydrationWarning
               >
                 {OPTIONS.map((o) => (
                   <option key={o} value={o} className="bg-ink">
@@ -935,6 +1032,7 @@ function Contact() {
             </div>
             <button
               type="submit"
+              suppressHydrationWarning
               className="group mt-2 inline-flex items-center justify-center gap-2 rounded-full bg-cyan px-6 py-3.5 text-sm font-medium text-ink transition-all hover:bg-cyan/90"
             >
               Take charge of your yard
@@ -969,6 +1067,7 @@ function Field({
         name={name}
         type={type}
         required={required}
+        suppressHydrationWarning
         className="rounded-xl border border-paper/15 bg-ink px-4 py-3 text-sm text-paper outline-none transition-colors placeholder:text-paper/30 focus:border-cyan"
       />
     </label>
