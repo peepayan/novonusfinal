@@ -14,6 +14,7 @@ import {
   motion,
   useScroll,
   useTransform,
+  useMotionValueEvent,
   type MotionValue,
 } from "framer-motion";
 import {
@@ -577,6 +578,11 @@ function Hero() {
   const heroReady = phase === "hero" || phase === "done";
   const sectionRef = useRef<HTMLElement | null>(null);
 
+  /* Click-to-pulse: bumping the key remounts the flash overlays so their
+     0 → 1 → 0 keyframe runs again on every click. */
+  const [flashKey, setFlashKey] = useState(0);
+  const triggerFlash = () => setFlashKey((k) => k + 1);
+
   /* Scroll-pin: section is 200svh tall with a sticky 100svh viewport inside.
      Progress goes 0 → 1 over the 100svh of pinned scrolling — that drives
      the red fill. Once it completes the section unpins and the page
@@ -586,12 +592,14 @@ function Hero() {
     offset: ["start start", "end end"],
   });
 
-  /* Strictly sequential scroll phases — no overlap, so reversing scroll
-     plays the same beats in reverse order:
-       0    → 0.32 : red helmet fill rises / drops
-       0.4  → 0.5  : NOVONUS backdrop fades out / back in
-       0.55 → 0.7  : hero artwork slides right / back to center
-       0.78 → 0.92 : tagline letters reveal / unreveal */
+  /* Mixed model:
+       0    → 0.32 : red helmet fill rises / drops          (scroll-driven)
+       0.4  → 0.5  : NOVONUS backdrop fades out / back in   (scroll-driven)
+       past 0.55   : stage 1 → hero artwork snaps right     (single scroll)
+       past 0.65   : stage 2 → tagline snaps in             (single scroll)
+     The stage transitions use a duration-based animation, so a single
+     scroll past the threshold plays the whole beat regardless of how far
+     the user pushes the wheel. */
   const fillHeight = useTransform(scrollYProgress, [0, 0.32], ["0%", "100%"]);
   const fillOpacity = useTransform(
     scrollYProgress,
@@ -599,8 +607,14 @@ function Hero() {
     [0, 1, 1],
   );
   const novonusOpacity = useTransform(scrollYProgress, [0.4, 0.5], [1, 0]);
-  const heroX = useTransform(scrollYProgress, [0.55, 0.7], ["0%", "20%"]);
-  const textX = useTransform(scrollYProgress, [0.78, 0.92], [-20, 0]);
+
+  const [stage, setStage] = useState(0);
+  useMotionValueEvent(scrollYProgress, "change", (v) => {
+    let next = 0;
+    if (v > 0.65) next = 2;
+    else if (v > 0.55) next = 1;
+    setStage((prev) => (prev === next ? prev : next));
+  });
 
   return (
     <>
@@ -657,23 +671,28 @@ function Hero() {
               ◆ Somatic Control Stack
             </motion.p>
 
-            {/* Hero image container — graceful reveal after intro docking */}
+            {/* Hero image container — graceful reveal after intro docking.
+                After the NOVONUS fade completes, a single scroll past the
+                stage-1 threshold snaps the artwork to its right-shifted
+                position via a fixed-duration animation, independent of how
+                far the user actually scrolls. */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.96, y: 24 }}
+              initial={{ opacity: 0, scale: 0.96, y: 24, x: "0%" }}
               animate={{
                 opacity: heroReady ? 1 : 0,
                 scale: heroReady ? 1 : 0.96,
                 y: heroReady ? 0 : 24,
+                x: stage >= 1 ? "20%" : "0%",
               }}
               transition={{
                 duration: 0.9,
                 ease: [0.22, 1, 0.36, 1],
+                x: { duration: 0.85, ease: [0.4, 0, 0.2, 1] },
               }}
               className="hero-stack relative aspect-[16/10] w-full max-w-[1100px] mix-blend-screen select-none"
               style={{
                 WebkitUserSelect: "none",
                 userSelect: "none",
-                x: heroX,
               }}
             >
               {/* LAYER 1 (BACK): Cyan brain outline glow */}
@@ -772,41 +791,133 @@ function Hero() {
                   className="object-fill neon-reveal"
                 />
               </motion.div>
+
+              {/* CLICK FLASH — cyan bloom inside the brain only. Brain
+                  outline is the mask, heavy blur lets cyan light bleed
+                  inward to fill the enclosed area. Smooth ramp/hold/fade. */}
+              {flashKey > 0 && (
+                <motion.div
+                  key={`flash-cyan-${flashKey}`}
+                  aria-hidden
+                  className="pointer-events-none absolute mix-blend-screen z-[17]"
+                  style={{
+                    left: "29%",
+                    top: "6.5%",
+                    width: "35%",
+                    height: "47%",
+                    background: "rgba(40, 220, 255, 1)",
+                    WebkitMaskImage: "url(/brain_outline.png)",
+                    maskImage: "url(/brain_outline.png)",
+                    WebkitMaskSize: "100% 100%",
+                    maskSize: "100% 100%",
+                    WebkitMaskRepeat: "no-repeat",
+                    maskRepeat: "no-repeat",
+                    filter: "blur(28px) saturate(1.4)",
+                  }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: [0, 1, 1, 0] }}
+                  transition={{
+                    duration: 2.6,
+                    times: [0, 0.22, 0.5, 1],
+                    ease: [0.4, 0, 0.2, 1],
+                  }}
+                />
+              )}
+
+              {/* CLICK FLASH — red bloom inside the helmet silhouette. */}
+              {flashKey > 0 && (
+                <motion.div
+                  key={`flash-red-${flashKey}`}
+                  aria-hidden
+                  className="pointer-events-none absolute mix-blend-screen z-[18]"
+                  style={{
+                    left: "19.38%",
+                    top: "2.43%",
+                    width: "48.70%",
+                    height: "70.66%",
+                    background: "rgba(255, 22, 55, 1)",
+                    WebkitMaskImage: "url(/helmet-silhouette.png)",
+                    maskImage: "url(/helmet-silhouette.png)",
+                    WebkitMaskSize: "100% 100%",
+                    maskSize: "100% 100%",
+                    WebkitMaskRepeat: "no-repeat",
+                    maskRepeat: "no-repeat",
+                    filter: "saturate(1.4)",
+                  }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: [0, 1, 1, 0] }}
+                  transition={{
+                    duration: 2.6,
+                    times: [0, 0.22, 0.5, 1],
+                    ease: [0.4, 0, 0.2, 1],
+                  }}
+                />
+              )}
+
+              {/* CLICK TARGET — small, pixel-precise to the brain outline.
+                  SVG <image> with pointer-events="visiblePainted" only fires
+                  on opaque brain-outline pixels, so the click radius is
+                  tightly contained to the brain area. */}
+              <svg
+                viewBox="0 0 100 100"
+                preserveAspectRatio="none"
+                aria-hidden
+                className="absolute z-[19]"
+                style={{
+                  left: "29%",
+                  top: "6.5%",
+                  width: "35%",
+                  height: "47%",
+                  pointerEvents: "none",
+                }}
+              >
+                <image
+                  href="/brain_outline.png"
+                  x={0}
+                  y={0}
+                  width={100}
+                  height={100}
+                  preserveAspectRatio="none"
+                  onClick={triggerFlash}
+                  style={{
+                    pointerEvents: "visiblePainted",
+                    cursor: "pointer",
+                    opacity: 0.01,
+                  }}
+                />
+              </svg>
             </motion.div>
           </div>
 
-          {/* Liquid-glass tagline — letters reveal in sync with scroll, slide
-              in from the left as the hero drifts right. */}
+          {/* Tagline — appears as a single beat once stage 2 is reached. A
+              fixed-duration animation drives the slide-in, so any scroll
+              past the threshold reveals the whole tagline in one go. */}
           <motion.div
             className="pointer-events-none absolute left-0 top-1/2 z-[5] hidden w-[44%] max-w-[560px] -translate-y-1/2 px-8 md:block md:pl-[6vw] lg:pl-[8vw]"
-            style={{ x: textX }}
+            initial={{ opacity: 0, x: -28 }}
+            animate={{
+              opacity: stage >= 2 ? 1 : 0,
+              x: stage >= 2 ? 0 : -28,
+            }}
+            transition={{ duration: 0.85, ease: [0.4, 0, 0.2, 1] }}
           >
             <p
               className="text-balance"
               aria-label="Robots that feel. Manufacturing cells that learn from a single demonstration."
               style={{
-                fontFamily: "var(--font-inclusive), ui-sans-serif, system-ui",
-                fontWeight: 400,
-                fontSize: "clamp(1.15rem, 1.9vw, 1.85rem)",
-                lineHeight: 1.4,
-                letterSpacing: "0.01em",
-                color: "rgba(220, 240, 255, 0.78)",
+                fontFamily:
+                  "var(--font-space-grotesk), ui-sans-serif, system-ui",
+                fontWeight: 700,
+                fontSize: "clamp(1.25rem, 2.1vw, 2rem)",
+                lineHeight: 1.25,
+                letterSpacing: "-0.02em",
+                color: "rgba(230, 245, 255, 0.95)",
               }}
             >
-              <LetterStream
-                text="Robots that feel."
-                progress={scrollYProgress}
-                start={0.78}
-                end={0.84}
-              />
+              Robots that feel.
               <br />
               <br />
-              <LetterStream
-                text="Manufacturing cells that learn from a single demonstration."
-                progress={scrollYProgress}
-                start={0.84}
-                end={0.92}
-              />
+              Manufacturing cells that learn from a single demonstration.
             </p>
           </motion.div>
 
