@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Geist_Mono, Inclusive_Sans } from "next/font/google";
+import { Inter, Geist_Mono, Inclusive_Sans, Cinzel } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({
@@ -21,6 +21,13 @@ const inclusiveSans = Inclusive_Sans({
   display: "swap",
 });
 
+const cinzel = Cinzel({
+  variable: "--font-cinzel",
+  subsets: ["latin"],
+  weight: ["400", "700", "900"],
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title:
     "Novonus Somatic Control Stack | The New Industry Standard in Yard Operations",
@@ -36,7 +43,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${geistMono.variable} ${inclusiveSans.variable} h-full antialiased`}
+      className={`${inter.variable} ${geistMono.variable} ${inclusiveSans.variable} ${cinzel.variable} h-full antialiased`}
     >
       <body className="min-h-full bg-ink text-paper">{children}</body>
     </html>

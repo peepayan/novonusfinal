@@ -316,15 +316,12 @@ function BrandLockup() {
   /* Phase-dependent values */
   const logoSize = centered ? 144 : 38;
 
-  /* The gap + text are INSIDE the overflow:hidden wrapper so the wipe
-     first reveals empty space (gap), then the text — looks like it all
-     comes from behind the logo in one continuous sweep.
-     pop  → width:0  (nothing visible, logo stays centred)
-     text → paddingLeft:4 + textWidth:~164 = 168
-     dock → paddingLeft:2  + textWidth:~80  = 84              */
-  const wrapperWidth = phase === "pop" ? 0 : docked ? 84 : 168;
-  const innerPad = docked ? 2 : 4;
-  const textOpacity = phase === "pop" ? 0 : 1;
+  /* Text only shows during the centered intro phase. Once the logo docks
+     at the top, the wrapper collapses to 0 and the text fades — only the
+     logo remains in the top bar from then on. */
+  const wrapperWidth = phase === "text" ? 168 : 0;
+  const innerPad = 4;
+  const textOpacity = phase === "text" ? 1 : 0;
 
   return (
     <motion.div
@@ -375,8 +372,8 @@ function BrandLockup() {
           initial={{ paddingLeft: 4, fontSize: "34px", opacity: 0 }}
           animate={{
             paddingLeft: innerPad,
-            fontSize: docked ? "14px" : "34px",
-            opacity: textOpacity * (centered ? 0.85 : 1),
+            fontSize: "34px",
+            opacity: textOpacity * 0.9,
           }}
           transition={{
             paddingLeft: morph,
@@ -399,47 +396,82 @@ const NAV_ITEMS = ["System", "Markets", "Insights", "Resources", "About"];
 
 function Sidebar() {
   const { phase } = useIntro();
-  const visible = phase === "hero" || phase === "done";
+  const ready = phase === "hero" || phase === "done";
+  const [open, setOpen] = useState(false);
+
+  /* Edge-hover trigger: opens when the cursor hits the extreme left
+     edge, closes when the cursor moves well past the panel. The
+     hysteresis avoids flicker between trigger zone and panel. */
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const TRIGGER_EDGE = 14;   /* px — open zone */
+    const CLOSE_THRESHOLD = 320; /* px — past sidebar width + buffer */
+    const handler = (e: PointerEvent) => {
+      if (e.clientX <= TRIGGER_EDGE) setOpen(true);
+      else if (e.clientX > CLOSE_THRESHOLD) setOpen(false);
+    };
+    window.addEventListener("pointermove", handler, { passive: true });
+    return () => window.removeEventListener("pointermove", handler);
+  }, []);
+
+  const panelVisible = ready && open;
+  const tabVisible = ready && !open;
 
   return (
-    <motion.aside
-      initial={{ opacity: 0, x: -16 }}
-      animate={{ opacity: visible ? 1 : 0, x: visible ? 0 : -16 }}
-      transition={{
-        duration: 0.5,
-        ease: [0.22, 1, 0.36, 1],
-        delay: visible ? 0.1 : 0,
-      }}
-      className="liquid-glass fixed left-6 top-1/2 z-40 hidden -translate-y-1/2 md:block"
-      aria-label="Primary navigation"
-    >
-      <div className="liquid-glass-panel relative flex flex-col items-stretch gap-1 p-3">
-        <span className="px-3 pb-2 pt-1 font-mono text-[10px] uppercase tracking-[0.22em] text-paper/55">
-          Navigate
-        </span>
-        <nav className="flex flex-col gap-1">
-          {NAV_ITEMS.map((item) => (
+    <>
+      {/* Hidden curved-edge tab — signals the hover trigger zone */}
+      <motion.div
+        aria-hidden
+        initial={false}
+        animate={{
+          opacity: tabVisible ? 1 : 0,
+          x: tabVisible ? 0 : -6,
+        }}
+        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+        className="pointer-events-none fixed left-0 top-1/2 z-30 hidden -translate-y-1/2 md:block"
+      >
+        <div className="sidebar-trigger" />
+      </motion.div>
+
+      <motion.aside
+        initial={false}
+        animate={{
+          opacity: panelVisible ? 1 : 0,
+          x: panelVisible ? 0 : -120,
+        }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        style={{ pointerEvents: panelVisible ? "auto" : "none" }}
+        className="liquid-glass fixed left-6 top-1/2 z-40 hidden -translate-y-1/2 md:block"
+        aria-label="Primary navigation"
+      >
+        <div className="liquid-glass-panel relative flex flex-col items-stretch gap-1 p-3">
+          <span className="px-3 pb-2 pt-1 font-mono text-[10px] uppercase tracking-[0.22em] text-paper/55">
+            Navigate
+          </span>
+          <nav className="flex flex-col gap-1">
+            {NAV_ITEMS.map((item) => (
+              <a
+                key={item}
+                href={`#${item.toLowerCase()}`}
+                className="liquid-glass-btn group relative flex items-center justify-between px-4 py-2.5 text-sm text-paper/85"
+              >
+                <span className="relative z-10">{item}</span>
+                <span className="relative z-10 h-1.5 w-1.5 rounded-full bg-cyan/0 transition-colors group-hover:bg-cyan" />
+              </a>
+            ))}
+          </nav>
+          <div className="mt-2 border-t border-white/10 pt-3">
             <a
-              key={item}
-              href={`#${item.toLowerCase()}`}
-              className="liquid-glass-btn group relative flex items-center justify-between px-4 py-2.5 text-sm text-paper/85"
+              href="#contact"
+              className="liquid-glass-btn liquid-glass-cta group relative flex items-center justify-between px-4 py-2.5 text-sm font-medium text-ink"
             >
-              <span className="relative z-10">{item}</span>
-              <span className="relative z-10 h-1.5 w-1.5 rounded-full bg-cyan/0 transition-colors group-hover:bg-cyan" />
+              <span className="relative z-10">Contact</span>
+              <Arrow className="relative z-10 h-3 w-3 transition-transform group-hover:translate-x-0.5" />
             </a>
-          ))}
-        </nav>
-        <div className="mt-2 border-t border-white/10 pt-3">
-          <a
-            href="#contact"
-            className="liquid-glass-btn liquid-glass-cta group relative flex items-center justify-between px-4 py-2.5 text-sm font-medium text-ink"
-          >
-            <span className="relative z-10">Contact</span>
-            <Arrow className="relative z-10 h-3 w-3 transition-transform group-hover:translate-x-0.5" />
-          </a>
+          </div>
         </div>
-      </div>
-    </motion.aside>
+      </motion.aside>
+    </>
   );
 }
 
@@ -565,9 +597,29 @@ function Hero() {
         <div className="sticky top-0 h-[100svh] overflow-hidden">
           <div className="bg-grid absolute inset-0 opacity-50" />
           <div className="glow-accent absolute left-1/2 top-1/2 h-[900px] w-[900px] -translate-x-1/2 -translate-y-1/2" />
+
+          {/* Giant NOVONUS backdrop — cyan top → transparent bottom,
+              sits behind the hero artwork. */}
+          <motion.div
+            aria-hidden
+            initial={{ opacity: 0, y: 18 }}
+            animate={{
+              opacity: heroReady ? 1 : 0,
+              y: heroReady ? 0 : 18,
+            }}
+            transition={{
+              duration: 1.6,
+              ease: [0.22, 1, 0.36, 1],
+              delay: heroReady ? 0.15 : 0,
+            }}
+            className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden"
+          >
+            <span className="hero-backdrop-text">NOVONUS</span>
+          </motion.div>
+
           <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-ink" />
 
-          <div className="relative mx-auto flex h-full max-w-[1400px] flex-col items-center justify-center px-6 md:px-10">
+          <div className="relative z-[2] mx-auto flex h-full max-w-[1400px] flex-col items-center justify-center px-6 md:px-10">
             <motion.p
               variants={fadeUp}
               initial="hidden"
@@ -627,7 +679,7 @@ function Hero() {
                 fill
                 priority
                 sizes="(min-width: 1280px) 1100px, (min-width: 768px) 80vw, 95vw"
-                className="feathered-mask object-contain mix-blend-screen"
+                className="object-contain mix-blend-screen"
               />
 
               {/* LAYER 2.5: Scroll-driven red fill — rises from the bottom of

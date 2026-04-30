@@ -22,6 +22,7 @@
   --font-sans: var(--font-inter);
   --font-mono: var(--font-geist-mono);
   --font-brand: var(--font-inclusive);
+  --font-grand: var(--font-cinzel);
 
   --animate-neon-pulse: neon-pulse 2.4s ease-in-out infinite;
 }
@@ -237,6 +238,71 @@ body {
 @media (hover: none), (pointer: coarse) {
   .cursor-glow {
     display: none !important;
+  }
+}
+
+/* ============================================================================
+   HERO BACKDROP TEXT — giant NOVONUS sitting behind the hero artwork
+   Cyan at the top, fading to fully transparent at the bottom (per-letter
+   gradient via background-clip: text on a vertical linear gradient).
+   ========================================================================== */
+.hero-backdrop-text {
+  font-family: var(--font-cinzel), "Playfair Display", "Cormorant Garamond",
+    Georgia, serif;
+  font-weight: 900;
+  font-style: normal;
+  font-size: clamp(4.5rem, 14vw, 14rem);
+  line-height: 0.82;
+  letter-spacing: 0.04em;
+  padding: 0 4vw;
+  white-space: nowrap;
+  text-transform: uppercase;
+  background: linear-gradient(
+    to bottom,
+    rgba(34, 211, 238, 1) 0%,
+    rgba(34, 211, 238, 0.78) 22%,
+    rgba(34, 211, 238, 0.45) 50%,
+    rgba(34, 211, 238, 0.18) 75%,
+    rgba(34, 211, 238, 0.04) 90%,
+    rgba(34, 211, 238, 0) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 24px rgba(34, 211, 238, 0.18));
+  user-select: none;
+}
+
+/* ============================================================================
+   SIDEBAR EDGE TRIGGER — slim curved tab on the extreme left
+   ========================================================================== */
+.sidebar-trigger {
+  width: 4px;
+  height: 84px;
+  border-radius: 0 6px 6px 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(34, 211, 238, 0.05) 0%,
+    rgba(34, 211, 238, 0.55) 28%,
+    rgba(125, 240, 255, 0.95) 50%,
+    rgba(34, 211, 238, 0.55) 72%,
+    rgba(34, 211, 238, 0.05) 100%
+  );
+  box-shadow:
+    0 0 1px rgba(255, 255, 255, 0.6),
+    0 0 14px rgba(34, 211, 238, 0.55),
+    0 0 28px rgba(34, 211, 238, 0.25);
+  animation: sidebar-trigger-breathe 2.6s ease-in-out infinite;
+}
+@keyframes sidebar-trigger-breathe {
+  0%, 100% {
+    opacity: 0.7;
+    transform: scaleY(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scaleY(1.08);
   }
 }
 
