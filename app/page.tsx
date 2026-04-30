@@ -9,7 +9,13 @@ import {
   type ReactNode,
 } from "react";
 import Image from "next/image";
-import { AnimatePresence, motion, useScroll, useTransform } from "framer-motion";
+import {
+  AnimatePresence,
+  motion,
+  useScroll,
+  useTransform,
+  type MotionValue,
+} from "framer-motion";
 import {
   Cpu,
   Workflow,
@@ -580,44 +586,65 @@ function Hero() {
     offset: ["start start", "end end"],
   });
 
-  const fillHeight = useTransform(scrollYProgress, [0, 0.92], ["0%", "100%"]);
+  /* Strictly sequential scroll phases — no overlap, so reversing scroll
+     plays the same beats in reverse order:
+       0    → 0.32 : red helmet fill rises / drops
+       0.4  → 0.5  : NOVONUS backdrop fades out / back in
+       0.55 → 0.7  : hero artwork slides right / back to center
+       0.78 → 0.92 : tagline letters reveal / unreveal */
+  const fillHeight = useTransform(scrollYProgress, [0, 0.32], ["0%", "100%"]);
   const fillOpacity = useTransform(
     scrollYProgress,
-    [0, 0.04, 0.92, 1],
-    [0, 1, 1, 1],
+    [0, 0.04, 1],
+    [0, 1, 1],
   );
+  const novonusOpacity = useTransform(scrollYProgress, [0.4, 0.5], [1, 0]);
+  const heroX = useTransform(scrollYProgress, [0.55, 0.7], ["0%", "20%"]);
+  const textX = useTransform(scrollYProgress, [0.78, 0.92], [-20, 0]);
 
   return (
     <>
       <section
         ref={sectionRef}
         className="relative bg-ink"
-        style={{ height: "200svh" }}
+        style={{ height: "300svh" }}
       >
         <div className="sticky top-0 h-[100svh] overflow-hidden">
           <div className="bg-grid absolute inset-0 opacity-50" />
           <div className="glow-accent absolute left-1/2 top-1/2 h-[900px] w-[900px] -translate-x-1/2 -translate-y-1/2" />
 
           {/* Giant NOVONUS backdrop — cyan top → transparent bottom,
-              sits behind the hero artwork. */}
+              sits behind the hero artwork. Fades out as red fill completes. */}
           <motion.div
             aria-hidden
-            initial={{ opacity: 0, y: 18 }}
-            animate={{
-              opacity: heroReady ? 1 : 0,
-              y: heroReady ? 0 : 18,
-            }}
-            transition={{
-              duration: 1.6,
-              ease: [0.22, 1, 0.36, 1],
-              delay: heroReady ? 0.15 : 0,
-            }}
             className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden"
+            style={{ opacity: novonusOpacity }}
           >
-            <span className="hero-backdrop-text">NOVONUS</span>
+            <motion.span
+              className="hero-backdrop-text"
+              initial={{ opacity: 0, y: 18 }}
+              animate={{
+                opacity: heroReady ? 1 : 0,
+                y: heroReady ? 0 : 18,
+              }}
+              transition={{
+                duration: 1.6,
+                ease: [0.22, 1, 0.36, 1],
+                delay: heroReady ? 0.15 : 0,
+              }}
+            >
+              NOVONUS
+            </motion.span>
           </motion.div>
 
-          <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-ink" />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 bottom-0 z-[3] h-[55svh]"
+            style={{
+              background:
+                "linear-gradient(to bottom, transparent 0%, rgba(8,10,16,0.18) 28%, rgba(8,10,16,0.5) 55%, rgba(8,10,16,0.82) 78%, rgb(8,10,16) 100%)",
+            }}
+          />
 
           <div className="relative z-[2] mx-auto flex h-full max-w-[1400px] flex-col items-center justify-center px-6 md:px-10">
             <motion.p
@@ -643,7 +670,11 @@ function Hero() {
                 ease: [0.22, 1, 0.36, 1],
               }}
               className="hero-stack relative aspect-[16/10] w-full max-w-[1100px] mix-blend-screen select-none"
-              style={{ WebkitUserSelect: "none", userSelect: "none" }}
+              style={{
+                WebkitUserSelect: "none",
+                userSelect: "none",
+                x: heroX,
+              }}
             >
               {/* LAYER 1 (BACK): Cyan brain outline glow */}
               <motion.div
@@ -743,6 +774,42 @@ function Hero() {
               </motion.div>
             </motion.div>
           </div>
+
+          {/* Liquid-glass tagline — letters reveal in sync with scroll, slide
+              in from the left as the hero drifts right. */}
+          <motion.div
+            className="pointer-events-none absolute left-0 top-1/2 z-[5] hidden w-[44%] max-w-[560px] -translate-y-1/2 px-8 md:block md:pl-[6vw] lg:pl-[8vw]"
+            style={{ x: textX }}
+          >
+            <p
+              className="text-balance"
+              aria-label="Robots that feel. Manufacturing cells that learn from a single demonstration."
+              style={{
+                fontFamily: "var(--font-inclusive), ui-sans-serif, system-ui",
+                fontWeight: 400,
+                fontSize: "clamp(1.15rem, 1.9vw, 1.85rem)",
+                lineHeight: 1.4,
+                letterSpacing: "0.01em",
+                color: "rgba(220, 240, 255, 0.78)",
+              }}
+            >
+              <LetterStream
+                text="Robots that feel."
+                progress={scrollYProgress}
+                start={0.78}
+                end={0.84}
+              />
+              <br />
+              <br />
+              <LetterStream
+                text="Manufacturing cells that learn from a single demonstration."
+                progress={scrollYProgress}
+                start={0.84}
+                end={0.92}
+              />
+            </p>
+          </motion.div>
+
         </div>
       </section>
 
@@ -851,6 +918,97 @@ function FeatureList() {
         </div>
       </div>
     </section>
+  );
+}
+
+/* Single letter whose opacity & y are scroll-bound — buttery smooth in both
+   directions because it tracks scrollYProgress rather than time-based delays. */
+function ScrollLetter({
+  ch,
+  progress,
+  start,
+  end,
+}: {
+  ch: string;
+  progress: MotionValue<number>;
+  start: number;
+  end: number;
+}) {
+  const opacity = useTransform(progress, [start, end], [0, 1]);
+  const y = useTransform(progress, [start, end], [10, 0]);
+  return (
+    <motion.span
+      aria-hidden
+      style={{
+        opacity,
+        y,
+        display: "inline-block",
+        marginRight: ch === " " ? "0.28ch" : "0.01ch",
+      }}
+    >
+      {ch === " " ? " " : ch}
+    </motion.span>
+  );
+}
+
+/* Splits a string into staggered scroll-bound letters. Letters are grouped
+   per word and the word wrappers carry `white-space: nowrap` so line breaks
+   only ever land between words — never inside one. */
+function LetterStream({
+  text,
+  progress,
+  start,
+  end,
+}: {
+  text: string;
+  progress: MotionValue<number>;
+  start: number;
+  end: number;
+}) {
+  const chars = text.split("");
+  const N = chars.length;
+  const span = end - start;
+  const window = Math.min(span, (span / N) * 3);
+
+  /* Walk characters once, grouping non-space runs into word buckets while
+     preserving each character's global index for stagger timing. */
+  const words: { ch: string; index: number }[][] = [];
+  let current: { ch: string; index: number }[] | null = null;
+  chars.forEach((ch, i) => {
+    if (ch === " ") {
+      current = null;
+    } else {
+      if (!current) {
+        current = [];
+        words.push(current);
+      }
+      current.push({ ch, index: i });
+    }
+  });
+
+  const letterStart = (i: number) =>
+    start + (span - window) * (i / Math.max(N - 1, 1));
+
+  return (
+    <span className="inline">
+      {words.map((wordChars, wi) => (
+        <span
+          key={wi}
+          style={{ display: "inline-block", whiteSpace: "nowrap" }}
+        >
+          {wordChars.map(({ ch, index }) => (
+            <ScrollLetter
+              key={index}
+              ch={ch}
+              progress={progress}
+              start={letterStart(index)}
+              end={letterStart(index) + window}
+            />
+          ))}
+          {wi < words.length - 1 ? " " : null}
+        </span>
+      ))}
+    </span>
   );
 }
 
