@@ -573,9 +573,174 @@ const fadeUp = {
   }),
 };
 
+function HeroTypewriter({
+  start,
+  fadeOpacity,
+  onDone,
+}: {
+  start: boolean;
+  fadeOpacity: MotionValue<number>;
+  onDone?: () => void;
+}) {
+  const lines = [
+    "Cameras hit a wall.",
+    "Force sensors react too late.",
+    "We're the layer they're missing.",
+  ];
+  const [typed, setTyped] = useState<string[]>(["", "", ""]);
+  const [activeLine, setActiveLine] = useState(0);
+  const [done, setDone] = useState(false);
+
+  useEffect(() => {
+    if (!start) {
+      setTyped(["", "", ""]);
+      setActiveLine(0);
+      setDone(false);
+      return;
+    }
+    let cancelled = false;
+    let lineIdx = 0;
+    let charIdx = 0;
+    const tick = () => {
+      if (cancelled) return;
+      if (lineIdx >= lines.length) {
+        setDone(true);
+        onDone?.();
+        return;
+      }
+      const current = lines[lineIdx];
+      if (charIdx <= current.length) {
+        setTyped((prev) => {
+          const next = [...prev];
+          next[lineIdx] = current.slice(0, charIdx);
+          return next;
+        });
+        setActiveLine(lineIdx);
+        charIdx += 1;
+        const jitter = 22 + Math.random() * 38;
+        setTimeout(tick, jitter);
+      } else {
+        lineIdx += 1;
+        charIdx = 0;
+        setTimeout(tick, 320);
+      }
+    };
+    const startDelay = setTimeout(tick, 650);
+    return () => {
+      cancelled = true;
+      clearTimeout(startDelay);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [start]);
+
+  return (
+    <motion.div
+      style={{ opacity: fadeOpacity }}
+      className="absolute right-6 top-20 md:right-10 md:top-28 z-30"
+    >
+      <motion.div
+        initial={{ opacity: 0, y: -8 }}
+        animate={{ opacity: start ? 1 : 0, y: start ? 0 : -8 }}
+        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.15 }}
+        className="flex items-start gap-3 md:gap-4"
+      >
+      <div className="flex pt-[6px] md:pt-[8px]">
+        <span className="hero-typewriter-bullet">◆</span>
+      </div>
+
+      <div className="hero-typewriter-text font-mono text-cyan/90">
+        {lines.map((_, i) => (
+          <div
+            key={i}
+            className="hero-typewriter-line"
+            style={{ minHeight: "1.4em" }}
+          >
+            <span>{typed[i]}</span>
+            {start && i === activeLine && !done && (
+              <span className="hero-typewriter-caret" aria-hidden>
+                ▍
+              </span>
+            )}
+            {done && i === lines.length - 1 && (
+              <span className="hero-typewriter-caret" aria-hidden>
+                ▍
+              </span>
+            )}
+          </div>
+        ))}
+      </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+function HeroTagline({
+  start,
+  fadeOpacity,
+}: {
+  start: boolean;
+  fadeOpacity: MotionValue<number>;
+}) {
+  const text =
+    "We are building the intelligent nervous system for the next generation of robotics.";
+  const [typed, setTyped] = useState("");
+  const [done, setDone] = useState(false);
+
+  useEffect(() => {
+    if (!start) {
+      setTyped("");
+      setDone(false);
+      return;
+    }
+    let cancelled = false;
+    let charIdx = 0;
+    const tick = () => {
+      if (cancelled) return;
+      if (charIdx > text.length) {
+        setDone(true);
+        return;
+      }
+      setTyped(text.slice(0, charIdx));
+      charIdx += 1;
+      const jitter = 22 + Math.random() * 38;
+      setTimeout(tick, jitter);
+    };
+    const startDelay = setTimeout(tick, 350);
+    return () => {
+      cancelled = true;
+      clearTimeout(startDelay);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [start]);
+
+  return (
+    <motion.div
+      style={{ opacity: fadeOpacity }}
+      className="absolute left-1/2 bottom-16 md:bottom-20 z-40 w-[92%] max-w-[42rem] -translate-x-1/2"
+    >
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: start ? 1 : 0, y: start ? 0 : 12 }}
+        transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+        className="hero-tagline-card"
+      >
+        <p className="hero-tagline-text font-mono">
+          <span>{typed}</span>
+          {start && (
+            <span className="hero-typewriter-caret" aria-hidden>
+              ▍
+            </span>
+          )}
+        </p>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 function Hero() {
   const { phase } = useIntro();
   const heroReady = phase === "hero" || phase === "done";
+  const [firstTypeDone, setFirstTypeDone] = useState(false);
   const sectionRef = useRef<HTMLElement | null>(null);
 
   /* Click-to-pulse: bumping the key remounts the flash overlays so their
@@ -616,6 +781,22 @@ function Hero() {
     setStage((prev) => (prev === next ? prev : next));
   });
 
+  /* Replay the typewriter sequence whenever the NOVONUS backdrop fully
+     re-enters view. While the backdrop is faded (mid-pin scroll), the
+     typewriters reset to empty so they can re-type from scratch on the
+     way back up. */
+  const [novonusVisible, setNovonusVisible] = useState(true);
+  useMotionValueEvent(novonusOpacity, "change", (v) => {
+    setNovonusVisible((prev) => {
+      if (prev && v < 0.05) return false;
+      if (!prev && v > 0.95) return true;
+      return prev;
+    });
+  });
+  useEffect(() => {
+    if (!novonusVisible) setFirstTypeDone(false);
+  }, [novonusVisible]);
+
   return (
     <>
       <section
@@ -653,23 +834,23 @@ function Hero() {
 
           <div
             aria-hidden
-            className="pointer-events-none absolute inset-x-0 bottom-0 z-[3] h-[55svh]"
+            className="pointer-events-none absolute inset-x-0 bottom-0 z-[3] h-[20svh]"
             style={{
               background:
-                "linear-gradient(to bottom, transparent 0%, rgba(8,10,16,0.18) 28%, rgba(8,10,16,0.5) 55%, rgba(8,10,16,0.82) 78%, rgb(8,10,16) 100%)",
+                "linear-gradient(to bottom, transparent 0%, rgba(8,10,16,0.4) 70%, rgb(8,10,16) 100%)",
             }}
           />
 
           <div className="relative z-[2] mx-auto flex h-full max-w-[1400px] flex-col items-center justify-center px-6 md:px-10">
-            <motion.p
-              variants={fadeUp}
-              initial="hidden"
-              animate="visible"
-              custom={0}
-              className="eyebrow absolute right-6 top-6 md:right-10 md:top-10 z-30"
-            >
-              ◆ Somatic Control Stack
-            </motion.p>
+            <HeroTypewriter
+              start={heroReady && novonusVisible}
+              fadeOpacity={novonusOpacity}
+              onDone={() => setFirstTypeDone(true)}
+            />
+            <HeroTagline
+              start={heroReady && novonusVisible && firstTypeDone}
+              fadeOpacity={novonusOpacity}
+            />
 
             {/* Hero image container — graceful reveal after intro docking.
                 After the NOVONUS fade completes, a single scroll past the
@@ -903,7 +1084,7 @@ function Hero() {
           >
             <p
               className="text-balance"
-              aria-label="Robots that feel. Manufacturing cells that learn from a single demonstration."
+              aria-label="Robots have hit a ceiling. We know exactly where it is."
               style={{
                 fontFamily:
                   "var(--font-space-grotesk), ui-sans-serif, system-ui",
@@ -914,10 +1095,10 @@ function Hero() {
                 color: "rgba(230, 245, 255, 0.95)",
               }}
             >
-              Robots that feel.
+              Robots have hit a ceiling.
               <br />
               <br />
-              Manufacturing cells that learn from a single demonstration.
+              We know exactly where it is.
             </p>
           </motion.div>
 

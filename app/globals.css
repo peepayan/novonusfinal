@@ -100,6 +100,180 @@ body {
   color: rgba(34, 211, 238, 0.8);
 }
 
+/* Hero typewriter — high-tech terminal copy with a glowing beam linking
+   the bullet to the hero artwork. */
+.hero-typewriter-text {
+  font-size: 13px;
+  line-height: 1.45;
+  letter-spacing: 0.04em;
+  color: rgba(34, 211, 238, 0.95);
+  text-shadow:
+    0 0 10px rgba(34, 211, 238, 0.45),
+    0 0 22px rgba(34, 211, 238, 0.22);
+  max-width: 30ch;
+}
+@media (min-width: 768px) {
+  .hero-typewriter-text {
+    font-size: 17px;
+    letter-spacing: 0.05em;
+    max-width: 34ch;
+  }
+}
+@media (min-width: 1280px) {
+  .hero-typewriter-text {
+    font-size: 18px;
+  }
+}
+.hero-typewriter-line {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.hero-typewriter-bullet {
+  font-size: 14px;
+  line-height: 1;
+  color: rgba(34, 211, 238, 1);
+  text-shadow:
+    0 0 6px rgba(34, 211, 238, 0.9),
+    0 0 14px rgba(34, 211, 238, 0.55),
+    0 0 28px rgba(34, 211, 238, 0.35);
+}
+@media (min-width: 768px) {
+  .hero-typewriter-bullet {
+    font-size: 18px;
+  }
+}
+/* Bent connector — anchored to the right edge of the bullet column and
+   extending leftward only, so it never crosses the typewriter text. Static:
+   no draw-on, no pulse, just a still glowing line. */
+.hero-typewriter-svg {
+  position: absolute;
+  top: 8px;
+  right: 50%;
+  width: 110px;
+  height: 80px;
+  pointer-events: none;
+  overflow: visible;
+  filter: drop-shadow(0 0 4px rgba(34, 211, 238, 0.55))
+    drop-shadow(0 0 10px rgba(34, 211, 238, 0.3));
+}
+@media (min-width: 768px) {
+  .hero-typewriter-svg {
+    width: 150px;
+    height: 110px;
+  }
+}
+
+.hero-ceiling-line {
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(34, 211, 238, 0.6) 15%,
+    rgba(255, 255, 255, 0.95) 50%,
+    rgba(34, 211, 238, 0.6) 85%,
+    transparent 100%
+  );
+  box-shadow:
+    0 0 8px rgba(255, 255, 255, 0.7),
+    0 0 18px rgba(34, 211, 238, 0.7),
+    0 0 36px rgba(34, 211, 238, 0.4),
+    0 -2px 12px rgba(255, 255, 255, 0.3);
+}
+
+.hero-tagline-card {
+  position: relative;
+  display: block;
+  padding: 20px 26px;
+  border-radius: 18px;
+  background: linear-gradient(
+    135deg,
+    rgba(0, 0, 0, 0.55) 0%,
+    rgba(0, 0, 0, 0.45) 50%,
+    rgba(0, 10, 20, 0.55) 100%
+  );
+  backdrop-filter: blur(10px) saturate(120%);
+  -webkit-backdrop-filter: blur(10px) saturate(120%);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.04) inset,
+    0 18px 50px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+  isolation: isolate;
+}
+.hero-tagline-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    120% 80% at 0% 0%,
+    rgba(255, 255, 255, 0.04) 0%,
+    rgba(255, 255, 255, 0) 55%
+  );
+  pointer-events: none;
+  z-index: -1;
+}
+@media (min-width: 768px) {
+  .hero-tagline-card {
+    gap: 18px;
+    padding: 22px 28px;
+    border-radius: 16px;
+  }
+}
+.hero-tagline-bullet {
+  margin-top: 4px;
+}
+@media (min-width: 768px) {
+  .hero-tagline-bullet {
+    margin-top: 8px;
+  }
+}
+
+.hero-tagline-text {
+  font-size: 18px;
+  line-height: 1.35;
+  letter-spacing: 0.02em;
+  font-weight: 700;
+  color: rgba(220, 250, 255, 1);
+  text-shadow:
+    -1.2px 0 0 rgba(255, 60, 90, 0.55),
+    1.2px 0 0 rgba(34, 211, 238, 0.65),
+    0 0 1px rgba(0, 0, 0, 0.9),
+    0 0 12px rgba(34, 211, 238, 0.55),
+    0 0 28px rgba(34, 211, 238, 0.3),
+    0 1px 2px rgba(0, 0, 0, 0.8);
+}
+@media (min-width: 768px) {
+  .hero-tagline-text {
+    font-size: 26px;
+    letter-spacing: 0.025em;
+  }
+}
+@media (min-width: 1280px) {
+  .hero-tagline-text {
+    font-size: 30px;
+  }
+}
+
+.hero-typewriter-caret {
+  display: inline-block;
+  margin-left: 2px;
+  color: rgba(34, 211, 238, 1);
+  text-shadow: 0 0 8px rgba(34, 211, 238, 0.9);
+  animation: hero-caret-blink 1s steps(1, end) infinite;
+}
+@keyframes hero-caret-blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
 /* Radial mask used to feather the hero image edges into the dark background */
 .feathered-mask {
   -webkit-mask-image: radial-gradient(

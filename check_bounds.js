@@ -1,0 +1,39 @@
+const fs = require('fs');
+
+// We don't have jimp or sharp guaranteed, but we can write a simple HTML
+// page with a script that draws both images to canvas and finds the bounding box!
+const html = `
+<!DOCTYPE html>
+<html>
+<body>
+<canvas id="c"></canvas>
+<script>
+  const img1 = new Image();
+  img1.src = 'brain_outline.png';
+  img1.onload = () => {
+    const canvas = document.getElementById('c');
+    const ctx = canvas.getContext('2d');
+    canvas.width = img1.width;
+    canvas.height = img1.height;
+    ctx.drawImage(img1, 0, 0);
+    const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+    let minX = canvas.width, minY = canvas.height, maxX = 0, maxY = 0;
+    for (let y = 0; y < canvas.height; y++) {
+      for (let x = 0; x < canvas.width; x++) {
+        const i = (y * canvas.width + x) * 4;
+        if (data[i+3] > 10) { // non-transparent pixel
+          if (x < minX) minX = x;
+          if (x > maxX) maxX = x;
+          if (y < minY) minY = y;
+          if (y > maxY) maxY = y;
+        }
+      }
+    }
+    console.log("BRAIN OUTLINE BOUNDS:", {minX, minY, maxX, maxY});
+    document.body.innerHTML += \`<div id="res">BRAIN OUTLINE BOUNDS: \${minX}, \${minY}, \${maxX}, \${maxY}</div>\`;
+  };
+</script>
+</body>
+</html>
+`;
+fs.writeFileSync('public/check_bounds.html', html);
