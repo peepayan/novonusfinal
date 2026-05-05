@@ -573,174 +573,9 @@ const fadeUp = {
   }),
 };
 
-function HeroTypewriter({
-  start,
-  fadeOpacity,
-  onDone,
-}: {
-  start: boolean;
-  fadeOpacity: MotionValue<number>;
-  onDone?: () => void;
-}) {
-  const lines = [
-    "Cameras hit a wall.",
-    "Force sensors react too late.",
-    "We're the layer they're missing.",
-  ];
-  const [typed, setTyped] = useState<string[]>(["", "", ""]);
-  const [activeLine, setActiveLine] = useState(0);
-  const [done, setDone] = useState(false);
-
-  useEffect(() => {
-    if (!start) {
-      setTyped(["", "", ""]);
-      setActiveLine(0);
-      setDone(false);
-      return;
-    }
-    let cancelled = false;
-    let lineIdx = 0;
-    let charIdx = 0;
-    const tick = () => {
-      if (cancelled) return;
-      if (lineIdx >= lines.length) {
-        setDone(true);
-        onDone?.();
-        return;
-      }
-      const current = lines[lineIdx];
-      if (charIdx <= current.length) {
-        setTyped((prev) => {
-          const next = [...prev];
-          next[lineIdx] = current.slice(0, charIdx);
-          return next;
-        });
-        setActiveLine(lineIdx);
-        charIdx += 1;
-        const jitter = 22 + Math.random() * 38;
-        setTimeout(tick, jitter);
-      } else {
-        lineIdx += 1;
-        charIdx = 0;
-        setTimeout(tick, 320);
-      }
-    };
-    const startDelay = setTimeout(tick, 650);
-    return () => {
-      cancelled = true;
-      clearTimeout(startDelay);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [start]);
-
-  return (
-    <motion.div
-      style={{ opacity: fadeOpacity }}
-      className="absolute right-6 top-20 md:right-10 md:top-28 z-30"
-    >
-      <motion.div
-        initial={{ opacity: 0, y: -8 }}
-        animate={{ opacity: start ? 1 : 0, y: start ? 0 : -8 }}
-        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.15 }}
-        className="flex items-start gap-3 md:gap-4"
-      >
-      <div className="flex pt-[6px] md:pt-[8px]">
-        <span className="hero-typewriter-bullet">◆</span>
-      </div>
-
-      <div className="hero-typewriter-text font-mono text-cyan/90">
-        {lines.map((_, i) => (
-          <div
-            key={i}
-            className="hero-typewriter-line"
-            style={{ minHeight: "1.4em" }}
-          >
-            <span>{typed[i]}</span>
-            {start && i === activeLine && !done && (
-              <span className="hero-typewriter-caret" aria-hidden>
-                ▍
-              </span>
-            )}
-            {done && i === lines.length - 1 && (
-              <span className="hero-typewriter-caret" aria-hidden>
-                ▍
-              </span>
-            )}
-          </div>
-        ))}
-      </div>
-      </motion.div>
-    </motion.div>
-  );
-}
-
-function HeroTagline({
-  start,
-  fadeOpacity,
-}: {
-  start: boolean;
-  fadeOpacity: MotionValue<number>;
-}) {
-  const text =
-    "We are building the intelligent nervous system for the next generation of robotics.";
-  const [typed, setTyped] = useState("");
-  const [done, setDone] = useState(false);
-
-  useEffect(() => {
-    if (!start) {
-      setTyped("");
-      setDone(false);
-      return;
-    }
-    let cancelled = false;
-    let charIdx = 0;
-    const tick = () => {
-      if (cancelled) return;
-      if (charIdx > text.length) {
-        setDone(true);
-        return;
-      }
-      setTyped(text.slice(0, charIdx));
-      charIdx += 1;
-      const jitter = 22 + Math.random() * 38;
-      setTimeout(tick, jitter);
-    };
-    const startDelay = setTimeout(tick, 350);
-    return () => {
-      cancelled = true;
-      clearTimeout(startDelay);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [start]);
-
-  return (
-    <motion.div
-      style={{ opacity: fadeOpacity }}
-      className="absolute left-1/2 bottom-16 md:bottom-20 z-40 w-[92%] max-w-[42rem] -translate-x-1/2"
-    >
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: start ? 1 : 0, y: start ? 0 : 12 }}
-        transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-        className="hero-tagline-card"
-      >
-        <p className="hero-tagline-text font-mono">
-          <span>{typed}</span>
-          {start && (
-            <span className="hero-typewriter-caret" aria-hidden>
-              ▍
-            </span>
-          )}
-        </p>
-      </motion.div>
-    </motion.div>
-  );
-}
-
 function Hero() {
   const { phase } = useIntro();
   const heroReady = phase === "hero" || phase === "done";
-  const [firstTypeDone, setFirstTypeDone] = useState(false);
   const sectionRef = useRef<HTMLElement | null>(null);
 
   /* Click-to-pulse: bumping the key remounts the flash overlays so their
@@ -762,6 +597,8 @@ function Hero() {
        0.4  → 0.5  : NOVONUS backdrop fades out / back in   (scroll-driven)
        past 0.55   : stage 1 → hero artwork snaps right     (single scroll)
        past 0.65   : stage 2 → tagline snaps in             (single scroll)
+       past 0.80   : stage 3 → hero + tagline fade out,
+                                manifesto replaces them      (single scroll)
      The stage transitions use a duration-based animation, so a single
      scroll past the threshold plays the whole beat regardless of how far
      the user pushes the wheel. */
@@ -776,26 +613,11 @@ function Hero() {
   const [stage, setStage] = useState(0);
   useMotionValueEvent(scrollYProgress, "change", (v) => {
     let next = 0;
-    if (v > 0.65) next = 2;
+    if (v > 0.8) next = 3;
+    else if (v > 0.65) next = 2;
     else if (v > 0.55) next = 1;
     setStage((prev) => (prev === next ? prev : next));
   });
-
-  /* Replay the typewriter sequence whenever the NOVONUS backdrop fully
-     re-enters view. While the backdrop is faded (mid-pin scroll), the
-     typewriters reset to empty so they can re-type from scratch on the
-     way back up. */
-  const [novonusVisible, setNovonusVisible] = useState(true);
-  useMotionValueEvent(novonusOpacity, "change", (v) => {
-    setNovonusVisible((prev) => {
-      if (prev && v < 0.05) return false;
-      if (!prev && v > 0.95) return true;
-      return prev;
-    });
-  });
-  useEffect(() => {
-    if (!novonusVisible) setFirstTypeDone(false);
-  }, [novonusVisible]);
 
   return (
     <>
@@ -842,16 +664,6 @@ function Hero() {
           />
 
           <div className="relative z-[2] mx-auto flex h-full max-w-[1400px] flex-col items-center justify-center px-6 md:px-10">
-            <HeroTypewriter
-              start={heroReady && novonusVisible}
-              fadeOpacity={novonusOpacity}
-              onDone={() => setFirstTypeDone(true)}
-            />
-            <HeroTagline
-              start={heroReady && novonusVisible && firstTypeDone}
-              fadeOpacity={novonusOpacity}
-            />
-
             {/* Hero image container — graceful reveal after intro docking.
                 After the NOVONUS fade completes, a single scroll past the
                 stage-1 threshold snaps the artwork to its right-shifted
@@ -860,15 +672,16 @@ function Hero() {
             <motion.div
               initial={{ opacity: 0, scale: 0.96, y: 24, x: "0%" }}
               animate={{
-                opacity: heroReady ? 1 : 0,
-                scale: heroReady ? 1 : 0.96,
-                y: heroReady ? 0 : 24,
+                opacity: heroReady ? (stage >= 3 ? 0 : 1) : 0,
+                scale: heroReady ? (stage >= 3 ? 0.98 : 1) : 0.96,
+                y: heroReady ? (stage >= 3 ? -12 : 0) : 24,
                 x: stage >= 1 ? "20%" : "0%",
               }}
               transition={{
                 duration: 0.9,
                 ease: [0.22, 1, 0.36, 1],
                 x: { duration: 0.85, ease: [0.4, 0, 0.2, 1] },
+                opacity: { duration: 0.7, ease: [0.4, 0, 0.2, 1] },
               }}
               className="hero-stack relative aspect-[16/10] w-full max-w-[1100px] mix-blend-screen select-none"
               style={{
@@ -1074,32 +887,206 @@ function Hero() {
               fixed-duration animation drives the slide-in, so any scroll
               past the threshold reveals the whole tagline in one go. */}
           <motion.div
-            className="pointer-events-none absolute left-0 top-1/2 z-[5] hidden w-[44%] max-w-[560px] -translate-y-1/2 px-8 md:block md:pl-[6vw] lg:pl-[8vw]"
+            className="pointer-events-none absolute left-0 top-1/2 z-[5] hidden w-[52%] max-w-[760px] -translate-y-1/2 px-8 md:block md:pl-[6vw] lg:pl-[8vw]"
             initial={{ opacity: 0, x: -28 }}
             animate={{
-              opacity: stage >= 2 ? 1 : 0,
-              x: stage >= 2 ? 0 : -28,
+              opacity: stage === 2 ? 1 : 0,
+              x: stage >= 2 ? (stage >= 3 ? -28 : 0) : -28,
             }}
             transition={{ duration: 0.85, ease: [0.4, 0, 0.2, 1] }}
           >
             <p
               className="text-balance"
-              aria-label="Robots have hit a ceiling. We know exactly where it is."
+              aria-label="Thirty years. One missing signal. We found it."
               style={{
                 fontFamily:
                   "var(--font-space-grotesk), ui-sans-serif, system-ui",
                 fontWeight: 700,
-                fontSize: "clamp(1.25rem, 2.1vw, 2rem)",
-                lineHeight: 1.25,
-                letterSpacing: "-0.02em",
-                color: "rgba(230, 245, 255, 0.95)",
+                fontStyle: "italic",
+                fontSize: "clamp(2.05rem, 3.55vw, 3.25rem)",
+                lineHeight: 1.05,
+                letterSpacing: "-0.032em",
+                color: "rgba(234, 246, 255, 0.99)",
+                margin: 0,
+                textShadow:
+                  "2px 0 0 rgba(34, 211, 238, 0.32), -2px 0 0 rgba(255, 90, 130, 0.3)",
+                filter:
+                  "drop-shadow(0 0 22px rgba(34, 211, 238, 0.1)) drop-shadow(0 1px 0 rgba(0, 0, 0, 0.4))",
               }}
             >
-              Robots have hit a ceiling.
-              <br />
-              <br />
-              We know exactly where it is.
+              <span style={{ display: "block" }}>Thirty years.</span>
+              <span style={{ display: "block", marginTop: "0.62em" }}>
+                One missing signal.
+              </span>
+              <span
+                style={{
+                  display: "block",
+                  marginTop: "0.62em",
+                  color: "rgba(34, 211, 238, 1)",
+                  textShadow:
+                    "2px 0 0 rgba(34, 211, 238, 0.5), -2px 0 0 rgba(255, 90, 130, 0.32)",
+                }}
+              >
+                We found it.
+              </span>
             </p>
+          </motion.div>
+
+          {/* Manifesto — at stage 3 the hero artwork and the ceiling
+              tagline fade out and this paragraph block fades into the
+              same pinned space. No page scroll happens between the
+              two beats; the swap is part of the pin. */}
+          <motion.div
+            className="pointer-events-none absolute inset-0 z-[6] flex items-center justify-center px-6 md:px-10"
+            initial={false}
+            animate={{
+              opacity: stage >= 3 ? 1 : 0,
+              y: stage >= 3 ? 0 : 16,
+            }}
+            transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
+            aria-hidden={stage < 3}
+          >
+            <div
+              className="w-full max-w-[820px] text-balance"
+              style={{
+                fontFamily:
+                  "var(--font-space-grotesk), ui-sans-serif, system-ui",
+                fontWeight: 400,
+                fontSize: "clamp(1.05rem, 1.55vw, 1.4rem)",
+                lineHeight: 1.55,
+                letterSpacing: "-0.01em",
+                color: "rgba(220, 235, 250, 0.88)",
+              }}
+            >
+              <p>
+                Modern robotics has trained on the wrong data for thirty
+                years. Vision systems learned to see, foundation models
+                learned to plan, manipulation policies learned to move.
+                Almost none of them learned to{" "}
+                <span style={{ color: "rgba(34, 211, 238, 1)", fontWeight: 600 }}>
+                  feel
+                </span>
+                .
+              </p>
+              <p className="mt-6 md:mt-8">
+                The result is the{" "}
+                <span style={{ color: "rgba(255, 95, 115, 0.98)", fontWeight: 600 }}>
+                  contact-rich ceiling
+                </span>
+                . Robots fail at connector insertion, cable routing, and
+                fragile assembly because they can&apos;t anticipate force.
+                They find out they&apos;re pressing too hard{" "}
+                <span style={{ color: "rgba(255, 215, 225, 0.98)", fontWeight: 600 }}>
+                  200 milliseconds
+                </span>{" "}
+                after the part is already crushed.
+              </p>
+              <p className="mt-6 md:mt-8">
+                The richest manipulation signal in the room has been
+                ignored: what the human&apos;s{" "}
+                <span style={{ color: "rgba(34, 211, 238, 1)", fontWeight: 600 }}>
+                  muscles
+                </span>{" "}
+                were doing before contact. We capture it.{" "}
+                <span
+                  style={{
+                    color: "rgba(240, 248, 255, 1)",
+                    fontWeight: 700,
+                  }}
+                >
+                  Industrial robots are about to start feeling.
+                </span>
+              </p>
+            </div>
+          </motion.div>
+
+          {/* Bottom badge — small centered pill that wraps just the title.
+              Heavily translucent liquid-glass backdrop with a soft iridescent
+              tint and rounded corners. The outer wrapper binds opacity to
+              novonusOpacity so the pill fades with the giant NOVONUS backdrop
+              as the user scrolls. The inner motion.div handles the intro
+              fade-in and the stage 3 hand-off to the manifesto. */}
+          <motion.div
+            className="absolute left-1/2 bottom-8 z-[40] hidden -translate-x-1/2 md:block lg:bottom-10"
+            style={{ opacity: novonusOpacity }}
+          >
+          <motion.div
+            initial={{ opacity: 0, y: 14 }}
+            animate={{
+              opacity: heroReady ? (stage >= 3 ? 0 : 1) : 0,
+              y: heroReady ? (stage >= 3 ? 8 : 0) : 14,
+            }}
+            transition={{
+              duration: 0.9,
+              ease: [0.22, 1, 0.36, 1],
+              delay: heroReady && stage < 3 ? 0.55 : 0,
+            }}
+            aria-hidden={stage >= 3}
+          >
+            <div
+              className="relative overflow-hidden rounded-full px-7 py-3 lg:px-9 lg:py-3.5"
+              style={{
+                background:
+                  "linear-gradient(180deg, rgba(255, 255, 255, 0.045) 0%, rgba(255, 255, 255, 0.015) 100%)",
+                backdropFilter:
+                  "blur(28px) saturate(200%) brightness(1.04)",
+                WebkitBackdropFilter:
+                  "blur(28px) saturate(200%) brightness(1.04)",
+                border: "1px solid rgba(255, 255, 255, 0.08)",
+                boxShadow:
+                  "inset 0 1px 0 rgba(255, 255, 255, 0.09), 0 18px 50px rgba(0, 0, 0, 0.22)",
+              }}
+            >
+              {/* Iridescent chromatic tint — cyan from the lower-left,
+                  magenta from the lower-right, blended in screen so the
+                  glass keeps its translucence. */}
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-0"
+                style={{
+                  background:
+                    "radial-gradient(80% 220% at 0% 100%, rgba(34, 211, 238, 0.1) 0%, transparent 60%), radial-gradient(80% 220% at 100% 100%, rgba(255, 90, 130, 0.07) 0%, transparent 60%)",
+                  mixBlendMode: "screen",
+                }}
+              />
+
+              <h2
+                className="relative whitespace-nowrap"
+                style={{
+                  fontFamily:
+                    "var(--font-space-grotesk), ui-sans-serif, system-ui",
+                  fontWeight: 400,
+                  fontSize: "clamp(1.02rem, 1.4vw, 1.4rem)",
+                  lineHeight: 1.15,
+                  letterSpacing: "-0.022em",
+                  color: "rgba(232, 244, 255, 0.97)",
+                  margin: 0,
+                }}
+              >
+                The{" "}
+                <em style={{ fontStyle: "italic", fontWeight: 700 }}>
+                  Somatic Layer
+                </em>{" "}
+                for{" "}
+                <span
+                  style={{
+                    fontFamily:
+                      "var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace",
+                    fontStyle: "normal",
+                    fontWeight: 500,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.2em",
+                    fontSize: "0.74em",
+                    color: "rgba(34, 211, 238, 0.95)",
+                    verticalAlign: "0.06em",
+                    paddingLeft: "0.05em",
+                  }}
+                >
+                  Industrial Autonomy
+                </span>
+              </h2>
+            </div>
+          </motion.div>
           </motion.div>
 
         </div>
