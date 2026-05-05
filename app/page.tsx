@@ -32,15 +32,37 @@ import {
    INTRO PROVIDER — cinematic preloader phase machine
    ========================================================================== */
 
-type IntroPhase = "pop" | "text" | "dock" | "hero" | "done";
+type IntroPhase =
+  | "pop"
+  | "text"
+  | "linesExit"
+  | "logoPop"
+  | "dock"
+  | "hero"
+  | "done";
 
-const POP_MS = 400;        /* logo scales in */
-const HOLD_MS = 500;       /* hold logo alone at center */
-const TEXT_MS = 700;       /* logo shifts left, text slides right */
-const TEXT_HOLD_MS = 400;  /* hold the centralized lockup */
-const DOCK_MS = 800;       /* logo+text fly to top bar, site fades in */
-const HERO_DELAY_MS = 200; /* small pause before hero reveal */
-const HERO_MS = 900;       /* hero reveal duration */
+/* Intro choreography:
+     pop        — line 1 'Thirty years.' enters, line 2 starts.
+     text       — line 3 enters, all three hold for read time.
+     linesExit  — lines fade up + away.
+     logoPop    — logo scales into the center (large, glass), holds.
+     dock       — logo shrinks down to the top, the persistent
+                  rounded-rectangle top bar appears around it, and the
+                  site fades in.
+     hero       — pinned hero artwork reveals.
+     done       — site fully interactive. */
+const POP_MS = 700;
+const HOLD_MS = 200;
+const TEXT_MS = 900;
+const TEXT_HOLD_MS = 650;
+const LINES_EXIT_MS = 520;
+/* logoPop covers logo scale-in, wordmark wipe-in, and a hold for read
+   time. The dock phase is the transition: wordmark and logo retract /
+   fly to the top in one quick beat — no separate fade-out. */
+const LOGO_POP_MS = 2200;
+const DOCK_MS = 500;
+const HERO_DELAY_MS = 200;
+const HERO_MS = 900;
 const MORPH_S = 0.75;
 const POP_S = 0.45;
 const EASE_MORPH = [0.65, 0, 0.35, 1] as const;
@@ -62,14 +84,18 @@ function IntroProvider({
   useEffect(() => {
     const t0 = POP_MS + HOLD_MS;
     const t1 = t0 + TEXT_MS + TEXT_HOLD_MS;
-    const t2 = t1 + DOCK_MS + HERO_DELAY_MS;
-    const t3 = t2 + HERO_MS;
+    const t2 = t1 + LINES_EXIT_MS;
+    const t3 = t2 + LOGO_POP_MS;
+    const t4 = t3 + DOCK_MS + HERO_DELAY_MS;
+    const t5 = t4 + HERO_MS;
 
     const timers = [
       window.setTimeout(() => setPhase("text"), t0),
-      window.setTimeout(() => setPhase("dock"), t1),
-      window.setTimeout(() => setPhase("hero"), t2),
-      window.setTimeout(() => setPhase("done"), t3),
+      window.setTimeout(() => setPhase("linesExit"), t1),
+      window.setTimeout(() => setPhase("logoPop"), t2),
+      window.setTimeout(() => setPhase("dock"), t3),
+      window.setTimeout(() => setPhase("hero"), t4),
+      window.setTimeout(() => setPhase("done"), t5),
     ];
     return () => timers.forEach(window.clearTimeout);
   }, []);
@@ -81,6 +107,7 @@ function IntroProvider({
     <IntroContext.Provider value={{ phase }}>
       <CursorGlow />
       <Preloader />
+      <IntroLines />
       <BrandLockup />
       {sidebar}
       <motion.div
@@ -257,7 +284,12 @@ function LogoGlass({ glass }: { glass: boolean }) {
 
 function Preloader() {
   const { phase } = useIntro();
-  const overlayVisible = phase === "pop" || phase === "text";
+  const overlayVisible =
+    phase === "pop" ||
+    phase === "text" ||
+    phase === "linesExit" ||
+    phase === "logoPop";
+  const haloVisible = overlayVisible;
 
   return (
     <AnimatePresence>
@@ -277,20 +309,21 @@ function Preloader() {
         </motion.div>
       )}
 
-      {/* Cyan halo — anchored at screen center during pop phase */}
-      {(phase === "pop" || phase === "text") && (
+      {/* Cyan halo — anchored at screen center during the centered intro
+          phases (lines + logo pop). */}
+      {haloVisible && (
         <motion.div
           key="halo"
           aria-hidden
           className="pointer-events-none fixed left-1/2 top-1/2 z-[105] -translate-x-1/2 -translate-y-1/2"
           initial={{ opacity: 0, scale: 0.6 }}
           animate={{
-            opacity: phase === "pop" ? 1 : 0.6,
-            scale: phase === "pop" ? 1 : 1.2,
+            opacity: phase === "logoPop" ? 1 : 0.7,
+            scale: phase === "logoPop" ? 1.05 : 1,
           }}
           exit={{ opacity: 0, scale: 1.9 }}
           transition={{
-            duration: phase === "pop" ? 0.6 : MORPH_S,
+            duration: 0.7,
             ease: EASE_FADE,
           }}
         >
@@ -311,87 +344,211 @@ function Preloader() {
 }
 
 /* ============================================================================
-   BRAND LOCKUP — top-center docking destination
+   INTRO LINES — three statement lines that stagger in at center during the
+   pop/text phases, fade up and out during the dock phase, and are gone for
+   the rest of the site.
+   ========================================================================== */
+
+const INTRO_LINES = [
+  { text: "Thirty years.", accent: false },
+  { text: "One missing signal.", accent: false },
+  { text: "We found it.", accent: true },
+] as const;
+
+function IntroLines() {
+  const { phase } = useIntro();
+  const animateState =
+    phase === "pop" || phase === "text"
+      ? "visible"
+      : phase === "linesExit"
+        ? "exit"
+        : "hidden";
+
+  return (
+    <motion.div
+      aria-hidden={animateState !== "visible"}
+      className="pointer-events-none fixed inset-0 z-[120] flex items-center justify-center px-8"
+    >
+      <motion.div
+        className="text-balance"
+        initial="hidden"
+        animate={animateState}
+        variants={{
+          hidden: {},
+          visible: {
+            transition: { staggerChildren: 0.5, delayChildren: 0.15 },
+          },
+          exit: {
+            transition: { staggerChildren: 0.05 },
+          },
+        }}
+        style={{
+          fontFamily: "var(--font-inter), ui-sans-serif, system-ui",
+          fontWeight: 800,
+          fontSize: "clamp(2.4rem, 5.4vw, 4.8rem)",
+          lineHeight: 1.05,
+          letterSpacing: "-0.045em",
+          color: "rgba(245, 250, 255, 0.98)",
+          maxWidth: "62rem",
+        }}
+      >
+        {INTRO_LINES.map(({ text, accent }) => (
+          <motion.span
+            key={text}
+            style={{
+              display: "block",
+              color: accent ? "rgba(34, 211, 238, 1)" : undefined,
+            }}
+            variants={{
+              hidden: { opacity: 0, y: 22 },
+              visible: {
+                opacity: 1,
+                y: 0,
+                transition: {
+                  duration: 0.7,
+                  ease: [0.22, 1, 0.36, 1],
+                },
+              },
+              exit: {
+                opacity: 0,
+                y: -10,
+                transition: {
+                  duration: 0.45,
+                  ease: [0.4, 0, 0.6, 1],
+                },
+              },
+            }}
+          >
+            {text}
+          </motion.span>
+        ))}
+      </motion.div>
+    </motion.div>
+  );
+}
+
+/* ============================================================================
+   BRAND LOCKUP — composed of two pieces:
+     1. TopBar — full-width glassy rectangle with curved corners that
+        appears once the dock phase fires and then follows the user
+        across the rest of the site.
+     2. Logo + 'Novonus' wordmark — logo pops into the center after the
+        intro lines leave, the wordmark wipes out from behind it, then
+        the lockup flies up to the top center where the wordmark
+        retracts and only the logo remains inside the bar.
    ========================================================================== */
 
 function BrandLockup() {
   const { phase } = useIntro();
-  const centered = phase === "pop" || phase === "text";
-  const docked = !centered;
-  const morph = { duration: MORPH_S, ease: EASE_MORPH };
-
-  /* Phase-dependent values */
-  const logoSize = centered ? 144 : 38;
-
-  /* Text only shows during the centered intro phase. Once the logo docks
-     at the top, the wrapper collapses to 0 and the text fades — only the
-     logo remains in the top bar from then on. */
-  const wrapperWidth = phase === "text" ? 168 : 0;
-  const innerPad = 4;
-  const textOpacity = phase === "text" ? 1 : 0;
+  const visible =
+    phase === "logoPop" ||
+    phase === "dock" ||
+    phase === "hero" ||
+    phase === "done";
+  const centered = phase === "logoPop";
+  const docked =
+    phase === "dock" || phase === "hero" || phase === "done";
 
   return (
-    <motion.div
-      className="pointer-events-none fixed left-1/2 z-[120] flex items-center"
-      initial={{ top: "50%", x: "-50%", y: "-50%" }}
-      animate={{
-        top: docked ? "1.25rem" : "50%",
-        x: "-50%",
-        y: docked ? "0%" : "-50%",
-      }}
-      transition={morph}
-    >
-      {/* Logo — pops in center during "pop", smoothly shifts left as
-          the wrapper width grows during "text" phase. */}
+    <>
+      {/* Full-width top bar — only fades in once docked, persists for
+          the rest of the site. Rounded corners, glassy backdrop. */}
+      {docked && (
+        <motion.div
+          aria-hidden
+          className="pointer-events-none fixed inset-x-2.5 top-2.5 z-[119] h-14 md:inset-x-3 md:top-3 md:h-16"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: EASE_FADE, delay: 0.3 }}
+          style={{
+            borderRadius: 18,
+            background:
+              "linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, rgba(8, 14, 24, 0.5) 100%)",
+            backdropFilter: "blur(22px) saturate(180%)",
+            WebkitBackdropFilter: "blur(22px) saturate(180%)",
+            border: "1px solid rgba(255, 255, 255, 0.1)",
+            boxShadow:
+              "inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 12px 32px rgba(0, 0, 0, 0.32)",
+          }}
+        />
+      )}
+
+      {/* Logo + wordmark lockup. Floats above the bar (z-120 vs z-119). */}
       <motion.div
-        className="relative shrink-0"
-        style={{ zIndex: 2 }}
-        initial={{ width: 144, height: 144, scale: 0, opacity: 0 }}
+        className="pointer-events-none fixed left-1/2 z-[120] flex items-center"
+        initial={{
+          top: "50%",
+          x: "-50%",
+          y: "-50%",
+          scale: 0,
+          opacity: 0,
+        }}
         animate={{
-          width: logoSize,
-          height: logoSize,
-          scale: 1,
-          opacity: 1,
+          top: docked ? "1.125rem" : "50%",
+          x: "-50%",
+          y: docked ? "0%" : "-50%",
+          scale: visible ? 1 : 0,
+          opacity: visible ? 1 : 0,
         }}
         transition={{
-          width: morph,
-          height: morph,
-          scale: { duration: POP_S, ease: EASE_POP },
-          opacity: { duration: 0.35, ease: "easeOut" },
+          top: { duration: 0.5, ease: EASE_MORPH },
+          y: { duration: 0.5, ease: EASE_MORPH },
+          scale: {
+            duration: centered ? 0.55 : 0.5,
+            ease: centered ? EASE_POP : EASE_MORPH,
+          },
+          opacity: { duration: 0.45, ease: EASE_FADE },
         }}
       >
-        <LogoMark glass={phase === "pop" || phase === "text"} />
-      </motion.div>
-
-      {/* Text wrapper — width wipe from 0.
-          paddingLeft is INSIDE, so the wipe first reveals the gap
-          (empty space), then the text. Feels like one continuous
-          reveal emerging from behind the logo. */}
-      <motion.div
-        style={{ overflow: "hidden", zIndex: 1, flexShrink: 0 }}
-        initial={{ width: 0, y: 0 }}
-        animate={{ width: wrapperWidth, y: docked ? 6 : 0 }}
-        transition={{ width: morph, y: morph }}
-      >
-        <motion.span
-          className="block font-sans font-semibold tracking-[0.02em] text-paper select-none"
-          style={{ whiteSpace: "nowrap" }}
-          initial={{ paddingLeft: 4, fontSize: "34px", opacity: 0 }}
+        {/* Logo */}
+        <motion.div
+          className="relative shrink-0"
+          style={{ zIndex: 2 }}
           animate={{
-            paddingLeft: innerPad,
-            fontSize: "34px",
-            opacity: textOpacity * 0.9,
+            width: centered ? 144 : 38,
+            height: centered ? 144 : 38,
+          }}
+          transition={{ duration: 0.55, ease: EASE_MORPH }}
+        >
+          <LogoMark glass={centered} />
+        </motion.div>
+
+        {/* Novonus wordmark — width-wipe from behind the logo, holds
+            until the dock phase fires. No standalone fade-out; the
+            dock transition itself collapses the wordmark (width +
+            opacity → 0) at the same time the logo flies up to the
+            top bar. Heavy-impact Inter 800. */}
+        <motion.div
+          style={{ overflow: "hidden", flexShrink: 0, zIndex: 1 }}
+          initial={{ width: 0, opacity: 0 }}
+          animate={{
+            width: centered ? 240 : 0,
+            opacity: centered ? 1 : 0,
           }}
           transition={{
-            paddingLeft: morph,
-            fontSize: morph,
-            opacity: { duration: 0.5, ease: EASE_FADE },
+            duration: centered ? 0.6 : 0.4,
+            ease: centered ? EASE_MORPH : EASE_FADE,
+            delay: centered ? 0.55 : 0,
           }}
         >
-          Novonus
-        </motion.span>
+          <span
+            className="block select-none"
+            style={{
+              fontFamily: "var(--font-inter), ui-sans-serif, system-ui",
+              fontWeight: 800,
+              fontSize: "48px",
+              letterSpacing: "-0.04em",
+              lineHeight: 1,
+              color: "rgba(245, 250, 255, 0.98)",
+              whiteSpace: "nowrap",
+              paddingLeft: 14,
+            }}
+          >
+            Novonus
+          </span>
+        </motion.div>
       </motion.div>
-    </motion.div>
+    </>
   );
 }
 
@@ -602,21 +759,59 @@ function Hero() {
      The stage transitions use a duration-based animation, so a single
      scroll past the threshold plays the whole beat regardless of how far
      the user pushes the wheel. */
-  const fillHeight = useTransform(scrollYProgress, [0, 0.32], ["0%", "100%"]);
+  /* Scroll-driven phases:
+       0    → 0.30 : helmet mask fills with red (rises bottom → top)
+       0.30 → 0.38 : 'Somatic Layer' pill fades out
+       0.40 onwards: red glow whole-screen animation begins. */
+  const fillHeight = useTransform(scrollYProgress, [0, 0.3], ["0%", "100%"]);
   const fillOpacity = useTransform(
     scrollYProgress,
     [0, 0.04, 1],
     [0, 1, 1],
   );
-  const novonusOpacity = useTransform(scrollYProgress, [0.4, 0.5], [1, 0]);
+  const novonusOpacity = useTransform(
+    scrollYProgress,
+    [0.3, 0.38],
+    [1, 0],
+  );
+
+  /* Late phase — hero artwork and red glow are out of the transition.
+         v=0.30 → 0.38 somatic layer text fades.
+         v=0.40 → 0.55 hero artwork fades out cleanly (no scale, no
+                       translate, no glow).
+         v=0.50 → 0.70 'The Problem' header fades + slides in.
+         v=0.70 → 0.90 manifesto paragraph fades + slides in. */
+  const heroFadeOpacity = useTransform(
+    scrollYProgress,
+    [0.4, 0.55],
+    [1, 0],
+  );
+  const theProblemOpacity = useTransform(
+    scrollYProgress,
+    [0.5, 0.7, 1],
+    [0, 1, 1],
+  );
+  const theProblemY = useTransform(
+    scrollYProgress,
+    [0.5, 0.7],
+    [-12, 0],
+  );
+  const manifestoOpacity = useTransform(
+    scrollYProgress,
+    [0.7, 0.9, 1],
+    [0, 1, 1],
+  );
+  const manifestoY = useTransform(
+    scrollYProgress,
+    [0.7, 0.9],
+    [16, 0],
+  );
 
   const [stage, setStage] = useState(0);
   useMotionValueEvent(scrollYProgress, "change", (v) => {
-    let next = 0;
-    if (v > 0.8) next = 3;
-    else if (v > 0.65) next = 2;
-    else if (v > 0.55) next = 1;
-    setStage((prev) => (prev === next ? prev : next));
+    /* Only stage 3 is meaningful (manifesto aria-hidden). Fires once
+       the manifesto begins fading in. */
+    setStage(v > 0.7 ? 3 : 0);
   });
 
   return (
@@ -624,34 +819,42 @@ function Hero() {
       <section
         ref={sectionRef}
         className="relative bg-ink"
-        style={{ height: "300svh" }}
+        style={{ height: "350svh" }}
       >
         <div className="sticky top-0 h-[100svh] overflow-hidden">
           <div className="bg-grid absolute inset-0 opacity-50" />
           <div className="glow-accent absolute left-1/2 top-1/2 h-[900px] w-[900px] -translate-x-1/2 -translate-y-1/2" />
 
-          {/* Giant NOVONUS backdrop — cyan top → transparent bottom,
-              sits behind the hero artwork. Fades out as red fill completes. */}
+
+          {/* "The Problem" — top-middle red glowing header. Sits where the
+              wipe converges so the residual halo reads as the text's own
+              radiance. */}
           <motion.div
-            aria-hidden
-            className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden"
-            style={{ opacity: novonusOpacity }}
+            className="pointer-events-none absolute left-1/2 top-24 z-[8] hidden md:block lg:top-32"
+            style={{
+              opacity: theProblemOpacity,
+              x: "-50%",
+              y: theProblemY,
+            }}
           >
-            <motion.span
-              className="hero-backdrop-text"
-              initial={{ opacity: 0, y: 18 }}
-              animate={{
-                opacity: heroReady ? 1 : 0,
-                y: heroReady ? 0 : 18,
-              }}
-              transition={{
-                duration: 1.6,
-                ease: [0.22, 1, 0.36, 1],
-                delay: heroReady ? 0.15 : 0,
+            <h2
+              style={{
+                fontFamily:
+                  "var(--font-space-grotesk), ui-sans-serif, system-ui",
+                fontWeight: 700,
+                fontStyle: "italic",
+                fontSize: "clamp(2.1rem, 3.8vw, 3.6rem)",
+                lineHeight: 1,
+                letterSpacing: "-0.028em",
+                color: "rgba(255, 65, 95, 1)",
+                margin: 0,
+                textShadow:
+                  "0 0 10px rgba(255, 35, 65, 0.95), 0 0 28px rgba(255, 35, 65, 0.72), 0 0 56px rgba(255, 35, 65, 0.5), 0 0 100px rgba(255, 35, 65, 0.32), 0 0 180px rgba(255, 35, 65, 0.18)",
+                whiteSpace: "nowrap",
               }}
             >
-              NOVONUS
-            </motion.span>
+              The Problem
+            </h2>
           </motion.div>
 
           <div
@@ -664,26 +867,32 @@ function Hero() {
           />
 
           <div className="relative z-[2] mx-auto flex h-full max-w-[1400px] flex-col items-center justify-center px-6 md:px-10">
+            {/* Hero fade wrapper — clean scroll-driven opacity fade-out.
+                No scale, no translate, no glow. Inner stack keeps its
+                intro reveal + 32% right-shift. */}
+            <motion.div
+              className="relative w-full max-w-[1100px]"
+              style={{ opacity: heroFadeOpacity }}
+            >
             {/* Hero image container — graceful reveal after intro docking.
                 After the NOVONUS fade completes, a single scroll past the
                 stage-1 threshold snaps the artwork to its right-shifted
                 position via a fixed-duration animation, independent of how
                 far the user actually scrolls. */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.96, y: 24, x: "0%" }}
+              initial={{ opacity: 0, scale: 0.96, y: 24, x: "32%" }}
               animate={{
-                opacity: heroReady ? (stage >= 3 ? 0 : 1) : 0,
-                scale: heroReady ? (stage >= 3 ? 0.98 : 1) : 0.96,
-                y: heroReady ? (stage >= 3 ? -12 : 0) : 24,
-                x: stage >= 1 ? "20%" : "0%",
+                opacity: heroReady ? 1 : 0,
+                scale: heroReady ? 1 : 0.96,
+                y: heroReady ? 0 : 24,
+                x: "32%",
               }}
               transition={{
                 duration: 0.9,
                 ease: [0.22, 1, 0.36, 1],
-                x: { duration: 0.85, ease: [0.4, 0, 0.2, 1] },
                 opacity: { duration: 0.7, ease: [0.4, 0, 0.2, 1] },
               }}
-              className="hero-stack relative aspect-[16/10] w-full max-w-[1100px] mix-blend-screen select-none"
+              className="hero-stack relative aspect-[16/10] w-full mix-blend-screen select-none"
               style={{
                 WebkitUserSelect: "none",
                 userSelect: "none",
@@ -848,25 +1057,26 @@ function Hero() {
                 />
               )}
 
-              {/* CLICK TARGET — small, pixel-precise to the brain outline.
-                  SVG <image> with pointer-events="visiblePainted" only fires
-                  on opaque brain-outline pixels, so the click radius is
-                  tightly contained to the brain area. */}
+              {/* CLICK TARGET — pixel-precise to the helmet silhouette.
+                  SVG <image> with pointer-events="visiblePainted" only
+                  fires on opaque silhouette pixels, so clicks register
+                  anywhere inside the red helmet outline (and ignore the
+                  surrounding empty area). */}
               <svg
                 viewBox="0 0 100 100"
                 preserveAspectRatio="none"
                 aria-hidden
                 className="absolute z-[19]"
                 style={{
-                  left: "29%",
-                  top: "6.5%",
-                  width: "35%",
-                  height: "47%",
+                  left: "19.38%",
+                  top: "2.43%",
+                  width: "48.70%",
+                  height: "70.66%",
                   pointerEvents: "none",
                 }}
               >
                 <image
-                  href="/brain_outline.png"
+                  href="/helmet-silhouette.png"
                   x={0}
                   y={0}
                   width={100}
@@ -881,212 +1091,204 @@ function Hero() {
                 />
               </svg>
             </motion.div>
+            </motion.div>
           </div>
 
-          {/* Tagline — appears as a single beat once stage 2 is reached. A
-              fixed-duration animation drives the slide-in, so any scroll
-              past the threshold reveals the whole tagline in one go. */}
+          {/* Manifesto — scroll-driven so it lands strictly after the hero
+              fade and 'The Problem' header. Fades in v=0.97 → 0.995 with
+              a small upward slide. The outer wrapper stays
+              pointer-events-none so it doesn't block the brain click; the
+              inner text block opts back in (pointer-events-auto) so users
+              can highlight / copy the paragraph. */}
           <motion.div
-            className="pointer-events-none absolute left-0 top-1/2 z-[5] hidden w-[52%] max-w-[760px] -translate-y-1/2 px-8 md:block md:pl-[6vw] lg:pl-[8vw]"
-            initial={{ opacity: 0, x: -28 }}
-            animate={{
-              opacity: stage === 2 ? 1 : 0,
-              x: stage >= 2 ? (stage >= 3 ? -28 : 0) : -28,
+            className="pointer-events-none absolute inset-0 z-[6] flex items-center justify-center px-6 pb-[14vh] md:px-10 md:pb-[12vh]"
+            style={{
+              opacity: manifestoOpacity,
+              y: manifestoY,
             }}
-            transition={{ duration: 0.85, ease: [0.4, 0, 0.2, 1] }}
-          >
-            <p
-              className="text-balance"
-              aria-label="Thirty years. One missing signal. We found it."
-              style={{
-                fontFamily:
-                  "var(--font-space-grotesk), ui-sans-serif, system-ui",
-                fontWeight: 700,
-                fontStyle: "italic",
-                fontSize: "clamp(2.05rem, 3.55vw, 3.25rem)",
-                lineHeight: 1.05,
-                letterSpacing: "-0.032em",
-                color: "rgba(234, 246, 255, 0.99)",
-                margin: 0,
-                textShadow:
-                  "2px 0 0 rgba(34, 211, 238, 0.32), -2px 0 0 rgba(255, 90, 130, 0.3)",
-                filter:
-                  "drop-shadow(0 0 22px rgba(34, 211, 238, 0.1)) drop-shadow(0 1px 0 rgba(0, 0, 0, 0.4))",
-              }}
-            >
-              <span style={{ display: "block" }}>Thirty years.</span>
-              <span style={{ display: "block", marginTop: "0.62em" }}>
-                One missing signal.
-              </span>
-              <span
-                style={{
-                  display: "block",
-                  marginTop: "0.62em",
-                  color: "rgba(34, 211, 238, 1)",
-                  textShadow:
-                    "2px 0 0 rgba(34, 211, 238, 0.5), -2px 0 0 rgba(255, 90, 130, 0.32)",
-                }}
-              >
-                We found it.
-              </span>
-            </p>
-          </motion.div>
-
-          {/* Manifesto — at stage 3 the hero artwork and the ceiling
-              tagline fade out and this paragraph block fades into the
-              same pinned space. No page scroll happens between the
-              two beats; the swap is part of the pin. */}
-          <motion.div
-            className="pointer-events-none absolute inset-0 z-[6] flex items-center justify-center px-6 md:px-10"
-            initial={false}
-            animate={{
-              opacity: stage >= 3 ? 1 : 0,
-              y: stage >= 3 ? 0 : 16,
-            }}
-            transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
             aria-hidden={stage < 3}
           >
             <div
-              className="w-full max-w-[820px] text-balance"
+              className="pointer-events-auto w-full max-w-[820px] cursor-text text-balance select-text"
               style={{
                 fontFamily:
-                  "var(--font-space-grotesk), ui-sans-serif, system-ui",
+                  "var(--font-inter), ui-sans-serif, system-ui",
                 fontWeight: 400,
                 fontSize: "clamp(1.05rem, 1.55vw, 1.4rem)",
                 lineHeight: 1.55,
                 letterSpacing: "-0.01em",
                 color: "rgba(220, 235, 250, 0.88)",
+                WebkitUserSelect: "text",
+                userSelect: "text",
               }}
             >
-              <p>
+              <p style={{ textAlign: "justify", hyphens: "auto" }}>
                 Modern robotics has trained on the wrong data for thirty
-                years. Vision systems learned to see, foundation models
-                learned to plan, manipulation policies learned to move.
-                Almost none of them learned to{" "}
-                <span style={{ color: "rgba(34, 211, 238, 1)", fontWeight: 600 }}>
-                  feel
+                years. Vision can&apos;t see{" "}
+                <span
+                  style={{
+                    color: "rgba(34, 211, 238, 1)",
+                    fontWeight: 600,
+                  }}
+                >
+                  force
                 </span>
-                .
-              </p>
-              <p className="mt-6 md:mt-8">
-                The result is the{" "}
-                <span style={{ color: "rgba(255, 95, 115, 0.98)", fontWeight: 600 }}>
-                  contact-rich ceiling
+                , sensors react too{" "}
+                <span
+                  style={{
+                    color: "rgba(34, 211, 238, 1)",
+                    fontWeight: 600,
+                  }}
+                >
+                  late
                 </span>
-                . Robots fail at connector insertion, cable routing, and
-                fragile assembly because they can&apos;t anticipate force.
-                They find out they&apos;re pressing too hard{" "}
-                <span style={{ color: "rgba(255, 215, 225, 0.98)", fontWeight: 600 }}>
+                , and simulators can&apos;t accurately model the physics
+                of friction, suction, and{" "}
+                <span
+                  style={{
+                    color: "rgba(34, 211, 238, 1)",
+                    fontWeight: 600,
+                  }}
+                >
+                  contact forces
+                </span>
+                . Industrial robots excel at pick-and-place in
+                controlled environments but break down on{" "}
+                <span
+                  style={{
+                    color: "rgba(34, 211, 238, 1)",
+                    fontWeight: 600,
+                  }}
+                >
+                  contact-rich manipulation
+                </span>
+                , where success depends on fine-grained force control
+                and physical precision.{" "}
+                <em
+                  style={{
+                    fontStyle: "italic",
+                    color: "rgba(34, 211, 238, 1)",
+                    fontWeight: 600,
+                  }}
+                >
+                  They lack feel
+                </em>{" "}
+                *. They find out they&apos;re pressing too hard{" "}
+                <span
+                  style={{
+                    color: "rgba(255, 215, 225, 0.98)",
+                    fontWeight: 600,
+                    whiteSpace: "nowrap",
+                  }}
+                >
                   200 milliseconds
                 </span>{" "}
                 after the part is already crushed.
               </p>
-              <p className="mt-6 md:mt-8">
-                The richest manipulation signal in the room has been
-                ignored: what the human&apos;s{" "}
-                <span style={{ color: "rgba(34, 211, 238, 1)", fontWeight: 600 }}>
-                  muscles
-                </span>{" "}
-                were doing before contact. We capture it.{" "}
-                <span
-                  style={{
-                    color: "rgba(240, 248, 255, 1)",
-                    fontWeight: 700,
-                  }}
-                >
-                  Industrial robots are about to start feeling.
-                </span>
+              <p
+                style={{
+                  marginTop: "1.4em",
+                  textAlign: "right",
+                  fontFamily:
+                    "var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace",
+                  fontSize: "clamp(0.62rem, 0.7vw, 0.74rem)",
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                  color: "rgba(180, 200, 220, 0.55)",
+                }}
+              >
+                *NVIDIA R2D2, 2025
               </p>
             </div>
           </motion.div>
 
-          {/* Bottom badge — small centered pill that wraps just the title.
-              Heavily translucent liquid-glass backdrop with a soft iridescent
-              tint and rounded corners. The outer wrapper binds opacity to
-              novonusOpacity so the pill fades with the giant NOVONUS backdrop
-              as the user scrolls. The inner motion.div handles the intro
-              fade-in and the stage 3 hand-off to the manifesto. */}
+          {/* Main landing-page heading — big bold technical statement on
+              the left side of the viewport, balancing the hero artwork
+              shifted to the right. Outer wrapper fades it via
+              novonusOpacity so it leaves as the helmet glow takes over;
+              inner motion.div handles the intro fade-in. Both layers
+              are pointer-events-none so clicks pass through to the
+              brain SVG hit-target on the helmet. */}
           <motion.div
-            className="absolute left-1/2 bottom-8 z-[40] hidden -translate-x-1/2 md:block lg:bottom-10"
+            className="pointer-events-none absolute left-0 top-1/2 z-[5] hidden w-[56%] max-w-[820px] -translate-y-1/2 px-8 md:block md:pl-[6vw] lg:pl-[8vw]"
             style={{ opacity: novonusOpacity }}
           >
-          <motion.div
-            initial={{ opacity: 0, y: 14 }}
-            animate={{
-              opacity: heroReady ? (stage >= 3 ? 0 : 1) : 0,
-              y: heroReady ? (stage >= 3 ? 8 : 0) : 14,
-            }}
-            transition={{
-              duration: 0.9,
-              ease: [0.22, 1, 0.36, 1],
-              delay: heroReady && stage < 3 ? 0.55 : 0,
-            }}
-            aria-hidden={stage >= 3}
-          >
-            <div
-              className="relative overflow-hidden rounded-full px-7 py-3 lg:px-9 lg:py-3.5"
-              style={{
-                background:
-                  "linear-gradient(180deg, rgba(255, 255, 255, 0.045) 0%, rgba(255, 255, 255, 0.015) 100%)",
-                backdropFilter:
-                  "blur(28px) saturate(200%) brightness(1.04)",
-                WebkitBackdropFilter:
-                  "blur(28px) saturate(200%) brightness(1.04)",
-                border: "1px solid rgba(255, 255, 255, 0.08)",
-                boxShadow:
-                  "inset 0 1px 0 rgba(255, 255, 255, 0.09), 0 18px 50px rgba(0, 0, 0, 0.22)",
+            <motion.div
+              className="pointer-events-none"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{
+                opacity: heroReady ? 1 : 0,
+                y: heroReady ? 0 : 16,
+              }}
+              transition={{
+                duration: 0.85,
+                ease: [0.22, 1, 0.36, 1],
+                delay: heroReady ? 0.5 : 0,
               }}
             >
-              {/* Iridescent chromatic tint — cyan from the lower-left,
-                  magenta from the lower-right, blended in screen so the
-                  glass keeps its translucence. */}
-              <div
-                aria-hidden
-                className="pointer-events-none absolute inset-0"
-                style={{
-                  background:
-                    "radial-gradient(80% 220% at 0% 100%, rgba(34, 211, 238, 0.1) 0%, transparent 60%), radial-gradient(80% 220% at 100% 100%, rgba(255, 90, 130, 0.07) 0%, transparent 60%)",
-                  mixBlendMode: "screen",
-                }}
-              />
-
-              <h2
-                className="relative whitespace-nowrap"
+              <p
+                className="pointer-events-none"
                 style={{
                   fontFamily:
-                    "var(--font-space-grotesk), ui-sans-serif, system-ui",
+                    "var(--font-inter), ui-sans-serif, system-ui",
                   fontWeight: 400,
-                  fontSize: "clamp(1.02rem, 1.4vw, 1.4rem)",
-                  lineHeight: 1.15,
-                  letterSpacing: "-0.022em",
-                  color: "rgba(232, 244, 255, 0.97)",
+                  fontStyle: "normal",
+                  fontSize: "clamp(0.92rem, 1.1vw, 1.1rem)",
+                  lineHeight: 1.5,
+                  letterSpacing: "0.005em",
+                  color: "rgba(34, 211, 238, 1)",
+                  margin: 0,
+                  marginBottom: "1em",
+                }}
+              >
+                [ pipeline for robots powered by humans ]
+              </p>
+              <h1
+                className="pointer-events-none text-balance text-paper"
+                style={{
+                  fontFamily:
+                    "var(--font-inter), ui-sans-serif, system-ui",
+                  fontWeight: 800,
+                  fontStyle: "normal",
+                  fontSize: "clamp(2.1rem, 4.4vw, 3.8rem)",
+                  lineHeight: 1.05,
+                  letterSpacing: "-0.02em",
                   margin: 0,
                 }}
               >
-                The{" "}
-                <em style={{ fontStyle: "italic", fontWeight: 700 }}>
-                  Somatic Layer
-                </em>{" "}
-                for{" "}
+                The Somatic Layer for Industrial Autonomy
+              </h1>
+              <p
+                className="pointer-events-none"
+                style={{
+                  fontFamily:
+                    "var(--font-inter), ui-sans-serif, system-ui",
+                  fontWeight: 400,
+                  fontStyle: "normal",
+                  fontSize: "clamp(0.92rem, 1.1vw, 1.1rem)",
+                  lineHeight: 1.55,
+                  letterSpacing: "0.005em",
+                  color: "rgba(220, 235, 250, 0.74)",
+                  margin: 0,
+                  marginTop: "1.4em",
+                  maxWidth: "32em",
+                }}
+              >
+                Cameras can&apos;t see force. Sensors react too late. We
+                capture the biological signal that decides whether
+                contact-rich assembly succeeds or fails, and we just
+                solved a thirty-year problem industrial robotics
+                couldn&apos;t.{" "}
                 <span
                   style={{
-                    fontFamily:
-                      "var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace",
-                    fontStyle: "normal",
+                    color: "rgba(34, 211, 238, 1)",
                     fontWeight: 500,
-                    textTransform: "uppercase",
-                    letterSpacing: "0.2em",
-                    fontSize: "0.74em",
-                    color: "rgba(34, 211, 238, 0.95)",
-                    verticalAlign: "0.06em",
-                    paddingLeft: "0.05em",
                   }}
                 >
-                  Industrial Autonomy
+                  Robots can finally feel.
                 </span>
-              </h2>
-            </div>
-          </motion.div>
+              </p>
+            </motion.div>
           </motion.div>
 
         </div>

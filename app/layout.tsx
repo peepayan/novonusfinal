@@ -5,6 +5,7 @@ import {
   Inclusive_Sans,
   Cinzel,
   Space_Grotesk,
+  Orbitron,
 } from "next/font/google";
 import "./globals.css";
 
@@ -41,6 +42,15 @@ const spaceGrotesk = Space_Grotesk({
   display: "swap",
 });
 
+/* Robotic, geometric display face — iconic sci-fi / aerospace feel.
+   Drives the main Somatic Layer heading. */
+const orbitron = Orbitron({
+  variable: "--font-orbitron",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800", "900"],
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title:
     "Novonus Somatic Control Stack | The New Industry Standard in Yard Operations",
@@ -56,7 +66,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${geistMono.variable} ${inclusiveSans.variable} ${cinzel.variable} ${spaceGrotesk.variable} h-full antialiased`}
+      className={`${inter.variable} ${geistMono.variable} ${inclusiveSans.variable} ${cinzel.variable} ${spaceGrotesk.variable} ${orbitron.variable} h-full antialiased`}
     >
       <body className="min-h-full bg-ink text-paper" suppressHydrationWarning>{children}</body>
     </html>
