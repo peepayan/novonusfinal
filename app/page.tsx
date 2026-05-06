@@ -820,23 +820,23 @@ function EyesScene({
 }: {
   scrollYProgress: MotionValue<number>;
 }) {
-  /* Wrapper opacity — fade-in over [0.3903, 0.4076], hold through
-     the strip reveal AND the 8-scroll hold, then fade-out
-     [0.5464, 0.5638] so slide 3 cleanly hands off to slide 4. */
+  /* Wrapper opacity — fade-in over [0.337, 0.352], hold through the
+     strip reveal AND the 8-scroll hold, then fade-out [0.472, 0.487]
+     so slide 3 cleanly hands off to slide 4. */
   const opacity = useTransform(
     scrollYProgress,
-    [0.3903, 0.4076, 0.5464, 0.5638],
+    [0.337, 0.352, 0.472, 0.487],
     [0, 1, 1, 0],
   );
 
   /* Strip pathLength is a direct projection of scrollYProgress onto
-     [0.4076, 0.4539]. At 900svh a wheel notch covers ~0.01157 of
-     progress, so the 0.0463-wide range exposes ~¼ of the strip per
-     notch — four notches reveal it fully. After 0.4539 it clamps at
+     [0.352, 0.392]. At 1000svh a wheel notch is exactly 0.01 of
+     progress, so the 0.04-wide range exposes ¼ of the strip per
+     notch — four notches reveal it fully. After 0.392 it clamps at
      1, holding the strip fully drawn during the 8-scroll wait. */
   const stripPathLength = useTransform(
     scrollYProgress,
-    [0.4076, 0.4539],
+    [0.352, 0.392],
     [0, 1],
   );
 
@@ -844,23 +844,23 @@ function EyesScene({
      fills in lockstep with the line being drawn across the eyes. */
   const captionHead = useTransform(
     scrollYProgress,
-    [0.4076, 0.4539],
+    [0.352, 0.392],
     [0, SLIDE3_TEXT.length + 7],
   );
 
   /* Eye state — open / closed / open, gated to the strip's progress.
-     Strip range is [0.4076, 0.4539] (0.0463 wide):
-       1/4 of strip drawn ≈ scroll 0.4193
-       1/2 of strip drawn ≈ scroll 0.4309
+     Strip range is [0.352, 0.392] (0.040 wide):
+       1/4 of strip drawn ≈ scroll 0.362
+       1/2 of strip drawn ≈ scroll 0.372
      Eyes close at 1/4, hold closed, snap back open at 1/2. */
   const openOpacity = useTransform(
     scrollYProgress,
-    [0.4193, 0.4218, 0.4309, 0.4334],
+    [0.362, 0.3645, 0.372, 0.3745],
     [1, 0, 0, 1],
   );
   const closedOpacity = useTransform(
     scrollYProgress,
-    [0.4193, 0.4218, 0.4309, 0.4334],
+    [0.362, 0.3645, 0.372, 0.3745],
     [0, 1, 1, 0],
   );
 
@@ -1106,25 +1106,25 @@ function BellScene({
   /* Fade in then fade out so slide 4 hands cleanly off to slide 5. */
   const opacity = useTransform(
     scrollYProgress,
-    [0.558, 0.5754, 0.6911, 0.7085],
+    [0.482, 0.497, 0.597, 0.612],
     [0, 1, 1, 0],
   );
 
   const bellRotation = useTransform(
     scrollYProgress,
-    [0.5754, 0.5919, 0.6085, 0.625, 0.6415, 0.658, 0.6745, 0.6911],
+    [0.497, 0.5113, 0.5256, 0.5400, 0.5543, 0.5686, 0.5829, 0.597],
     [0, -12, 10, -8, 6, -4, 2, 0],
   );
 
   const waveOpacity = useTransform(
     scrollYProgress,
-    [0.5712, 0.5852, 0.6745, 0.6911],
+    [0.4924, 0.5074, 0.5874, 0.597],
     [0, 1, 1, 0],
   );
 
   const captionHead = useTransform(
     scrollYProgress,
-    [0.5754, 0.631],
+    [0.497, 0.545],
     [0, SLIDE4_TEXT.length + 7],
   );
 
@@ -1326,14 +1326,19 @@ function BellScene({
    shimmer continuously, matching the bell's vibration aesthetic.
 
    Choreography:
-     • Wrapper opacity     : scroll [0.7026, 0.7200] → 0 → 1 (fade-in)
-                             scroll [0.8415, 0.8589] → 1 → 0 (fade-out)
-     • Hammer rotation     : scroll [0.7200, 0.7724, 0.7840, 0.7956] →
+     • Wrapper opacity     : scroll [0.607, 0.622] → 0 → 1 (fade-in)
+                             scroll [0.807, 0.822] → 1 → 0 (fade-out
+                             after the 8-scroll hold)
+     • Hammer rotation     : scroll [0.622, 0.667, 0.677, 0.687] →
                              [-75°, 0°, -8°, 0°] — raise→swing→bounce
-                             →rest. Impact occurs at scroll 0.7724.
-     • Reaction line opacity: scroll [0.7724, 0.7840] → 0 → 1
-     • Reaction pathLength : scroll [0.7724, 0.7956] → 0 → 1
-     • Caption reveal head : scroll [0.7724, 0.8415] → [0, length+7]
+                             →rest. Impact occurs at scroll 0.667.
+     • Reaction line opacity: scroll [0.667, 0.677] → 0 → 1
+     • Reaction pathLength : scroll [0.667, 0.687] → 0 → 1
+     • Caption reveal head : scroll [0.667, 0.727] → [0, length+7]
+     • Hold (NEW)          : scroll [0.727, 0.807] — hammer settled,
+                             reaction lines + caption visible while
+                             the user takes 8 scrolls before the
+                             scene fades into slide 6.
    ========================================================================== */
 const SLIDE5_TEXT =
   "Simulators can't accurately model contact physics.";
@@ -1345,31 +1350,31 @@ function HammerScene({
 }) {
   const opacity = useTransform(
     scrollYProgress,
-    [0.7026, 0.72, 0.8415, 0.8589],
+    [0.607, 0.622, 0.807, 0.822],
     [0, 1, 1, 0],
   );
 
   const hammerRotation = useTransform(
     scrollYProgress,
-    [0.72, 0.7724, 0.784, 0.7956],
+    [0.622, 0.667, 0.677, 0.687],
     [-75, 0, -8, 0],
   );
 
   const reactionOpacity = useTransform(
     scrollYProgress,
-    [0.7724, 0.784],
+    [0.667, 0.677],
     [0, 1],
   );
 
   const reactionLineLength = useTransform(
     scrollYProgress,
-    [0.7724, 0.7956],
+    [0.667, 0.687],
     [0, 1],
   );
 
   const captionHead = useTransform(
     scrollYProgress,
-    [0.7724, 0.8415],
+    [0.667, 0.727],
     [0, SLIDE5_TEXT.length + 7],
   );
 
@@ -1569,11 +1574,12 @@ function ManifestoScene({
 }: {
   scrollYProgress: MotionValue<number>;
 }) {
-  /* Fade in over [0.8474, 0.8647] (overlaps slide 5 fade-out for a
-     clean crossfade), then hold visible to the end of the section. */
+  /* Fade in over [0.817, 0.832] (overlaps slide 5 fade-out for a
+     clean crossfade), then hold visible to the end of the section
+     (~17 wheel notches of reading time). */
   const opacity = useTransform(
     scrollYProgress,
-    [0.8474, 0.8647],
+    [0.817, 0.832],
     [0, 1],
   );
 
@@ -1672,66 +1678,66 @@ function Hero() {
        0    → 0.30 : helmet mask fills with red (rises bottom → top)
        0.30 → 0.38 : 'Somatic Layer' pill fades out
        0.40 onwards: red glow whole-screen animation begins. */
-  const fillHeight = useTransform(scrollYProgress, [0, 0.0926], ["0%", "100%"]);
+  const fillHeight = useTransform(scrollYProgress, [0, 0.08], ["0%", "100%"]);
   const fillOpacity = useTransform(
     scrollYProgress,
-    [0, 0.012, 1],
+    [0, 0.01, 1],
     [0, 1, 1],
   );
   const novonusOpacity = useTransform(
     scrollYProgress,
-    [0.0926, 0.1157],
+    [0.08, 0.1],
     [1, 0],
   );
 
   /* Late phase — hero artwork and red glow are out of the transition.
-     Section height is 900svh (800svh of pinned scroll), so 1 wheel
-     notch ≈ 0.01157 of progress. Early phases below preserve the
-     same wheel-notch counts as the original 350svh layout (helmet 8,
-     somatic 2, artwork 4) so they scroll at the original speed; the
-     post-0.168 region holds the six-slide story.
-         v=0.093 → 0.116 somatic layer text fades.
-         v=0.122 → 0.168 hero artwork fades out cleanly.
-         v=0.168 → 0.286 slide 2 sentence reveals char-by-char
-                         (~¼ line / wheel notch).
-         v=0.286 → 0.379 slide 2 holds (8 wheel notches).
-         v=0.379 → 0.396 slide 2 fades out.
-         v=0.390 → 0.408 slide 3 eyes fade in.
-         v=0.408 → 0.454 slide 3 strip + caption reveal.
-         v≈0.419         eyes blink shut (strip ¼ mark).
-         v≈0.431         eyes open again (strip ½ mark).
-         v=0.454 → 0.546 slide 3 holds (8 wheel notches).
-         v=0.546 → 0.564 slide 3 fades out.
-         v=0.558 → 0.575 slide 4 (alarm bell) fades in.
-         v=0.575 → 0.691 bell rings + "Sensors react too late."
-         v=0.691 → 0.708 slide 4 fades out.
-         v=0.703 → 0.720 slide 5 (hammer) fades in.
-         v=0.720 → 0.842 hammer raises, swings down, impacts, red
-                         reaction lines burst out vibrating, and
+     Section height is 1000svh (900svh of pinned scroll), so 1 wheel
+     notch = 0.01 of progress (clean math). Early phases below
+     preserve the same wheel-notch counts as the original 350svh
+     layout so they scroll at the original speed; the post-0.145
+     region holds the six-slide story, with 8-scroll holds after
+     slides 2, 3, and 5 so each beat lands.
+         v=0.080 → 0.100 somatic layer text fades.
+         v=0.105 → 0.145 hero artwork fades out.
+         v=0.145 → 0.247 slide 2 reveals char-by-char (¼ line/notch).
+         v=0.247 → 0.327 slide 2 holds (8 notches).
+         v=0.327 → 0.342 slide 2 fades out.
+         v=0.337 → 0.352 slide 3 eyes fade in.
+         v=0.352 → 0.392 slide 3 strip + caption reveal.
+         v≈0.362         eyes blink shut (strip ¼).
+         v≈0.372         eyes open again (strip ½).
+         v=0.392 → 0.472 slide 3 holds (8 notches).
+         v=0.472 → 0.487 slide 3 fades out.
+         v=0.482 → 0.497 slide 4 fades in.
+         v=0.497 → 0.597 bell rings + "Sensors react too late."
+         v=0.597 → 0.612 slide 4 fades out.
+         v=0.607 → 0.622 slide 5 fades in.
+         v=0.622 → 0.727 hammer swings, impact, reaction lines,
                          "Simulators can't accurately model contact
-                         physics" caption reveals letter-by-letter.
-         v=0.842 → 0.859 slide 5 fades out.
-         v=0.847 → 0.865 slide 6 (manifesto + citation) fades in.
-         v=0.865 → 1.000 slide 6 holds — long enough to read the
-                         paragraph (~11 wheel notches). */
+                         physics" caption reveals.
+         v=0.727 → 0.807 slide 5 holds (8 notches).
+         v=0.807 → 0.822 slide 5 fades out.
+         v=0.817 → 0.832 slide 6 fades in.
+         v=0.832 → 1.000 slide 6 holds — manifesto + citation hold
+                         visible to the end (~17 notches). */
   const heroFadeOpacity = useTransform(
     scrollYProgress,
-    [0.1215, 0.1678],
+    [0.105, 0.145],
     [1, 0],
   );
   /* Reveal head — drives the per-char color/opacity in slide 2.
-     Range [0.1678, 0.2862] = 0.1184 wide. At 900svh that's ~10 wheel
+     Range [0.145, 0.247] = 0.102 wide. At 1000svh that's ~10 wheel
      notches, giving ¼-line-per-scroll reveal speed. */
   const revealHead = useTransform(
     scrollYProgress,
-    [0.1678, 0.2862],
+    [0.145, 0.247],
     [0, SLIDE2_TEXT.length + 7],
   );
   /* Slide 2 fade-out — clears the sentence after the 8-notch hold so
      the eyes scene can land on a clean chart-paper field. */
   const slide2FadeOpacity = useTransform(
     scrollYProgress,
-    [0.3787, 0.3961],
+    [0.327, 0.342],
     [1, 0],
   );
 
@@ -1739,7 +1745,7 @@ function Hero() {
   useMotionValueEvent(scrollYProgress, "change", (v) => {
     /* aria-hidden flips off once the reveal has fully completed, so
        screen readers announce the finished sentence as one unit. */
-    setStage(v > 0.2862 ? 3 : 0);
+    setStage(v > 0.247 ? 3 : 0);
   });
 
   return (
@@ -1747,7 +1753,7 @@ function Hero() {
       <section
         ref={sectionRef}
         className="relative bg-ink"
-        style={{ height: "900svh" }}
+        style={{ height: "1000svh" }}
       >
         <div className="sticky top-0 h-[100svh] overflow-hidden">
           <LinenBackground />
@@ -2141,14 +2147,14 @@ function Hero() {
       </section>
 
       {/* Stats — visible after the pinned hero releases */}
-      <section className="relative bg-ink py-16 md:py-24">
+      <section className="relative bg-paper py-16 md:py-24">
         <div className="mx-auto max-w-[1400px] px-6 md:px-10">
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-80px" }}
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            className="grid w-full gap-8 border-t border-paper/10 pt-10 md:grid-cols-3 md:gap-12"
+            className="grid w-full gap-8 border-t border-ink/10 pt-10 md:grid-cols-3 md:gap-12"
           >
             <Stat label="Loads orchestrated" digits={[8, 4, 2]} suffix="K+" />
             <Stat label="Reduction in dwell time" digits={[3, 7]} suffix="%" />
@@ -2179,7 +2185,7 @@ function Stat({
           {suffix}
         </span>
       </div>
-      <p className="font-mono text-xs uppercase tracking-[0.18em] text-paper/55">
+      <p className="font-mono text-xs uppercase tracking-[0.18em] text-ink/55">
         {label}
       </p>
     </div>
@@ -2203,7 +2209,7 @@ function FeatureList() {
   return (
     <section
       id="system"
-      className="relative bg-ink pt-24 pb-32 md:pt-32 md:pb-40"
+      className="relative bg-paper pt-24 pb-32 md:pt-32 md:pb-40"
     >
       <div className="mx-auto max-w-[1400px] px-6 md:px-10">
         <p className="eyebrow mb-10">◆ The System</p>
@@ -2220,12 +2226,12 @@ function FeatureList() {
                 delay: i * 0.06,
                 ease: [0.22, 1, 0.36, 1],
               }}
-              className="group flex items-start gap-6 border-b border-paper/10 py-6"
+              className="group flex items-start gap-6 border-b border-ink/10 py-6"
             >
               <span className="mt-1 font-mono text-xs tracking-widest text-cyan">
                 {String(i + 1).padStart(2, "0")}
               </span>
-              <p className="text-balance text-xl leading-snug text-paper md:text-2xl">
+              <p className="text-balance text-xl leading-snug text-ink md:text-2xl">
                 {line}
               </p>
             </motion.li>
@@ -2233,10 +2239,10 @@ function FeatureList() {
         </ul>
 
         <div className="mt-24 flex flex-col gap-4">
-          <p className="font-mono text-sm uppercase tracking-[0.18em] text-paper/55">
+          <p className="font-mono text-sm uppercase tracking-[0.18em] text-ink/55">
             That&apos;s the
           </p>
-          <h2 className="text-balance text-[44px] font-medium leading-[0.95] tracking-[-0.02em] text-paper md:text-[96px]">
+          <h2 className="text-balance text-[44px] font-medium leading-[0.95] tracking-[-0.02em] text-ink md:text-[96px]">
             <SpacedReveal text="Somatic Control Stack." />
           </h2>
           <p className="mt-4 font-mono text-2xl tracking-[0.4em] text-cyan md:text-4xl">
@@ -2463,7 +2469,7 @@ const OPERATORS = [
 
 function IndustryLogos() {
   return (
-    <section className="relative bg-ink py-24 md:py-32">
+    <section className="relative bg-paper py-24 md:py-32">
       <div className="mx-auto max-w-[1400px] px-6 md:px-10">
         <div className="mb-12 flex flex-col gap-3">
           <p className="eyebrow">◆ Built by the Industry</p>
@@ -2477,7 +2483,7 @@ function IndustryLogos() {
           {BUILDERS.map((name) => (
             <div
               key={name}
-              className="flex h-32 items-center justify-center bg-ink"
+              className="flex h-32 items-center justify-center bg-paper"
             >
               <span className="font-mono text-base tracking-[0.16em] text-paper/70">
                 {name.toUpperCase()}
@@ -2520,7 +2526,7 @@ function IndustryLogos() {
 
 function Testimonial() {
   return (
-    <section className="relative overflow-hidden bg-ink py-24 md:py-36">
+    <section className="relative overflow-hidden bg-paper py-24 md:py-36">
       <div className="glow-accent absolute -right-40 top-1/2 h-[500px] w-[500px] -translate-y-1/2" />
 
       <div className="relative mx-auto grid max-w-[1400px] gap-12 px-6 md:grid-cols-12 md:px-10">
@@ -2599,7 +2605,7 @@ const STEPS = [
 
 function HowItWorks() {
   return (
-    <section className="relative bg-ink py-24 md:py-32">
+    <section className="relative bg-paper py-24 md:py-32">
       <div className="mx-auto max-w-[1400px] px-6 md:px-10">
         <div className="mb-14 flex flex-col gap-4">
           <p className="eyebrow">◆ How it works</p>
@@ -2623,7 +2629,7 @@ function HowItWorks() {
                   delay: i * 0.08,
                   ease: [0.22, 1, 0.36, 1],
                 }}
-                className="group flex flex-col gap-6 bg-ink p-8 transition-colors hover:bg-paper/[0.04]"
+                className="group flex flex-col gap-6 bg-paper p-8 transition-colors hover:bg-ink/[0.04]"
               >
                 <div className="flex items-center justify-between">
                   <span className="font-mono text-xs tracking-[0.22em] text-cyan/70">
@@ -2678,7 +2684,7 @@ function Contact() {
   return (
     <section
       id="contact"
-      className="relative overflow-hidden border-t border-paper/10 bg-ink py-24 md:py-32"
+      className="relative overflow-hidden border-t border-paper/10 bg-paper py-24 md:py-32"
     >
       <div className="glow-accent absolute -left-40 top-0 h-[600px] w-[600px]" />
 
@@ -2755,13 +2761,13 @@ function Contact() {
                 How can we help? *
               </label>
               <select
-                className="rounded-xl border border-paper/15 bg-ink px-4 py-3 text-sm text-paper outline-none transition-colors focus:border-cyan"
+                className="rounded-xl border border-paper/15 bg-paper px-4 py-3 text-sm text-paper outline-none transition-colors focus:border-cyan"
                 value={option}
                 onChange={(e) => setOption(e.target.value)}
                 suppressHydrationWarning
               >
                 {OPTIONS.map((o) => (
-                  <option key={o} value={o} className="bg-ink">
+                  <option key={o} value={o} className="bg-paper">
                     {o}
                   </option>
                 ))}
@@ -2805,7 +2811,7 @@ function Field({
         type={type}
         required={required}
         suppressHydrationWarning
-        className="rounded-xl border border-paper/15 bg-ink px-4 py-3 text-sm text-paper outline-none transition-colors placeholder:text-paper/30 focus:border-cyan"
+        className="rounded-xl border border-paper/15 bg-paper px-4 py-3 text-sm text-paper outline-none transition-colors placeholder:text-paper/30 focus:border-cyan"
       />
     </label>
   );
@@ -2841,7 +2847,7 @@ const COLS: { title: string; items: string[] }[] = [
 
 function Footer() {
   return (
-    <footer className="relative overflow-hidden border-t border-paper/10 bg-ink pt-24 pb-10">
+    <footer className="relative overflow-hidden border-t border-paper/10 bg-paper pt-24 pb-10">
       <div className="mx-auto max-w-[1400px] px-6 md:px-10">
         <div className="grid gap-12 md:grid-cols-12">
           <div className="md:col-span-5">
@@ -2926,13 +2932,7 @@ export default function Home() {
       <main>
         <Hero />
         <FeatureList />
-        <Benefits />
-        <IndustryLogos />
-        <Testimonial />
-        <HowItWorks />
-        <Contact />
       </main>
-      <Footer />
     </IntroProvider>
   );
 }
