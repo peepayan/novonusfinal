@@ -33,19 +33,6 @@ body {
   color: var(--paper);
 }
 
-/* Faint global grid — sits behind everything, barely visible until the
-   cursor halo lights it up via mix-blend-mode: screen. */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  background-image:
-    linear-gradient(to right, rgba(140, 200, 255, 0.05) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(140, 200, 255, 0.05) 1px, transparent 1px);
-  background-size: 56px 56px;
-}
 
 body {
   font-family: var(--font-inter), ui-sans-serif, system-ui, -apple-system,
@@ -67,6 +54,7 @@ body {
     linear-gradient(to bottom, rgba(34, 211, 238, 0.06) 1px, transparent 1px);
   background-size: 56px 56px;
 }
+
 
 /* Multi-stop gradient glow used as ambient lighting */
 .glow-accent {
@@ -309,13 +297,15 @@ body {
     drop-shadow(0 0 50px rgba(255, 0, 0, 0.35));
 }
 
-/* Smooth neon reveal: starts with zero glow, ramps up over 2s,
-   then loops into the gentle pulse. Never appears abrupt. */
+/* Heavy neon reveal: starts with zero glow, ramps up over 2s,
+   then loops into a strong pulse. Five stacked drop-shadows give a
+   tight burning core, a dense red bloom, and an atmospheric far wash. */
 .neon-reveal {
   animation: neon-ramp-in 2s ease-out forwards,
              neon-pulse 2.4s ease-in-out 2s infinite;
-  /* Start with no glow at all */
   filter:
+    drop-shadow(0 0 0px rgba(255, 0, 0, 0))
+    drop-shadow(0 0 0px rgba(255, 0, 0, 0))
     drop-shadow(0 0 0px rgba(255, 0, 0, 0))
     drop-shadow(0 0 0px rgba(255, 0, 0, 0))
     drop-shadow(0 0 0px rgba(255, 0, 0, 0));
@@ -328,32 +318,40 @@ body {
     filter:
       drop-shadow(0 0 0px rgba(255, 0, 0, 0))
       drop-shadow(0 0 0px rgba(255, 0, 0, 0))
+      drop-shadow(0 0 0px rgba(255, 0, 0, 0))
+      drop-shadow(0 0 0px rgba(255, 0, 0, 0))
       drop-shadow(0 0 0px rgba(255, 0, 0, 0));
   }
   100% {
-    opacity: 0.82;
+    opacity: 1;
     filter:
-      drop-shadow(0 0 10px rgba(255, 0, 0, 0.8))
-      drop-shadow(0 0 25px rgba(255, 0, 0, 0.6))
-      drop-shadow(0 0 50px rgba(255, 0, 0, 0.35));
+      drop-shadow(0 0 6px rgba(255, 200, 200, 1))
+      drop-shadow(0 0 18px rgba(255, 0, 0, 1))
+      drop-shadow(0 0 45px rgba(255, 20, 30, 0.95))
+      drop-shadow(0 0 95px rgba(255, 30, 40, 0.7))
+      drop-shadow(0 0 170px rgba(255, 40, 50, 0.45));
   }
 }
 
-/* Gentle pulsing neon glow — starts after ramp-in completes */
+/* Heavy pulsing neon glow — burns hotter at the peak */
 @keyframes neon-pulse {
   0%, 100% {
-    opacity: 0.82;
+    opacity: 1;
     filter:
-      drop-shadow(0 0 10px rgba(255, 0, 0, 0.8))
-      drop-shadow(0 0 25px rgba(255, 0, 0, 0.6))
-      drop-shadow(0 0 50px rgba(255, 0, 0, 0.35));
+      drop-shadow(0 0 6px rgba(255, 200, 200, 1))
+      drop-shadow(0 0 18px rgba(255, 0, 0, 1))
+      drop-shadow(0 0 45px rgba(255, 20, 30, 0.95))
+      drop-shadow(0 0 95px rgba(255, 30, 40, 0.7))
+      drop-shadow(0 0 170px rgba(255, 40, 50, 0.45));
   }
   50% {
     opacity: 1;
     filter:
-      drop-shadow(0 0 14px rgba(255, 0, 0, 0.95))
-      drop-shadow(0 0 35px rgba(255, 0, 0, 0.75))
-      drop-shadow(0 0 60px rgba(255, 0, 0, 0.5));
+      drop-shadow(0 0 10px rgba(255, 230, 230, 1))
+      drop-shadow(0 0 28px rgba(255, 0, 0, 1))
+      drop-shadow(0 0 65px rgba(255, 15, 25, 1))
+      drop-shadow(0 0 130px rgba(255, 25, 35, 0.88))
+      drop-shadow(0 0 230px rgba(255, 35, 45, 0.6));
   }
 }
 
@@ -382,36 +380,6 @@ body {
       drop-shadow(0 0 8px rgba(0, 255, 255, 1))
       drop-shadow(0 0 20px rgba(0, 255, 255, 1))
       drop-shadow(0 0 40px rgba(0, 255, 255, 0.8));
-  }
-}
-
-/* ============================================================================
-   CURSOR HALO — bright blue light around the pointer that lifts the grid
-   ========================================================================== */
-.cursor-glow {
-  width: 680px;
-  height: 680px;
-  border-radius: 50%;
-  background:
-    radial-gradient(
-      circle at center,
-      rgba(160, 215, 255, 0.13) 0%,
-      rgba(125, 195, 255, 0.10) 16%,
-      rgba(95, 175, 255, 0.07) 34%,
-      rgba(65, 145, 240, 0.04) 54%,
-      rgba(35, 95, 215, 0.018) 72%,
-      rgba(0, 0, 0, 0) 92%
-    );
-  filter: blur(40px);
-  mix-blend-mode: screen;
-  will-change: transform, opacity;
-  transition: opacity 300ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-/* Touch / no-hover devices: kill the cursor halo entirely. */
-@media (hover: none), (pointer: coarse) {
-  .cursor-glow {
-    display: none !important;
   }
 }
 

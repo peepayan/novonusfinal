@@ -10,7 +10,21 @@
       "Bash(git checkout *)",
       "Bash(curl *)",
       "Bash(npm run *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(pip install *)",
+      "Bash(tasklist //FI \"IMAGENAME eq node.exe\")",
+      "Bash(taskkill *)",
+      "Read(//c/Users/deepa/AppData/Local/Temp/claude/C--Users-deepa-novonusfinal/da39013d-a620-4415-8cbe-63bc6c5e617e/tasks/**)",
+      "Bash(netstat -ano)",
+      "Bash(awk '{print $5}')",
+      "WebSearch",
+      "WebFetch(domain:tnkr.ai)",
+      "Bash(grep *)",
+      "Bash(python3 -c ' *)",
+      "WebFetch(domain:www.npmjs.com)",
+      "WebFetch(domain:github.com)",
+      "Bash(npm install *)",
+      "Bash(tasklist)"
     ]
   }
 }

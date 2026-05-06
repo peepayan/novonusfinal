@@ -105,7 +105,6 @@ function IntroProvider({
 
   return (
     <IntroContext.Provider value={{ phase }}>
-      <CursorGlow />
       <Preloader />
       <IntroLines />
       <BrandLockup />
@@ -119,76 +118,6 @@ function IntroProvider({
         {children}
       </motion.div>
     </IntroContext.Provider>
-  );
-}
-
-/* ============================================================================
-   CURSOR GLOW — soft blue light that follows the cursor and reveals the grid
-   ========================================================================== */
-
-function CursorGlow() {
-  const ref = useRef<HTMLDivElement | null>(null);
-  const target = useRef({ x: 0, y: 0 });
-  const current = useRef({ x: 0, y: 0 });
-  const visible = useRef(0);
-  const targetVisible = useRef(0);
-  const raf = useRef<number | null>(null);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    target.current = {
-      x: window.innerWidth / 2,
-      y: window.innerHeight / 2,
-    };
-    current.current = { ...target.current };
-
-    const handleMove = (e: PointerEvent) => {
-      target.current.x = e.clientX;
-      target.current.y = e.clientY;
-      targetVisible.current = 1;
-    };
-    const handleLeave = () => {
-      targetVisible.current = 0;
-    };
-    const handleEnter = () => {
-      targetVisible.current = 1;
-    };
-
-    window.addEventListener("pointermove", handleMove, { passive: true });
-    window.addEventListener("pointerleave", handleLeave);
-    window.addEventListener("pointerenter", handleEnter);
-
-    const tick = () => {
-      const lerp = 0.85;
-      current.current.x += (target.current.x - current.current.x) * lerp;
-      current.current.y += (target.current.y - current.current.y) * lerp;
-      visible.current += (targetVisible.current - visible.current) * 0.4;
-
-      const el = ref.current;
-      if (el) {
-        el.style.transform = `translate3d(${current.current.x}px, ${current.current.y}px, 0) translate(-50%, -50%)`;
-        el.style.opacity = String(visible.current);
-      }
-      raf.current = window.requestAnimationFrame(tick);
-    };
-    raf.current = window.requestAnimationFrame(tick);
-
-    return () => {
-      window.removeEventListener("pointermove", handleMove);
-      window.removeEventListener("pointerleave", handleLeave);
-      window.removeEventListener("pointerenter", handleEnter);
-      if (raf.current !== null) window.cancelAnimationFrame(raf.current);
-    };
-  }, []);
-
-  return (
-    <div
-      ref={ref}
-      aria-hidden
-      className="cursor-glow pointer-events-none fixed left-0 top-0 z-[60]"
-      style={{ opacity: 0 }}
-    />
   );
 }
 
@@ -714,6 +643,986 @@ function Arrow({ className = "" }: { className?: string }) {
 }
 
 /* ============================================================================
+   HERO BACKGROUND — Black chart paper, minimal version.
+
+   Pure black field with two layers of structure only:
+     1. A faint printed chart grid — 48px squares, 1px strokes at #070707
+        (~3% gray). Barely-readable rules.
+     2. A sparse network of fine "microcrack" specks — anisotropic
+        turbulence (horizontal-streak-shaped peaks) pushed through a
+        steep gamma curve so only the very brightest crests survive.
+        Reads as the intricate fine cracks/scratches of a worn paper
+        surface, not as broad noise.
+
+   No blotches, no isotropic grain, no directional lighting, no vignette.
+   Earlier versions had broader low-frequency layers that created visible
+   "puddles" of lighter hue across the field — those have been removed
+   so the surface stays uniformly near-black except for the fine cracks.
+
+   The earlier Warp/Lava shader version is archived at
+   _archive/lava-background.tsx for restoration.
+   ========================================================================== */
+function LinenBackground({
+  idPrefix = "paper",
+}: {
+  idPrefix?: string;
+} = {}) {
+  const gridId = `${idPrefix}-grid`;
+  const cracksId = `${idPrefix}-microcracks`;
+  return (
+    <div
+      aria-hidden
+      className="pointer-events-none absolute inset-0 z-0 overflow-hidden"
+      style={{ background: "#000000", contain: "layout paint" }}
+    >
+      <svg
+        className="absolute inset-0 h-full w-full"
+        preserveAspectRatio="xMidYMid slice"
+      >
+        <defs>
+          <pattern
+            id={gridId}
+            width="48"
+            height="48"
+            patternUnits="userSpaceOnUse"
+          >
+            <path
+              d="M 48 0 L 0 0 0 48"
+              fill="none"
+              stroke="#070707"
+              strokeWidth="1"
+            />
+          </pattern>
+          <filter id={cracksId} x="0" y="0" width="100%" height="100%">
+            <feTurbulence
+              type="fractalNoise"
+              baseFrequency="0.4 1.8"
+              numOctaves="4"
+              seed="73"
+            />
+            <feComponentTransfer>
+              <feFuncA type="gamma" amplitude="1" exponent="4.8" offset="0" />
+            </feComponentTransfer>
+            <feColorMatrix
+              values="0 0 0 0 0.65
+                      0 0 0 0 0.65
+                      0 0 0 0 0.65
+                      0 0 0 0.45 0"
+            />
+          </filter>
+        </defs>
+        <rect width="100%" height="100%" fill={`url(#${gridId})`} />
+        <rect width="100%" height="100%" filter={`url(#${cracksId})`} />
+      </svg>
+    </div>
+  );
+}
+
+/* ============================================================================
+   SLIDE 2 — scroll-driven per-character reveal.
+
+   Single sentence, displayed letter by letter as the user scrolls. Each
+   character emerges as cyan, holds briefly, then smoothly blends to
+   white. The "reveal head" is a motion value driven directly by
+   scrollYProgress, so the reveal is continuous and stops mid-word if
+   the user pauses scrolling. No internal animation timers — every
+   visual state is a pure function of the current head position.
+
+   Per-character timeline (units = "characters", local = head − index):
+     local <= 0       hidden (opacity 0)
+     0 < local < 1    emerging — opacity 0→1, color stays cyan
+     1 ≤ local ≤ 2.5  pure cyan hold
+     2.5 < local < 6.5 smooth lerp cyan → white
+     local ≥ 6.5      pure white
+
+   The transition window (~6 chars wide) means a small wave of
+   colour-blending letters always trails the head. Smooth feel.
+   ========================================================================== */
+const SLIDE2_TEXT =
+  "Modern robotics has trained on the wrong data for thirty years.";
+
+function RevealChar({
+  char,
+  index,
+  head,
+}: {
+  char: string;
+  index: number;
+  head: MotionValue<number>;
+}) {
+  const opacity = useTransform(head, (h) => {
+    const local = h - index;
+    if (local <= 0) return 0;
+    if (local >= 1) return 1;
+    return local;
+  });
+
+  const color = useTransform(head, (h) => {
+    const local = h - index;
+    if (local <= 2.5) return "rgba(34, 211, 238, 1)";
+    if (local >= 6.5) return "rgba(245, 250, 255, 0.96)";
+    const t = (local - 2.5) / 4;
+    const r = Math.round(34 + (245 - 34) * t);
+    const g = Math.round(211 + (250 - 211) * t);
+    const b = Math.round(238 + (255 - 238) * t);
+    return `rgba(${r}, ${g}, ${b}, 0.96)`;
+  });
+
+  return <motion.span style={{ opacity, color }}>{char}</motion.span>;
+}
+
+/* ============================================================================
+   SLIDE 3 — pair of crayon-style eyes, a red crayon strip drawn across,
+   and a "Vision can't see force" caption — all scroll-driven.
+
+   Aesthetic: simplistic geometric shapes (circles, short lines, arcs)
+   rendered through a turbulence + displacement filter so every edge
+   wobbles hand-drawn-crayon style. Stroke colour is a warm paper-cream
+   that sits cleanly on the chart-paper backdrop.
+
+   Geometry (viewBox 800 × 400):
+     OPEN state:
+       • Left  eye outline: circle (260, 200) r=90
+       • Right eye outline: circle (540, 200) r=90
+       • Pupils: filled black r=32 inside each circle
+       • Lashes: 5 short lines fanning above each eye, pointing UP
+
+     CLOSED state (the "blink"):
+       • Eye outline = lower semicircular arc + a straight base line at
+         y=200 connecting the two endpoints. The two together form a
+         closed half-disk shape (D rotated 90°).
+       • No pupils (eyes are closed)
+       • Lashes: 5 short lines per eye whose bases sit at the red
+         strip's centre line (y≈215). Because the strip is rendered
+         after the eyes with a 42-px stroke, the upper part of each
+         lash gets hidden by the strip; only the lower portion (y≈236
+         onward) is visible, so the lashes appear to emerge from the
+         strip's lower edge and fan downward.
+
+   Choreography (all scroll-driven, no time-based animation):
+     • Wrapper opacity : scroll [0.88, 0.90] → 0 → 1
+     • Crayon strip    : scroll [0.91, 1.00] → pathLength 0 → 1
+                         (0.09 wide; ~¼ strip per wheel notch at 500svh)
+     • Caption reveal  : scroll [0.91, 1.00] → revealHead 0 → length+7
+                         (in lockstep with strip — caption fills as the
+                         line is drawn)
+     • Blink           : multi-keyframe crossfade. Eyes are open up to
+                         scroll 0.9325 (= ¼ of the strip drawn), close
+                         briefly, and snap back open at scroll 0.955
+                         (= ½ of the strip drawn). Each crossfade window
+                         is ~0.0025 progress wide so the close/open
+                         transitions read as a quick blink.
+   ========================================================================== */
+const SLIDE3_TEXT = "Vision can't see force.";
+
+function EyesScene({
+  scrollYProgress,
+}: {
+  scrollYProgress: MotionValue<number>;
+}) {
+  /* Wrapper opacity — fade-in over [0.3903, 0.4076], hold through
+     the strip reveal AND the 8-scroll hold, then fade-out
+     [0.5464, 0.5638] so slide 3 cleanly hands off to slide 4. */
+  const opacity = useTransform(
+    scrollYProgress,
+    [0.3903, 0.4076, 0.5464, 0.5638],
+    [0, 1, 1, 0],
+  );
+
+  /* Strip pathLength is a direct projection of scrollYProgress onto
+     [0.4076, 0.4539]. At 900svh a wheel notch covers ~0.01157 of
+     progress, so the 0.0463-wide range exposes ~¼ of the strip per
+     notch — four notches reveal it fully. After 0.4539 it clamps at
+     1, holding the strip fully drawn during the 8-scroll wait. */
+  const stripPathLength = useTransform(
+    scrollYProgress,
+    [0.4076, 0.4539],
+    [0, 1],
+  );
+
+  /* Caption reveal head — same scroll range as the strip, so the text
+     fills in lockstep with the line being drawn across the eyes. */
+  const captionHead = useTransform(
+    scrollYProgress,
+    [0.4076, 0.4539],
+    [0, SLIDE3_TEXT.length + 7],
+  );
+
+  /* Eye state — open / closed / open, gated to the strip's progress.
+     Strip range is [0.4076, 0.4539] (0.0463 wide):
+       1/4 of strip drawn ≈ scroll 0.4193
+       1/2 of strip drawn ≈ scroll 0.4309
+     Eyes close at 1/4, hold closed, snap back open at 1/2. */
+  const openOpacity = useTransform(
+    scrollYProgress,
+    [0.4193, 0.4218, 0.4309, 0.4334],
+    [1, 0, 0, 1],
+  );
+  const closedOpacity = useTransform(
+    scrollYProgress,
+    [0.4193, 0.4218, 0.4309, 0.4334],
+    [0, 1, 1, 0],
+  );
+
+  const stroke = "#f3eee2";
+  const pupil = "#0a0a0a";
+
+  return (
+    <motion.div
+      className="pointer-events-none absolute inset-0 z-[7] flex flex-col items-center justify-center gap-6 px-8"
+      style={{ opacity }}
+      aria-hidden
+    >
+      <div className="w-full max-w-[640px]">
+        <svg
+          viewBox="0 0 800 400"
+          preserveAspectRatio="xMidYMid meet"
+          className="h-auto w-full"
+        >
+          <defs>
+            <filter
+              id="crayon-rough"
+              x="-10%"
+              y="-10%"
+              width="120%"
+              height="120%"
+            >
+              <feTurbulence
+                type="fractalNoise"
+                baseFrequency="0.06"
+                numOctaves="2"
+                seed="5"
+              />
+              <feDisplacementMap in="SourceGraphic" scale="3" />
+            </filter>
+          </defs>
+
+          {/* OPEN STATE — full circles, pupils, up-pointing lashes. */}
+          <motion.g style={{ opacity: openOpacity }}>
+            <circle
+              cx="260"
+              cy="200"
+              r="90"
+              fill="none"
+              stroke={stroke}
+              strokeWidth="5"
+              strokeLinecap="round"
+              filter="url(#crayon-rough)"
+            />
+            <circle
+              cx="260"
+              cy="200"
+              r="32"
+              fill={pupil}
+              filter="url(#crayon-rough)"
+            />
+            <circle
+              cx="540"
+              cy="200"
+              r="90"
+              fill="none"
+              stroke={stroke}
+              strokeWidth="5"
+              strokeLinecap="round"
+              filter="url(#crayon-rough)"
+            />
+            <circle
+              cx="540"
+              cy="200"
+              r="32"
+              fill={pupil}
+              filter="url(#crayon-rough)"
+            />
+            <g
+              stroke={stroke}
+              strokeWidth="4"
+              strokeLinecap="round"
+              fill="none"
+              filter="url(#crayon-rough)"
+            >
+              <line x1="200" y1="125" x2="186" y2="92" />
+              <line x1="225" y1="115" x2="220" y2="78" />
+              <line x1="260" y1="110" x2="260" y2="68" />
+              <line x1="295" y1="115" x2="300" y2="78" />
+              <line x1="320" y1="125" x2="334" y2="92" />
+              <line x1="480" y1="125" x2="466" y2="92" />
+              <line x1="505" y1="115" x2="500" y2="78" />
+              <line x1="540" y1="110" x2="540" y2="68" />
+              <line x1="575" y1="115" x2="580" y2="78" />
+              <line x1="600" y1="125" x2="614" y2="92" />
+            </g>
+          </motion.g>
+
+          {/* CLOSED STATE — closed half-disk eyes (lower semicircle arc
+              + connecting straight base line at y=200) and lashes that
+              originate at the red strip line (y≈215) so they read as
+              hairs sprouting from the strip. The strip is rendered
+              after the eyes, so the upper portion of each lash gets
+              covered by the strip's 42-px stroke; only the lower
+              portion (roughly y≈236 onward) remains visible, giving
+              the impression of lashes emerging from the strip's lower
+              edge and pointing down toward the closed eye. */}
+          <motion.g style={{ opacity: closedOpacity }}>
+            {/* Left eye — semicircle curve + connected base line. */}
+            <path
+              d="M 170 200 A 90 90 0 0 1 350 200"
+              fill="none"
+              stroke={stroke}
+              strokeWidth="5"
+              strokeLinecap="round"
+              filter="url(#crayon-rough)"
+            />
+            <line
+              x1="170"
+              y1="200"
+              x2="350"
+              y2="200"
+              stroke={stroke}
+              strokeWidth="5"
+              strokeLinecap="round"
+              filter="url(#crayon-rough)"
+            />
+            {/* Right eye — semicircle curve + connected base line. */}
+            <path
+              d="M 450 200 A 90 90 0 0 1 630 200"
+              fill="none"
+              stroke={stroke}
+              strokeWidth="5"
+              strokeLinecap="round"
+              filter="url(#crayon-rough)"
+            />
+            <line
+              x1="450"
+              y1="200"
+              x2="630"
+              y2="200"
+              stroke={stroke}
+              strokeWidth="5"
+              strokeLinecap="round"
+              filter="url(#crayon-rough)"
+            />
+            {/* Down-lashes — bases lifted to y=215 (the strip's centre)
+                so they appear to emerge from the red line; vectors
+                preserved from the original outward-normal calculation
+                so the fan shape stays the same. */}
+            <g
+              stroke={stroke}
+              strokeWidth="4"
+              strokeLinecap="round"
+              fill="none"
+              filter="url(#crayon-rough)"
+            >
+              <line x1="200" y1="215" x2="180" y2="237" />
+              <line x1="225" y1="215" x2="213" y2="243" />
+              <line x1="260" y1="215" x2="260" y2="245" />
+              <line x1="295" y1="215" x2="307" y2="243" />
+              <line x1="320" y1="215" x2="340" y2="237" />
+              <line x1="480" y1="215" x2="460" y2="237" />
+              <line x1="505" y1="215" x2="493" y2="243" />
+              <line x1="540" y1="215" x2="540" y2="245" />
+              <line x1="575" y1="215" x2="587" y2="243" />
+              <line x1="600" y1="215" x2="620" y2="237" />
+            </g>
+          </motion.g>
+
+          {/* Red crayon strip — drawn last so it sits on top of the eyes
+              regardless of which state they're in. */}
+          <motion.path
+            d="M 50 218 Q 200 208 400 213 T 750 220"
+            stroke="#dc2f3a"
+            strokeWidth="42"
+            strokeLinecap="round"
+            fill="none"
+            filter="url(#crayon-rough)"
+            style={{ pathLength: stripPathLength, opacity: 0.94 }}
+          />
+        </svg>
+      </div>
+
+      {/* Caption — letter-by-letter reveal driven by the same scroll range
+          as the strip, so each new letter appears as the line extends. */}
+      <div className="w-full max-w-[820px] text-center">
+        <h3
+          className="text-balance"
+          style={{
+            fontFamily:
+              "var(--font-tt-norms-pro), ui-sans-serif, system-ui",
+            fontWeight: 700,
+            fontSize: "clamp(1.4rem, 3vw, 2.4rem)",
+            lineHeight: 1.15,
+            letterSpacing: "-0.018em",
+            margin: 0,
+          }}
+        >
+          {SLIDE3_TEXT.split("").map((c, i) => (
+            <RevealChar key={i} char={c} index={i} head={captionHead} />
+          ))}
+        </h3>
+      </div>
+    </motion.div>
+  );
+}
+
+/* ============================================================================
+   SLIDE 4 — alarm bell going off + "Sensors react too late." caption.
+
+   Same crayon aesthetic as slide 3. Lives inside the hero's pinned
+   scroll region so it crossfades cleanly out of slide 3 instead of
+   feeling like the page jumped to a new section.
+
+   Geometry (viewBox 800 × 500):
+     • Bell body: M 280 320 Q 280 160, 400 130 Q 520 160, 520 320 Z
+       — closed dome wider at the bottom, narrower toward the top.
+     • Mouth rim: line at y=320 from x=265 to x=535 (slight flare).
+     • Stem: vertical line from (400, 130) up to (400, 94).
+     • Crown: filled circle r=12 at (400, 86).
+     • Clapper: short vertical line + filled ball hanging just below
+       the bell mouth — circle r=14 at (400, 362).
+     • Sound waves: three nested "(" arcs on the left at increasing
+       distances from the bell, plus their mirrors ")" on the right.
+
+   Choreography (all scroll-driven; reads from the hero's global
+   scrollYProgress over the slide-4 sub-range [0.558, 0.708]):
+     • Wrapper opacity     : scroll [0.558, 0.575] → 0 → 1 (fade-in)
+                             scroll [0.691, 0.708] → 1 → 0 (fade-out
+                             into slide 5)
+     • Bell rocking        : scroll [0.5754, 0.5919, 0.6085, 0.6250,
+                                     0.6415, 0.6580, 0.6745, 0.6911] →
+                             [0°, -12°, 10°, -8°, 6°, -4°, 2°, 0°]
+                             damped pendulum, ~1 swing per wheel notch.
+     • Sound wave opacity  : scroll [0.5712, 0.5852, 0.6745, 0.6911] →
+                             [0, 1, 1, 0]
+     • Caption reveal head : scroll [0.5754, 0.6310] → [0, length+7] —
+                             "Sensors react too late." reveals letter
+                             by letter, ~¼ line per wheel notch.
+   ========================================================================== */
+const SLIDE4_TEXT = "Sensors react too late.";
+
+function BellScene({
+  scrollYProgress,
+}: {
+  scrollYProgress: MotionValue<number>;
+}) {
+  /* Fade in then fade out so slide 4 hands cleanly off to slide 5. */
+  const opacity = useTransform(
+    scrollYProgress,
+    [0.558, 0.5754, 0.6911, 0.7085],
+    [0, 1, 1, 0],
+  );
+
+  const bellRotation = useTransform(
+    scrollYProgress,
+    [0.5754, 0.5919, 0.6085, 0.625, 0.6415, 0.658, 0.6745, 0.6911],
+    [0, -12, 10, -8, 6, -4, 2, 0],
+  );
+
+  const waveOpacity = useTransform(
+    scrollYProgress,
+    [0.5712, 0.5852, 0.6745, 0.6911],
+    [0, 1, 1, 0],
+  );
+
+  const captionHead = useTransform(
+    scrollYProgress,
+    [0.5754, 0.631],
+    [0, SLIDE4_TEXT.length + 7],
+  );
+
+  const stroke = "#f3eee2";
+
+  return (
+    <motion.div
+      className="pointer-events-none absolute inset-0 z-[7] flex flex-col items-center justify-center gap-6 px-8"
+      style={{ opacity }}
+      aria-hidden
+    >
+      <div className="w-full max-w-[640px]">
+        <svg
+          viewBox="0 0 800 500"
+          preserveAspectRatio="xMidYMid meet"
+          className="h-auto w-full"
+        >
+          <defs>
+            <filter
+              id="crayon-rough-bell"
+              x="-10%"
+              y="-10%"
+              width="120%"
+              height="120%"
+            >
+              <feTurbulence
+                type="fractalNoise"
+                baseFrequency="0.06"
+                numOctaves="2"
+                seed="11"
+              />
+              <feDisplacementMap in="SourceGraphic" scale="3" />
+            </filter>
+            {/* Vibrating filter — same crayon wobble, but the
+                turbulence seed cycles continuously via SMIL animation
+                so every frame computes a new displacement pattern.
+                Result: the rendered edges shimmer, reading as an
+                alarm "buzzing" out sound. Slightly larger
+                displacement scale (5 vs 3) makes the vibration more
+                visible than the static crayon filter. */}
+            <filter
+              id="alarm-vibrate"
+              x="-15%"
+              y="-15%"
+              width="130%"
+              height="130%"
+            >
+              <feTurbulence
+                type="fractalNoise"
+                baseFrequency="0.08"
+                numOctaves="2"
+                seed="0"
+              >
+                <animate
+                  attributeName="seed"
+                  values="0;3;6;9;12;15;18;21;24;27;30"
+                  dur="0.35s"
+                  repeatCount="indefinite"
+                />
+              </feTurbulence>
+              <feDisplacementMap in="SourceGraphic" scale="5" />
+            </filter>
+          </defs>
+
+          {/* Sound waves — three nested arcs on each side. They stay
+              put while the bell rocks; their visibility pulses in /
+              out via waveOpacity. The vibrating filter makes their
+              edges shimmer continuously to read as an alarm sounding. */}
+          <motion.g
+            style={{ opacity: waveOpacity }}
+            stroke="#dc2f3a"
+            strokeWidth="4"
+            strokeLinecap="round"
+            fill="none"
+            filter="url(#alarm-vibrate)"
+          >
+            <path d="M 245 195 Q 225 240 245 285" />
+            <path d="M 215 175 Q 190 240 215 305" />
+            <path d="M 185 155 Q 155 240 185 325" />
+            <path d="M 555 195 Q 575 240 555 285" />
+            <path d="M 585 175 Q 610 240 585 305" />
+            <path d="M 615 155 Q 645 240 615 325" />
+          </motion.g>
+
+          {/* Bell body — rotates around the top of the stem (400, 92).
+              transform-box defaults to view-box for SVG, so the
+              transform-origin is interpreted in viewBox units. */}
+          <motion.g
+            style={{
+              rotate: bellRotation,
+              transformOrigin: "400px 92px",
+            }}
+          >
+            {/* Bell dome */}
+            <path
+              d="M 280 320 Q 280 160 400 130 Q 520 160 520 320 Z"
+              fill="none"
+              stroke={stroke}
+              strokeWidth="5"
+              strokeLinejoin="round"
+              strokeLinecap="round"
+              filter="url(#crayon-rough-bell)"
+            />
+            {/* Mouth rim — slight flare beyond the dome's bottom edge */}
+            <line
+              x1="265"
+              y1="320"
+              x2="535"
+              y2="320"
+              stroke={stroke}
+              strokeWidth="5"
+              strokeLinecap="round"
+              filter="url(#crayon-rough-bell)"
+            />
+            {/* Stem */}
+            <line
+              x1="400"
+              y1="130"
+              x2="400"
+              y2="94"
+              stroke={stroke}
+              strokeWidth="5"
+              strokeLinecap="round"
+              filter="url(#crayon-rough-bell)"
+            />
+            {/* Crown */}
+            <circle
+              cx="400"
+              cy="86"
+              r="12"
+              fill={stroke}
+              filter="url(#crayon-rough-bell)"
+            />
+            {/* Clapper hanging below the bell mouth */}
+            <line
+              x1="400"
+              y1="320"
+              x2="400"
+              y2="350"
+              stroke={stroke}
+              strokeWidth="4"
+              strokeLinecap="round"
+              filter="url(#crayon-rough-bell)"
+            />
+            <circle
+              cx="400"
+              cy="362"
+              r="14"
+              fill={stroke}
+              filter="url(#crayon-rough-bell)"
+            />
+          </motion.g>
+        </svg>
+      </div>
+
+      {/* Caption — letter-by-letter reveal, in lockstep with the ringing
+          via the same captionHead motion value. */}
+      <div className="w-full max-w-[820px] text-center">
+        <h3
+          className="text-balance"
+          style={{
+            fontFamily:
+              "var(--font-tt-norms-pro), ui-sans-serif, system-ui",
+            fontWeight: 700,
+            fontSize: "clamp(1.4rem, 3vw, 2.4rem)",
+            lineHeight: 1.15,
+            letterSpacing: "-0.018em",
+            margin: 0,
+          }}
+        >
+          {SLIDE4_TEXT.split("").map((c, i) => (
+            <RevealChar key={i} char={c} index={i} head={captionHead} />
+          ))}
+        </h3>
+      </div>
+    </motion.div>
+  );
+}
+
+/* ============================================================================
+   SLIDE 5 — hammer striking the ground + "Simulators can't accurately
+   model contact physics." caption.
+
+   Same crayon aesthetic as slides 3 and 4. The hammer hangs from a
+   grip point at (400, 100) that acts as the rotation pivot; the
+   handle hangs down to (400, 350) with a head-block (350,350)–
+   (450,380) attached at the bottom. In the rest/striking pose
+   (rotation = 0°) the bottom of the head sits exactly on the ground
+   line at y=380. The hammer is initially raised to -75° and swings
+   clockwise to 0° to strike, with a small bounce afterwards.
+
+   At impact, six red reaction lines burst outward from (400, 380)
+   along radial directions (above-flat-left, up-left, up-left-strong,
+   up-right-strong, up-right, above-flat-right). They use motion.path
+   d="M 400 380 L tx ty" with a shared pathLength motion value driven
+   from 0 → 1 over the impact window, so each spike grows out from
+   the impact point. The same animated-seed turbulence filter from
+   the alarm bell (alarm-vibrate-hammer) is applied so the lines
+   shimmer continuously, matching the bell's vibration aesthetic.
+
+   Choreography:
+     • Wrapper opacity     : scroll [0.7026, 0.7200] → 0 → 1 (fade-in)
+                             scroll [0.8415, 0.8589] → 1 → 0 (fade-out)
+     • Hammer rotation     : scroll [0.7200, 0.7724, 0.7840, 0.7956] →
+                             [-75°, 0°, -8°, 0°] — raise→swing→bounce
+                             →rest. Impact occurs at scroll 0.7724.
+     • Reaction line opacity: scroll [0.7724, 0.7840] → 0 → 1
+     • Reaction pathLength : scroll [0.7724, 0.7956] → 0 → 1
+     • Caption reveal head : scroll [0.7724, 0.8415] → [0, length+7]
+   ========================================================================== */
+const SLIDE5_TEXT =
+  "Simulators can't accurately model contact physics.";
+
+function HammerScene({
+  scrollYProgress,
+}: {
+  scrollYProgress: MotionValue<number>;
+}) {
+  const opacity = useTransform(
+    scrollYProgress,
+    [0.7026, 0.72, 0.8415, 0.8589],
+    [0, 1, 1, 0],
+  );
+
+  const hammerRotation = useTransform(
+    scrollYProgress,
+    [0.72, 0.7724, 0.784, 0.7956],
+    [-75, 0, -8, 0],
+  );
+
+  const reactionOpacity = useTransform(
+    scrollYProgress,
+    [0.7724, 0.784],
+    [0, 1],
+  );
+
+  const reactionLineLength = useTransform(
+    scrollYProgress,
+    [0.7724, 0.7956],
+    [0, 1],
+  );
+
+  const captionHead = useTransform(
+    scrollYProgress,
+    [0.7724, 0.8415],
+    [0, SLIDE5_TEXT.length + 7],
+  );
+
+  const stroke = "#f3eee2";
+
+  return (
+    <motion.div
+      className="pointer-events-none absolute inset-0 z-[7] flex flex-col items-center justify-center gap-6 px-8"
+      style={{ opacity }}
+      aria-hidden
+    >
+      <div className="w-full max-w-[640px]">
+        <svg
+          viewBox="0 0 800 500"
+          preserveAspectRatio="xMidYMid meet"
+          className="h-auto w-full"
+        >
+          <defs>
+            <filter
+              id="crayon-rough-hammer"
+              x="-10%"
+              y="-10%"
+              width="120%"
+              height="120%"
+            >
+              <feTurbulence
+                type="fractalNoise"
+                baseFrequency="0.06"
+                numOctaves="2"
+                seed="17"
+              />
+              <feDisplacementMap in="SourceGraphic" scale="3" />
+            </filter>
+            {/* Same vibrating filter recipe as the alarm bell — animated
+                seed cycles produce a shimmering shimmer on whatever the
+                filter is applied to. Used for the red reaction lines. */}
+            <filter
+              id="alarm-vibrate-hammer"
+              x="-15%"
+              y="-15%"
+              width="130%"
+              height="130%"
+            >
+              <feTurbulence
+                type="fractalNoise"
+                baseFrequency="0.08"
+                numOctaves="2"
+                seed="0"
+              >
+                <animate
+                  attributeName="seed"
+                  values="0;3;6;9;12;15;18;21;24;27;30"
+                  dur="0.35s"
+                  repeatCount="indefinite"
+                />
+              </feTurbulence>
+              <feDisplacementMap in="SourceGraphic" scale="5" />
+            </filter>
+          </defs>
+
+          {/* Ground — horizontal line the hammer strikes against. */}
+          <line
+            x1="150"
+            y1="380"
+            x2="650"
+            y2="380"
+            stroke={stroke}
+            strokeWidth="5"
+            strokeLinecap="round"
+            filter="url(#crayon-rough-hammer)"
+          />
+
+          {/* Hammer — handle + head, rotates around the grip at
+              (400, 100). At rotation = 0° the head's bottom edge sits
+              exactly on the ground line. */}
+          <motion.g
+            style={{
+              rotate: hammerRotation,
+              transformOrigin: "400px 100px",
+            }}
+          >
+            {/* Handle */}
+            <line
+              x1="400"
+              y1="100"
+              x2="400"
+              y2="350"
+              stroke={stroke}
+              strokeWidth="6"
+              strokeLinecap="round"
+              filter="url(#crayon-rough-hammer)"
+            />
+            {/* Head — perpendicular block at the bottom of the handle */}
+            <path
+              d="M 350 350 L 450 350 L 450 380 L 350 380 Z"
+              fill="none"
+              stroke={stroke}
+              strokeWidth="5"
+              strokeLinejoin="round"
+              strokeLinecap="round"
+              filter="url(#crayon-rough-hammer)"
+            />
+            {/* Grip dot at the pivot for visual emphasis */}
+            <circle
+              cx="400"
+              cy="100"
+              r="8"
+              fill={stroke}
+              filter="url(#crayon-rough-hammer)"
+            />
+          </motion.g>
+
+          {/* Reaction lines — six red spikes radiating from the impact
+              point at (400, 380). pathLength grows them outward; the
+              animated turbulence filter shimmers their edges. */}
+          <motion.g
+            style={{ opacity: reactionOpacity }}
+            stroke="#dc2f3a"
+            strokeWidth="4"
+            strokeLinecap="round"
+            fill="none"
+            filter="url(#alarm-vibrate-hammer)"
+          >
+            <motion.path
+              d="M 400 380 L 320 360"
+              style={{ pathLength: reactionLineLength }}
+            />
+            <motion.path
+              d="M 400 380 L 340 320"
+              style={{ pathLength: reactionLineLength }}
+            />
+            <motion.path
+              d="M 400 380 L 375 300"
+              style={{ pathLength: reactionLineLength }}
+            />
+            <motion.path
+              d="M 400 380 L 425 300"
+              style={{ pathLength: reactionLineLength }}
+            />
+            <motion.path
+              d="M 400 380 L 460 320"
+              style={{ pathLength: reactionLineLength }}
+            />
+            <motion.path
+              d="M 400 380 L 480 360"
+              style={{ pathLength: reactionLineLength }}
+            />
+          </motion.g>
+        </svg>
+      </div>
+
+      {/* Caption — letter-by-letter reveal, starts at impact and runs
+          through the rest of the slide. */}
+      <div className="w-full max-w-[820px] text-center">
+        <h3
+          className="text-balance"
+          style={{
+            fontFamily:
+              "var(--font-tt-norms-pro), ui-sans-serif, system-ui",
+            fontWeight: 700,
+            fontSize: "clamp(1.4rem, 3vw, 2.4rem)",
+            lineHeight: 1.15,
+            letterSpacing: "-0.018em",
+            margin: 0,
+          }}
+        >
+          {SLIDE5_TEXT.split("").map((c, i) => (
+            <RevealChar key={i} char={c} index={i} head={captionHead} />
+          ))}
+        </h3>
+      </div>
+    </motion.div>
+  );
+}
+
+/* ============================================================================
+   SLIDE 6 — long manifesto paragraph + tiny grey citation.
+
+   Final beat of the pinned story. Just text — no icon, no animation.
+   The whole block fades in as a unit (a per-letter reveal would take
+   far too much scroll for 290 chars), then holds for ~11 wheel notches
+   so the user has time to read before the section unpins.
+
+   Typography:
+     • Paragraph: TT Norms Pro Medium (500) — the "regular" weight in
+       this project's loaded set, since 400 isn't loaded. Justified
+       at body-text size on a comfortable reading column.
+     • Citation: TT Norms Pro Light (300), tiny, dim cool-grey,
+       right-aligned beneath the paragraph as a footnote.
+   ========================================================================== */
+const SLIDE6_TEXT =
+  "Industrial robots excel at pick-and-place in controlled environments but break down on contact-rich manipulation, where success depends on fine-grained force control and physical precision. They lack feel *. They find out they're pressing too hard 200 milliseconds after the part is already crushed.";
+const SLIDE6_CITATION = "*NVIDIA R2D2, 2025";
+
+function ManifestoScene({
+  scrollYProgress,
+}: {
+  scrollYProgress: MotionValue<number>;
+}) {
+  /* Fade in over [0.8474, 0.8647] (overlaps slide 5 fade-out for a
+     clean crossfade), then hold visible to the end of the section. */
+  const opacity = useTransform(
+    scrollYProgress,
+    [0.8474, 0.8647],
+    [0, 1],
+  );
+
+  return (
+    <motion.div
+      className="pointer-events-none absolute inset-0 z-[7] flex items-center justify-center px-8"
+      style={{ opacity }}
+      aria-hidden
+    >
+      <div className="pointer-events-auto w-full max-w-[820px] cursor-text select-text">
+        <p
+          style={{
+            fontFamily:
+              "var(--font-tt-norms-pro), ui-sans-serif, system-ui",
+            fontWeight: 500,
+            fontSize: "clamp(1.05rem, 1.55vw, 1.4rem)",
+            lineHeight: 1.55,
+            letterSpacing: "-0.005em",
+            color: "rgba(245, 250, 255, 0.94)",
+            margin: 0,
+            textAlign: "justify",
+            hyphens: "auto",
+          }}
+        >
+          {SLIDE6_TEXT}
+        </p>
+        <p
+          style={{
+            marginTop: "1.4em",
+            fontFamily:
+              "var(--font-tt-norms-pro), ui-sans-serif, system-ui",
+            fontWeight: 300,
+            fontStyle: "normal",
+            fontSize: "clamp(0.7rem, 0.82vw, 0.85rem)",
+            letterSpacing: "0.06em",
+            textTransform: "uppercase",
+            color: "rgba(170, 180, 195, 0.55)",
+            textAlign: "right",
+            margin: 0,
+          }}
+        >
+          {SLIDE6_CITATION}
+        </p>
+      </div>
+    </motion.div>
+  );
+}
+
+/* ============================================================================
    HERO
    ========================================================================== */
 
@@ -763,55 +1672,74 @@ function Hero() {
        0    → 0.30 : helmet mask fills with red (rises bottom → top)
        0.30 → 0.38 : 'Somatic Layer' pill fades out
        0.40 onwards: red glow whole-screen animation begins. */
-  const fillHeight = useTransform(scrollYProgress, [0, 0.3], ["0%", "100%"]);
+  const fillHeight = useTransform(scrollYProgress, [0, 0.0926], ["0%", "100%"]);
   const fillOpacity = useTransform(
     scrollYProgress,
-    [0, 0.04, 1],
+    [0, 0.012, 1],
     [0, 1, 1],
   );
   const novonusOpacity = useTransform(
     scrollYProgress,
-    [0.3, 0.38],
+    [0.0926, 0.1157],
     [1, 0],
   );
 
   /* Late phase — hero artwork and red glow are out of the transition.
-         v=0.30 → 0.38 somatic layer text fades.
-         v=0.40 → 0.55 hero artwork fades out cleanly (no scale, no
-                       translate, no glow).
-         v=0.50 → 0.70 'The Problem' header fades + slides in.
-         v=0.70 → 0.90 manifesto paragraph fades + slides in. */
+     Section height is 900svh (800svh of pinned scroll), so 1 wheel
+     notch ≈ 0.01157 of progress. Early phases below preserve the
+     same wheel-notch counts as the original 350svh layout (helmet 8,
+     somatic 2, artwork 4) so they scroll at the original speed; the
+     post-0.168 region holds the six-slide story.
+         v=0.093 → 0.116 somatic layer text fades.
+         v=0.122 → 0.168 hero artwork fades out cleanly.
+         v=0.168 → 0.286 slide 2 sentence reveals char-by-char
+                         (~¼ line / wheel notch).
+         v=0.286 → 0.379 slide 2 holds (8 wheel notches).
+         v=0.379 → 0.396 slide 2 fades out.
+         v=0.390 → 0.408 slide 3 eyes fade in.
+         v=0.408 → 0.454 slide 3 strip + caption reveal.
+         v≈0.419         eyes blink shut (strip ¼ mark).
+         v≈0.431         eyes open again (strip ½ mark).
+         v=0.454 → 0.546 slide 3 holds (8 wheel notches).
+         v=0.546 → 0.564 slide 3 fades out.
+         v=0.558 → 0.575 slide 4 (alarm bell) fades in.
+         v=0.575 → 0.691 bell rings + "Sensors react too late."
+         v=0.691 → 0.708 slide 4 fades out.
+         v=0.703 → 0.720 slide 5 (hammer) fades in.
+         v=0.720 → 0.842 hammer raises, swings down, impacts, red
+                         reaction lines burst out vibrating, and
+                         "Simulators can't accurately model contact
+                         physics" caption reveals letter-by-letter.
+         v=0.842 → 0.859 slide 5 fades out.
+         v=0.847 → 0.865 slide 6 (manifesto + citation) fades in.
+         v=0.865 → 1.000 slide 6 holds — long enough to read the
+                         paragraph (~11 wheel notches). */
   const heroFadeOpacity = useTransform(
     scrollYProgress,
-    [0.4, 0.55],
+    [0.1215, 0.1678],
     [1, 0],
   );
-  const theProblemOpacity = useTransform(
+  /* Reveal head — drives the per-char color/opacity in slide 2.
+     Range [0.1678, 0.2862] = 0.1184 wide. At 900svh that's ~10 wheel
+     notches, giving ¼-line-per-scroll reveal speed. */
+  const revealHead = useTransform(
     scrollYProgress,
-    [0.5, 0.7, 1],
-    [0, 1, 1],
+    [0.1678, 0.2862],
+    [0, SLIDE2_TEXT.length + 7],
   );
-  const theProblemY = useTransform(
+  /* Slide 2 fade-out — clears the sentence after the 8-notch hold so
+     the eyes scene can land on a clean chart-paper field. */
+  const slide2FadeOpacity = useTransform(
     scrollYProgress,
-    [0.5, 0.7],
-    [-12, 0],
-  );
-  const manifestoOpacity = useTransform(
-    scrollYProgress,
-    [0.7, 0.9, 1],
-    [0, 1, 1],
-  );
-  const manifestoY = useTransform(
-    scrollYProgress,
-    [0.7, 0.9],
-    [16, 0],
+    [0.3787, 0.3961],
+    [1, 0],
   );
 
   const [stage, setStage] = useState(0);
   useMotionValueEvent(scrollYProgress, "change", (v) => {
-    /* Only stage 3 is meaningful (manifesto aria-hidden). Fires once
-       the manifesto begins fading in. */
-    setStage(v > 0.7 ? 3 : 0);
+    /* aria-hidden flips off once the reveal has fully completed, so
+       screen readers announce the finished sentence as one unit. */
+    setStage(v > 0.2862 ? 3 : 0);
   });
 
   return (
@@ -819,43 +1747,11 @@ function Hero() {
       <section
         ref={sectionRef}
         className="relative bg-ink"
-        style={{ height: "350svh" }}
+        style={{ height: "900svh" }}
       >
         <div className="sticky top-0 h-[100svh] overflow-hidden">
-          <div className="bg-grid absolute inset-0 opacity-50" />
-          <div className="glow-accent absolute left-1/2 top-1/2 h-[900px] w-[900px] -translate-x-1/2 -translate-y-1/2" />
+          <LinenBackground />
 
-
-          {/* "The Problem" — top-middle red glowing header. Sits where the
-              wipe converges so the residual halo reads as the text's own
-              radiance. */}
-          <motion.div
-            className="pointer-events-none absolute left-1/2 top-24 z-[8] hidden md:block lg:top-32"
-            style={{
-              opacity: theProblemOpacity,
-              x: "-50%",
-              y: theProblemY,
-            }}
-          >
-            <h2
-              style={{
-                fontFamily:
-                  "var(--font-space-grotesk), ui-sans-serif, system-ui",
-                fontWeight: 700,
-                fontStyle: "italic",
-                fontSize: "clamp(2.1rem, 3.8vw, 3.6rem)",
-                lineHeight: 1,
-                letterSpacing: "-0.028em",
-                color: "rgba(255, 65, 95, 1)",
-                margin: 0,
-                textShadow:
-                  "0 0 10px rgba(255, 35, 65, 0.95), 0 0 28px rgba(255, 35, 65, 0.72), 0 0 56px rgba(255, 35, 65, 0.5), 0 0 100px rgba(255, 35, 65, 0.32), 0 0 180px rgba(255, 35, 65, 0.18)",
-                whiteSpace: "nowrap",
-              }}
-            >
-              The Problem
-            </h2>
-          </motion.div>
 
           <div
             aria-hidden
@@ -1094,113 +1990,64 @@ function Hero() {
             </motion.div>
           </div>
 
-          {/* Manifesto — scroll-driven so it lands strictly after the hero
-              fade and 'The Problem' header. Fades in v=0.97 → 0.995 with
-              a small upward slide. The outer wrapper stays
-              pointer-events-none so it doesn't block the brain click; the
-              inner text block opts back in (pointer-events-auto) so users
-              can highlight / copy the paragraph. */}
+          {/* Slide 2 — single sentence revealed letter by letter as the
+              user scrolls. Vertically centered, generous max-width so
+              lines run long. Per-char visual reveal is owned by the
+              transforms inside RevealChar; the wrapper additionally
+              fades the whole sentence out at 0.85 → 0.90 to make room
+              for slide 3. aria-hidden flips off after full reveal so
+              screen readers get the finished sentence as one unit. */}
           <motion.div
-            className="pointer-events-none absolute inset-0 z-[6] flex items-center justify-center px-6 pb-[14vh] md:px-10 md:pb-[12vh]"
-            style={{
-              opacity: manifestoOpacity,
-              y: manifestoY,
-            }}
+            className="pointer-events-none absolute inset-0 z-[6] flex items-center justify-center px-4 md:px-8"
+            style={{ opacity: slide2FadeOpacity }}
             aria-hidden={stage < 3}
           >
-            <div
-              className="pointer-events-auto w-full max-w-[820px] cursor-text text-balance select-text"
-              style={{
-                fontFamily:
-                  "var(--font-inter), ui-sans-serif, system-ui",
-                fontWeight: 400,
-                fontSize: "clamp(1.05rem, 1.55vw, 1.4rem)",
-                lineHeight: 1.55,
-                letterSpacing: "-0.01em",
-                color: "rgba(220, 235, 250, 0.88)",
-                WebkitUserSelect: "text",
-                userSelect: "text",
-              }}
-            >
-              <p style={{ textAlign: "justify", hyphens: "auto" }}>
-                Modern robotics has trained on the wrong data for thirty
-                years. Vision can&apos;t see{" "}
-                <span
-                  style={{
-                    color: "rgba(34, 211, 238, 1)",
-                    fontWeight: 600,
-                  }}
-                >
-                  force
-                </span>
-                , sensors react too{" "}
-                <span
-                  style={{
-                    color: "rgba(34, 211, 238, 1)",
-                    fontWeight: 600,
-                  }}
-                >
-                  late
-                </span>
-                , and simulators can&apos;t accurately model the physics
-                of friction, suction, and{" "}
-                <span
-                  style={{
-                    color: "rgba(34, 211, 238, 1)",
-                    fontWeight: 600,
-                  }}
-                >
-                  contact forces
-                </span>
-                . Industrial robots excel at pick-and-place in
-                controlled environments but break down on{" "}
-                <span
-                  style={{
-                    color: "rgba(34, 211, 238, 1)",
-                    fontWeight: 600,
-                  }}
-                >
-                  contact-rich manipulation
-                </span>
-                , where success depends on fine-grained force control
-                and physical precision.{" "}
-                <em
-                  style={{
-                    fontStyle: "italic",
-                    color: "rgba(34, 211, 238, 1)",
-                    fontWeight: 600,
-                  }}
-                >
-                  They lack feel
-                </em>{" "}
-                *. They find out they&apos;re pressing too hard{" "}
-                <span
-                  style={{
-                    color: "rgba(255, 215, 225, 0.98)",
-                    fontWeight: 600,
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  200 milliseconds
-                </span>{" "}
-                after the part is already crushed.
-              </p>
-              <p
+            <div className="pointer-events-auto w-full max-w-[1320px] cursor-text select-text">
+              <h2
+                className="text-balance"
                 style={{
-                  marginTop: "1.4em",
-                  textAlign: "right",
                   fontFamily:
-                    "var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace",
-                  fontSize: "clamp(0.62rem, 0.7vw, 0.74rem)",
-                  letterSpacing: "0.08em",
-                  textTransform: "uppercase",
-                  color: "rgba(180, 200, 220, 0.55)",
+                    "var(--font-tt-norms-pro), ui-sans-serif, system-ui",
+                  fontWeight: 800,
+                  fontSize: "clamp(2.6rem, 5.6vw, 5.2rem)",
+                  lineHeight: 1.04,
+                  letterSpacing: "-0.025em",
+                  margin: 0,
+                  textAlign: "center",
                 }}
               >
-                *NVIDIA R2D2, 2025
-              </p>
+                {SLIDE2_TEXT.split("").map((c, i) => (
+                  <RevealChar
+                    key={i}
+                    char={c}
+                    index={i}
+                    head={revealHead}
+                  />
+                ))}
+              </h2>
             </div>
           </motion.div>
+
+          {/* Slide 3 — pair of crayon-style eyes that blink once and then
+              get a red crayon strip drawn across them. Owns its own
+              scroll-driven fade-in/out and the strip+caption reveal. */}
+          <EyesScene scrollYProgress={scrollYProgress} />
+
+          {/* Slide 4 — alarm bell + "Sensors react too late." caption.
+              Crossfades in over slide 3's fade-out so the transition
+              happens inside the same pinned region instead of jumping
+              to a new section. */}
+          <BellScene scrollYProgress={scrollYProgress} />
+
+          {/* Slide 5 — hammer striking ground + red reaction lines +
+              "Simulators can't accurately model contact physics."
+              caption. Crossfades in over slide 4's fade-out. */}
+          <HammerScene scrollYProgress={scrollYProgress} />
+
+          {/* Slide 6 — long manifesto paragraph + tiny *NVIDIA R2D2
+              citation. Final beat; just fades in and holds long
+              enough to read. */}
+          <ManifestoScene scrollYProgress={scrollYProgress} />
 
           {/* Main landing-page heading — big bold technical statement on
               the left side of the viewport, balancing the hero artwork
@@ -1230,13 +2077,13 @@ function Hero() {
                 className="pointer-events-none"
                 style={{
                   fontFamily:
-                    "var(--font-inter), ui-sans-serif, system-ui",
-                  fontWeight: 400,
+                    "var(--font-tt-norms-pro), ui-sans-serif, system-ui",
+                  fontWeight: 300,
                   fontStyle: "normal",
                   fontSize: "clamp(0.92rem, 1.1vw, 1.1rem)",
                   lineHeight: 1.5,
                   letterSpacing: "0.005em",
-                  color: "rgba(34, 211, 238, 1)",
+                  color: "var(--cyan)",
                   margin: 0,
                   marginBottom: "1em",
                 }}
@@ -1247,8 +2094,8 @@ function Hero() {
                 className="pointer-events-none text-balance text-paper"
                 style={{
                   fontFamily:
-                    "var(--font-inter), ui-sans-serif, system-ui",
-                  fontWeight: 800,
+                    "var(--font-tt-norms-pro), ui-sans-serif, system-ui",
+                  fontWeight: 600,
                   fontStyle: "normal",
                   fontSize: "clamp(2.1rem, 4.4vw, 3.8rem)",
                   lineHeight: 1.05,
@@ -1262,26 +2109,25 @@ function Hero() {
                 className="pointer-events-none"
                 style={{
                   fontFamily:
-                    "var(--font-inter), ui-sans-serif, system-ui",
-                  fontWeight: 400,
+                    "var(--font-tt-norms-pro), ui-sans-serif, system-ui",
+                  fontWeight: 300,
                   fontStyle: "normal",
                   fontSize: "clamp(0.92rem, 1.1vw, 1.1rem)",
                   lineHeight: 1.55,
                   letterSpacing: "0.005em",
-                  color: "rgba(220, 235, 250, 0.74)",
+                  color: "rgba(255, 255, 255, 1)",
                   margin: 0,
                   marginTop: "1.4em",
                   maxWidth: "32em",
                 }}
               >
-                Cameras can&apos;t see force. Sensors react too late. We
-                capture the biological signal that decides whether
+                We capture the biological signal that decides whether
                 contact-rich assembly succeeds or fails, and we just
                 solved a thirty-year problem industrial robotics
                 couldn&apos;t.{" "}
                 <span
                   style={{
-                    color: "rgba(34, 211, 238, 1)",
+                    color: "var(--cyan)",
                     fontWeight: 500,
                   }}
                 >
