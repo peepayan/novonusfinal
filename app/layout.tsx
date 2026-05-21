@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import {
   Inter,
+  Inter_Tight,
   Geist_Mono,
   Inclusive_Sans,
   Cinzel,
@@ -8,6 +9,7 @@ import {
   Orbitron,
   Stack_Sans_Notch,
   DM_Sans,
+  Kode_Mono,
 } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
@@ -58,6 +60,14 @@ const ttNormsProExpanded = localFont({
 
 const inter = Inter({
   variable: "--font-inter",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+/* Inter Tight — the typeface redbud.vc uses for body + headings.
+   Loaded as a variable font so any weight 100–900 is available. */
+const interTight = Inter_Tight({
+  variable: "--font-inter-tight",
   subsets: ["latin"],
   display: "swap",
 });
@@ -116,6 +126,16 @@ const dmSans = DM_Sans({
   display: "swap",
 });
 
+/* Kode Mono — single typeface in the Delta Robotics style.
+   Pipes through every other font variable via globals.css so the
+   whole page renders in this monospace without touching call sites. */
+const kodeMono = Kode_Mono({
+  variable: "--font-kode-mono",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title:
     "Novonus Somatic Control Stack | The New Industry Standard in Yard Operations",
@@ -131,7 +151,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${geistMono.variable} ${inclusiveSans.variable} ${cinzel.variable} ${spaceGrotesk.variable} ${orbitron.variable} ${ttNormsPro.variable} ${ttNormsProExpanded.variable} ${stackSansNotch.variable} ${dmSans.variable} h-full antialiased`}
+      className={`${inter.variable} ${interTight.variable} ${geistMono.variable} ${inclusiveSans.variable} ${cinzel.variable} ${spaceGrotesk.variable} ${orbitron.variable} ${ttNormsPro.variable} ${ttNormsProExpanded.variable} ${stackSansNotch.variable} ${dmSans.variable} ${kodeMono.variable} h-full antialiased`}
     >
       <body className="min-h-full bg-ink text-paper" suppressHydrationWarning>{children}</body>
     </html>

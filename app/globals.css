@@ -19,12 +19,36 @@
   --color-cyan: var(--cyan);
   --color-royal: var(--royal);
   --color-turq: var(--turq);
-  --font-sans: var(--font-inter);
-  --font-mono: var(--font-geist-mono);
-  --font-brand: var(--font-inclusive);
-  --font-grand: var(--font-cinzel);
+  /* Single typeface: Kode Mono drives every role (Delta Robotics style). */
+  --font-sans: var(--font-kode-mono);
+  --font-mono: var(--font-kode-mono);
+  --font-brand: var(--font-kode-mono);
+  --font-grand: var(--font-kode-mono);
 
   --animate-neon-pulse: neon-pulse 2.4s ease-in-out infinite;
+}
+
+/* Rewire every legacy font variable to Kode Mono so the dozens of inline
+   `style={{ fontFamily: 'var(--font-...)' }}` call sites in page.tsx all
+   render in the same monospace without per-site edits. Applied on html so
+   it overrides the next/font className declarations on the same element. */
+html {
+  --font-inter: var(--font-kode-mono);
+  --font-geist-mono: var(--font-kode-mono);
+  --font-inclusive: var(--font-kode-mono);
+  --font-cinzel: var(--font-kode-mono);
+  --font-space-grotesk: var(--font-kode-mono);
+  --font-orbitron: var(--font-kode-mono);
+  --font-stack-sans-notch: var(--font-kode-mono);
+  --font-dm-sans: var(--font-kode-mono);
+  --font-tt-norms-pro: var(--font-kode-mono);
+  --font-tt-norms-pro-expanded: var(--font-kode-mono);
+}
+
+html {
+  /* Prevent iOS Safari from auto-zooming text on orientation change. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 html,
@@ -33,13 +57,17 @@ body {
   color: var(--paper);
 }
 
-
 body {
-  font-family: var(--font-inter), ui-sans-serif, system-ui, -apple-system,
-    BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  font-feature-settings: "ss01", "cv11";
+  font-family: var(--font-kode-mono), ui-monospace, SFMono-Regular, Menlo,
+    Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  /* Suppress the blue tap-highlight rectangle iOS Safari paints on
+     touch and prevent a flash of overflow during the pinned hero
+     section while keeping vertical scrolling normal. */
+  -webkit-tap-highlight-color: transparent;
+  overflow-x: hidden;
 }
 
 ::selection {
@@ -389,9 +417,9 @@ body {
    gradient via background-clip: text on a vertical linear gradient).
    ========================================================================== */
 .hero-backdrop-text {
-  font-family: var(--font-cinzel), "Playfair Display", "Cormorant Garamond",
-    Georgia, serif;
-  font-weight: 900;
+  font-family: var(--font-kode-mono), ui-monospace, SFMono-Regular, Menlo,
+    monospace;
+  font-weight: 700;
   font-style: normal;
   font-size: clamp(4.5rem, 14vw, 14rem);
   line-height: 0.82;
@@ -635,4 +663,58 @@ body {
       drop-shadow(0 0 15px rgba(0, 255, 255, 0.8))
       drop-shadow(0 0 30px rgba(0, 255, 255, 0.5));
   }
+}
+
+/* Continuous bell ring — loops the whole time slide 4 is on screen.
+   transform-origin is in viewBox units (transform-box defaults to
+   view-box for SVG). Pivots at the top of the bell's stem so the bell
+   rocks like a hanging clapper bell. */
+@keyframes bell-rock {
+  0%   { transform: rotate(0deg); }
+  25%  { transform: rotate(-9deg); }
+  50%  { transform: rotate(0deg); }
+  75%  { transform: rotate(9deg); }
+  100% { transform: rotate(0deg); }
+}
+.bell-ringing {
+  transform-origin: 400px 92px;
+  animation: bell-rock 0.55s ease-in-out infinite;
+}
+
+/* ============================================================================
+   CROSS-BROWSER / GPU FALLBACKS
+   ========================================================================== */
+
+/* Backdrop-filter fallback. Where the browser doesn't support it
+   (older Firefox builds without the layout.css.backdrop-filter pref,
+   some embedded WebViews, etc.), substitute a slightly more opaque
+   solid background so the glass cards still read as elevated rather
+   than transparent against the dark page. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .liquid-glass-panel,
+  .liquid-glass-btn,
+  .hero-tagline-card,
+  .top-bar-glass {
+    background: rgba(8, 12, 20, 0.86) !important;
+  }
+}
+
+/* Reduced-motion preference. When the user's OS asks for less motion
+   we kill the heavy GPU work (turbulence + displacement chains, SMIL
+   seed cycling) and freeze pulsing keyframe animations. The page
+   stays fully usable; only the moving / wobbling effects calm down.
+   This also helps lower-end mobile GPUs that report this preference
+   from their power-saving accessibility profiles. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  /* Modern browsers honor prefers-reduced-motion for SMIL natively.
+     The few that don't will still see slightly less motion overall
+     because every CSS-level transition / animation is now neutered. */
 }

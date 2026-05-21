@@ -24,7 +24,14 @@
       "WebFetch(domain:www.npmjs.com)",
       "WebFetch(domain:github.com)",
       "Bash(npm install *)",
-      "Bash(tasklist)"
+      "Bash(tasklist)",
+      "Bash(python3 *)",
+      "Bash(npx serve *)",
+      "Bash(npx kill-port *)",
+      "Bash(npx next *)",
+      "WebFetch(domain:www.deltaroboticsinc.com)",
+      "Bash(echo \"started pid=$!\")",
+      "Bash(cat \"C:\\\\\\\\Users\\\\\\\\deepa\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\claude\\\\\\\\C--Users-deepa-novonusfinal\\\\\\\\da39013d-a620-4415-8cbe-63bc6c5e617e\\\\\\\\tasks\\\\\\\\bjsfzb27h.output\")"
     ]
   }
 }

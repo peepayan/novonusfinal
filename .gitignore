@@ -5,3 +5,12 @@ node_modules
 *.log
 .DS_Store
 *.tsbuildinfo
+
+# Vanilla static landing site (localhost:5500). Lives alongside the Next.js
+# project for reference, but never gets pushed — only the Next.js work on
+# localhost:3001 should be tracked in git.
+/index.html
+/styles.css
+/script.js
+/README.md
+/assets/
