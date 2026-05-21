@@ -681,6 +681,24 @@ body {
   animation: bell-rock 0.55s ease-in-out infinite;
 }
 
+/* Terminal cursor — solid block that blinks at 1 Hz (visible half the
+   second, hidden the other half). Used in the Technicals section at the
+   end of the `$ status: operational` line. */
+@keyframes terminal-cursor-blink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  50.01%,
+  100% {
+    opacity: 0;
+  }
+}
+.terminal-cursor {
+  display: inline-block;
+  animation: terminal-cursor-blink 1s steps(1, end) infinite;
+}
+
 /* ============================================================================
    CROSS-BROWSER / GPU FALLBACKS
    ========================================================================== */

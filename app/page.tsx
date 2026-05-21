@@ -353,6 +353,41 @@ function IntroLines() {
             {text}
           </motion.span>
         ))}
+        {/* KIMLAB credibility — small muted line beneath the three intro
+            statements, staggers in after them. */}
+        <motion.span
+          style={{
+            display: "block",
+            marginTop: "1.4em",
+            fontFamily:
+              "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
+            fontWeight: 400,
+            fontSize: "clamp(0.78rem, 1vw, 0.95rem)",
+            letterSpacing: "0.02em",
+            color: "rgba(245, 239, 229, 0.55)",
+          }}
+          variants={{
+            hidden: { opacity: 0, y: 12 },
+            visible: {
+              opacity: 1,
+              y: 0,
+              transition: {
+                duration: 0.6,
+                ease: [0.22, 1, 0.36, 1],
+              },
+            },
+            exit: {
+              opacity: 0,
+              y: -6,
+              transition: {
+                duration: 0.4,
+                ease: [0.4, 0, 0.6, 1],
+              },
+            },
+          }}
+        >
+          Built at KIMLAB, University of Illinois Urbana-Champaign
+        </motion.span>
       </motion.div>
     </motion.div>
   );
@@ -1340,7 +1375,11 @@ function Manifesto() {
           milliseconds after the part is already crushed. And the
           systems that almost work require teams of expert engineers,
           hundreds of teleoperated demonstrations, and weeks of
-          reprogramming every time the product changes.
+          reprogramming every time the product changes. The same
+          tasks driving the carpal tunnel and repetitive strain
+          epidemic in factories are the same tasks that have resisted
+          automation. Manufacturers pay twice: in injury claims and
+          in failed automation budgets.
         </p>
         <p
           style={{
@@ -1633,36 +1672,34 @@ function Pipeline() {
           <span>01&nbsp;—&nbsp;05</span>
         </div>
 
-        {/* ============ HEADLINE + INTRO ============ */}
-        <div className="mb-12 grid gap-8 md:mb-16 md:grid-cols-12 md:gap-10">
+        {/* ============ HEADLINE + INTRO — centered ============ */}
+        <div className="mb-12 flex flex-col items-center text-center md:mb-16">
           <h2
-            className="text-balance text-[40px] leading-[0.98] tracking-[-0.015em] md:col-span-7 md:text-[72px]"
+            className="max-w-4xl text-balance text-[40px] leading-[0.98] tracking-[-0.015em] md:text-[72px]"
             style={{ fontWeight: 600, color: "#f5efe5" }}
           >
             Five steps from human demonstration{" "}
             <span style={{ color: "rgba(245, 239, 229, 0.40)" }}>to deployed robot.</span>
           </h2>
-          <div className="md:col-span-5 md:pt-3">
-            <p
-              className="max-w-md text-[14px] leading-[1.65] md:text-[15px]"
-              style={{ color: "rgba(245, 239, 229, 0.72)" }}
-            >
-              A single integrated system that captures biological signals from
-              a human operator and transforms them into a production-ready
-              robot policy. Each step builds on the previous one. Together
-              they form the only pipeline in the industry that captures{" "}
-              <span style={{ color: "#f5efe5", fontWeight: 500 }}>
-                what the body knew before contact ever happened
-              </span>
-              .
-            </p>
-          </div>
+          <p
+            className="mt-8 max-w-2xl text-balance text-[14px] leading-[1.65] md:text-[15px]"
+            style={{ color: "rgba(245, 239, 229, 0.72)" }}
+          >
+            A single integrated system that captures biological signals from
+            a human operator and transforms them into a production-ready
+            robot policy. Each step builds on the previous one. Together
+            they form the only pipeline in the industry that captures{" "}
+            <span style={{ color: "#f5efe5", fontWeight: 500 }}>
+              what the body knew before contact ever happened
+            </span>
+            .
+          </p>
         </div>
 
         {/* ============ SCHEMATIC RAIL (desktop only) — overview with
              chevron arrows between each step. */}
         <div
-          className="mb-10 hidden items-center gap-3 text-[10px] uppercase tracking-[0.24em] md:flex"
+          className="mx-auto mb-10 hidden max-w-[1100px] items-center gap-3 text-[10px] uppercase tracking-[0.24em] md:flex"
           style={{ color: "rgba(245, 239, 229, 0.55)" }}
         >
           {PIPELINE_STEPS.flatMap((s, i) => {
@@ -1703,8 +1740,8 @@ function Pipeline() {
           })}
         </div>
 
-        {/* ============ CELLS + ARROW CONNECTORS ============ */}
-        <div className="flex flex-col gap-6 md:flex-row md:items-stretch md:gap-2">
+        {/* ============ CELLS + ARROW CONNECTORS — centered ============ */}
+        <div className="mx-auto flex max-w-[1100px] flex-col gap-6 md:flex-row md:items-stretch md:justify-center md:gap-2">
           {PIPELINE_STEPS.flatMap((s, i) => {
             const cell = (
               <motion.article
@@ -1807,6 +1844,28 @@ function Pipeline() {
             return [cell, <PipelineArrow key={`arrow-${i}`} />];
           })}
         </div>
+
+        {/* ============ PAYOFF PARAGRAPH — centered ============ */}
+        <p
+          className="mx-auto mt-12 max-w-4xl text-balance text-center text-base leading-[1.6] md:mt-14 md:text-lg md:leading-[1.55]"
+          style={{
+            color: "rgba(245, 239, 229, 0.78)",
+            fontWeight: 400,
+          }}
+        >
+          The capture step turns biology into data. The processing step
+          turns data into training samples. The augmentation step
+          multiplies samples through physics simulation. The training
+          step turns samples into policy. The deployment step runs
+          policy in production while feeding new data back to the
+          start. Robots inherit human force intuition. Simulators
+          finally transfer to reality. Contact-rich tasks that
+          traditional automation has failed at for thirty years get
+          solved.{" "}
+          <span style={{ color: "var(--cyan)", fontWeight: 500 }}>
+            By us.
+          </span>
+        </p>
 
         {/* ============ FOOTER STATUS BAR ============ */}
         <div
@@ -2004,7 +2063,7 @@ function Hero() {
               {/* LAYER 2 (MIDDLE): Base hero image */}
               <Image
                 src="/hero-image.png"
-                alt="Novonus yard intelligence"
+                alt="Novonus pipeline overview"
                 fill
                 priority
                 sizes="(min-width: 1280px) 1100px, (min-width: 768px) 80vw, 95vw"
@@ -2303,409 +2362,716 @@ function Hero() {
   );
 }
 
-function Stat({
-  label,
-  digits,
-  suffix,
-}: {
-  label: string;
-  digits: number[];
-  suffix: string;
-}) {
+
+/* ============================================================================
+   SECTION TAG — shared header used by every standalone section. Matches
+   the "[ the problem ]" treatment in ProblemTriptych: cyan brackets,
+   cream-coloured inner label, mono small-caps tracking.
+   ========================================================================== */
+function SectionTag({ label }: { label: string }) {
   return (
-    <div className="flex flex-col gap-3">
-      <div className="flex items-end gap-1 text-cyan">
-        {digits.map((d, i) => (
-          <DigitReel key={i} target={d} size={64} delay={300 + i * 120} />
-        ))}
-        <span className="ml-1 font-mono text-3xl font-medium leading-none">
-          {suffix}
-        </span>
-      </div>
-      <p className="font-mono text-xs uppercase tracking-[0.18em] text-ink/55">
-        {label}
-      </p>
-    </div>
+    <p
+      className="mb-6 font-mono text-[11px] uppercase tracking-[0.22em] md:mb-7"
+      style={{ color: "var(--cyan)" }}
+    >
+      [<span style={{ color: "#f5efe5" }}> {label} </span>]
+    </p>
   );
 }
 
 /* ============================================================================
-   FEATURE LIST
+   WHAT WE BUILD — concrete offering + a four-row comparison table
    ========================================================================== */
 
-const FEATURES = [
-  "Autonomous, agentic AI-driven workflows from gate to dock",
-  "Single pane of glass visibility of all yard operations",
-  "Managed by a unified platform with AI computer vision",
-  "Highly configurable to all yards in your network",
-  "Unlocked value of your existing WMS/TMS",
-  "Digitally transformed, data rich, and predictive",
-];
+const WHAT_WE_BUILD_ROWS = [
+  {
+    label: "Deployment time",
+    trad: "8-16 weeks",
+    novonus: "2-4 weeks",
+    adv: "4× faster",
+  },
+  {
+    label: "Programming labor",
+    trad: "40-200 hours expert work",
+    novonus: "1-3 days operator demos",
+    adv: "Removes engineers",
+  },
+  {
+    label: "Reprogramming cost",
+    trad: "$20K-$40K per change",
+    novonus: "Operator's time",
+    adv: "Near-zero",
+  },
+  {
+    label: "Contact-rich tasks",
+    trad: "Often fail outright",
+    novonus: "Designed for",
+    adv: "Solves the gap",
+  },
+] as const;
 
-function FeatureList() {
+function WhatWeBuild() {
+  const cellBorder = "1px solid rgba(245, 239, 229, 0.10)";
+  const tableBorder = "1px solid rgba(245, 239, 229, 0.14)";
   return (
     <section
-      id="system"
-      className="relative bg-paper pt-24 pb-32 md:pt-32 md:pb-40"
-    >
-      <div className="mx-auto max-w-[1400px] px-6 md:px-10">
-        <p className="eyebrow mb-10">◆ The System</p>
-
-        <ul className="grid gap-x-12 gap-y-2 md:grid-cols-2">
-          {FEATURES.map((line, i) => (
-            <motion.li
-              key={i}
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-80px" }}
-              transition={{
-                duration: 0.6,
-                delay: i * 0.06,
-                ease: [0.22, 1, 0.36, 1],
-              }}
-              className="group flex items-start gap-6 border-b border-ink/10 py-6"
-            >
-              <span className="mt-1 font-mono text-xs tracking-widest text-cyan">
-                {String(i + 1).padStart(2, "0")}
-              </span>
-              <p className="text-balance text-xl leading-snug text-ink md:text-2xl">
-                {line}
-              </p>
-            </motion.li>
-          ))}
-        </ul>
-
-        <div className="mt-24 flex flex-col gap-4">
-          <p className="font-mono text-sm uppercase tracking-[0.18em] text-ink/55">
-            That&apos;s the
-          </p>
-          <h2 className="text-balance text-[44px] font-medium leading-[0.95] tracking-[-0.02em] text-ink md:text-[96px]">
-            <SpacedReveal text="Somatic Control Stack." />
-          </h2>
-          <p className="mt-4 font-mono text-2xl tracking-[0.4em] text-cyan md:text-4xl">
-            YOS™
-          </p>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* Single letter whose opacity & y are scroll-bound — buttery smooth in both
-   directions because it tracks scrollYProgress rather than time-based delays. */
-function ScrollLetter({
-  ch,
-  progress,
-  start,
-  end,
-}: {
-  ch: string;
-  progress: MotionValue<number>;
-  start: number;
-  end: number;
-}) {
-  const opacity = useTransform(progress, [start, end], [0, 1]);
-  const y = useTransform(progress, [start, end], [10, 0]);
-  return (
-    <motion.span
-      aria-hidden
+      className="relative overflow-hidden"
       style={{
-        opacity,
-        y,
-        display: "inline-block",
-        marginRight: ch === " " ? "0.28ch" : "0.01ch",
+        fontFamily:
+          "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
+        color: "#f5efe5",
       }}
     >
-      {ch === " " ? " " : ch}
-    </motion.span>
-  );
-}
-
-/* Splits a string into staggered scroll-bound letters. Letters are grouped
-   per word and the word wrappers carry `white-space: nowrap` so line breaks
-   only ever land between words — never inside one. */
-function LetterStream({
-  text,
-  progress,
-  start,
-  end,
-}: {
-  text: string;
-  progress: MotionValue<number>;
-  start: number;
-  end: number;
-}) {
-  const chars = text.split("");
-  const N = chars.length;
-  const span = end - start;
-  const window = Math.min(span, (span / N) * 3);
-
-  /* Walk characters once, grouping non-space runs into word buckets while
-     preserving each character's global index for stagger timing. */
-  const words: { ch: string; index: number }[][] = [];
-  let current: { ch: string; index: number }[] | null = null;
-  chars.forEach((ch, i) => {
-    if (ch === " ") {
-      current = null;
-    } else {
-      if (!current) {
-        current = [];
-        words.push(current);
-      }
-      current.push({ ch, index: i });
-    }
-  });
-
-  const letterStart = (i: number) =>
-    start + (span - window) * (i / Math.max(N - 1, 1));
-
-  return (
-    <span className="inline">
-      {words.map((wordChars, wi) => (
-        <span
-          key={wi}
-          style={{ display: "inline-block", whiteSpace: "nowrap" }}
+      <PaperBackground />
+      <div className="relative mx-auto max-w-[1400px] px-6 py-16 md:px-10 md:py-20">
+        <SectionTag label="what we build" />
+        <h2
+          className="max-w-4xl text-balance text-[36px] leading-[1.05] tracking-[-0.02em] md:text-[64px]"
+          style={{ fontWeight: 600 }}
         >
-          {wordChars.map(({ ch, index }) => (
-            <ScrollLetter
-              key={index}
-              ch={ch}
-              progress={progress}
-              start={letterStart(index)}
-              end={letterStart(index) + window}
-            />
-          ))}
-          {wi < words.length - 1 ? " " : null}
-        </span>
-      ))}
-    </span>
-  );
-}
-
-function SpacedReveal({ text }: { text: string }) {
-  return (
-    <span aria-label={text} className="inline-block">
-      {text.split("").map((ch, i) => (
-        <motion.span
-          key={i}
-          initial={{ opacity: 0, y: 14 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{
-            duration: 0.5,
-            delay: 0.02 * i,
-            ease: [0.22, 1, 0.36, 1],
-          }}
-          className="inline-block"
-          style={{ marginRight: ch === " " ? "0.4ch" : "0.04ch" }}
+          Robot cells your factory workers can teach.
+        </h2>
+        <p
+          className="mt-8 max-w-3xl text-base leading-[1.6] md:text-lg md:leading-[1.55]"
+          style={{ color: "rgba(245, 239, 229, 0.72)", fontWeight: 400 }}
         >
-          {ch === " " ? "\u00A0" : ch}
-        </motion.span>
-      ))}
-    </span>
-  );
-}
+          We deploy autonomous manipulation systems onto our customers&apos;
+          existing robot infrastructure. We bring the biological-signal
+          capture rig, the training pipeline, the deployed policy, the safety
+          supervisor, and the integration software. Customers bring the
+          robots they already trust. The result is the same as buying a
+          complete new cell from a traditional integrator, except faster to
+          deploy, dramatically cheaper, and built on top of hardware they
+          already own.
+        </p>
 
-/* ============================================================================
-   BENEFITS
-   ========================================================================== */
-
-const BENEFITS = [
-  {
-    icon: Cpu,
-    title: "A single solution for maximum, automated throughput",
-    body: "Deep integrations anticipate incoming loads, enabling our AI computer vision technology to automate gate check-ins and all critical yard operations: from assigning locations and maintaining real-time visibility to coordinating spotters for efficient load movement. It then closes the loop by validating assets before exit, providing comprehensive performance supervision across your entire yard network.",
-  },
-  {
-    icon: Workflow,
-    title: "Easy, scalable operation",
-    body: "Novonus was designed from the ground up for disruption-free operations. Easy to deploy and support, the system has a low IT lift with no 3rd party devices to support, and a modern UI/UX that's super-easy for operators to use from day one. Configurable to your yard, Novonus YOS integrates seamlessly with most TMS and WMS systems.",
-  },
-  {
-    icon: TrendingUp,
-    title: "Rapid, repeatable ROI",
-    body: "We know that yard operations run on lean budgets, which is why we price our all-inclusive solution as a service with terms that won't bust the bank. Ready to deploy right away, and rapid to scale over time.",
-  },
-];
-
-function Benefits() {
-  return (
-    <section className="relative bg-paper/[0.02] py-24 md:py-32">
-      <div className="mx-auto max-w-[1400px] px-6 md:px-10">
-        <div className="mb-16 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-          <div>
-            <p className="eyebrow mb-4">◆ Benefits</p>
-            <h2 className="max-w-3xl text-balance text-4xl font-medium leading-[1.05] tracking-[-0.02em] text-paper md:text-6xl">
-              Everything operators need.{" "}
-              <span className="text-paper/55">Nothing they don&apos;t.</span>
-            </h2>
-          </div>
-        </div>
-
-        <div className="grid gap-5 md:grid-cols-3">
-          {BENEFITS.map((b, i) => {
-            const Icon = b.icon;
-            return (
-              <motion.article
-                key={i}
-                initial={{ opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-80px" }}
-                transition={{
-                  duration: 0.7,
-                  delay: i * 0.1,
-                  ease: [0.22, 1, 0.36, 1],
-                }}
-                className="group relative flex flex-col gap-6 overflow-hidden rounded-3xl border border-paper/10 bg-gradient-to-b from-white/[0.04] to-white/[0.01] p-7 transition-colors hover:border-cyan/30"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs tracking-[0.22em] text-cyan">
-                    BENEFIT {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <span className="grid h-10 w-10 place-items-center rounded-full border border-paper/15 bg-cyan/5 text-cyan transition-colors group-hover:bg-cyan group-hover:text-ink">
-                    <Icon className="h-4 w-4" strokeWidth={1.5} />
-                  </span>
-                </div>
-
-                <h3 className="text-balance text-2xl font-medium leading-snug text-paper">
-                  {b.title}
-                </h3>
-
-                <p className="text-[15px] leading-relaxed text-paper/65">
-                  {b.body}
-                </p>
-
-                <div className="mt-auto flex items-center gap-2 pt-2 text-sm text-cyan opacity-0 transition-opacity group-hover:opacity-100">
-                  Read more
-                  <Arrow className="h-3 w-3" />
-                </div>
-              </motion.article>
-            );
-          })}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ============================================================================
-   INDUSTRY LOGOS
-   ========================================================================== */
-
-const BUILDERS = ["Ryder", "Prologis", "NFI", "Lineage", "8VC"];
-const OPERATORS = [
-  "Coca-Cola",
-  "HP",
-  "DHL",
-  "Maersk",
-  "Schneider",
-  "C.H. Robinson",
-  "FedEx",
-  "Amazon",
-];
-
-function IndustryLogos() {
-  return (
-    <section className="relative bg-paper py-24 md:py-32">
-      <div className="mx-auto max-w-[1400px] px-6 md:px-10">
-        <div className="mb-12 flex flex-col gap-3">
-          <p className="eyebrow">◆ Built by the Industry</p>
-          <h2 className="max-w-3xl text-balance text-3xl font-medium leading-[1.1] tracking-[-0.02em] text-paper md:text-5xl">
-            Built by logistics leaders who want a new industry standard in the
-            yard.
-          </h2>
-        </div>
-
-        <div className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-paper/10 bg-paper/10 md:grid-cols-5">
-          {BUILDERS.map((name) => (
-            <div
-              key={name}
-              className="flex h-32 items-center justify-center bg-paper"
-            >
-              <span className="font-mono text-base tracking-[0.16em] text-paper/70">
-                {name.toUpperCase()}
-              </span>
+        {/* Comparison table — 4-col grid on desktop, stacked card per row
+            on mobile with inline column labels. */}
+        <div
+          className="mt-12 overflow-hidden rounded-2xl"
+          style={{ border: tableBorder }}
+        >
+          {/* Desktop header row */}
+          <div
+            className="hidden font-mono text-[10px] uppercase tracking-[0.22em] md:grid md:grid-cols-[1.2fr_1fr_1fr_1fr]"
+            style={{
+              background: "rgba(245, 239, 229, 0.04)",
+              color: "rgba(245, 239, 229, 0.55)",
+            }}
+          >
+            <div className="p-5" />
+            <div className="p-5" style={{ borderLeft: cellBorder }}>
+              Traditional integrator
             </div>
-          ))}
-        </div>
+            <div
+              className="p-5 text-cyan"
+              style={{ borderLeft: cellBorder }}
+            >
+              Novonus
+            </div>
+            <div className="p-5" style={{ borderLeft: cellBorder }}>
+              Advantage
+            </div>
+          </div>
 
-        <div className="mt-24 flex flex-col gap-3">
-          <p className="eyebrow">◆ Trusted by Operators</p>
-          <h2 className="max-w-3xl text-balance text-3xl font-medium leading-[1.1] tracking-[-0.02em] text-paper md:text-5xl">
-            Trusted by leading operators looking for real yard innovation.
-          </h2>
-        </div>
-
-        <div className="relative mt-12 overflow-hidden">
-          <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 bg-gradient-to-r from-ink to-transparent" />
-          <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 bg-gradient-to-l from-ink to-transparent" />
-          <div className="flex w-max animate-marquee gap-px">
-            {[...OPERATORS, ...OPERATORS].map((name, i) => (
-              <div
-                key={i}
-                className="flex h-24 w-56 shrink-0 items-center justify-center border border-paper/10 bg-white/[0.02]"
-              >
-                <span className="font-mono text-sm tracking-widest text-paper/55">
-                  {name.toUpperCase()}
+          {WHAT_WE_BUILD_ROWS.map((r, i) => (
+            <div
+              key={r.label}
+              className="grid grid-cols-1 md:grid-cols-[1.2fr_1fr_1fr_1fr]"
+              style={{ borderTop: cellBorder }}
+            >
+              <div className="flex flex-col gap-1 p-5">
+                <span
+                  className="font-mono text-[10px] uppercase tracking-[0.20em]"
+                  style={{ color: "rgba(245, 239, 229, 0.40)" }}
+                >
+                  // {String(i + 1).padStart(2, "0")}
+                </span>
+                <span
+                  className="text-base md:text-[15px]"
+                  style={{ color: "#f5efe5", fontWeight: 500 }}
+                >
+                  {r.label}
                 </span>
               </div>
-            ))}
-          </div>
+              <div
+                className="flex flex-col gap-1 p-5 text-[14px] leading-[1.45] md:text-[14px]"
+                style={{ borderTop: cellBorder, color: "rgba(245, 239, 229, 0.62)" }}
+              >
+                <span
+                  className="font-mono text-[10px] uppercase tracking-[0.20em] md:hidden"
+                  style={{ color: "rgba(245, 239, 229, 0.40)" }}
+                >
+                  Traditional
+                </span>
+                {r.trad}
+              </div>
+              <div
+                className="flex flex-col gap-1 p-5 text-[14px] leading-[1.45]"
+                style={{
+                  borderTop: cellBorder,
+                  color: "#f5efe5",
+                  fontWeight: 500,
+                }}
+              >
+                <span
+                  className="font-mono text-[10px] uppercase tracking-[0.20em] md:hidden"
+                  style={{ color: "var(--cyan)" }}
+                >
+                  Novonus
+                </span>
+                {r.novonus}
+              </div>
+              <div
+                className="flex flex-col gap-1 p-5 text-[14px] leading-[1.45]"
+                style={{ borderTop: cellBorder, color: "var(--cyan)" }}
+              >
+                <span
+                  className="font-mono text-[10px] uppercase tracking-[0.20em] md:hidden"
+                  style={{ color: "rgba(245, 239, 229, 0.40)" }}
+                >
+                  Advantage
+                </span>
+                {r.adv}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </section>
   );
 }
 
+
 /* ============================================================================
-   TESTIMONIAL
+   EVIDENCE — research-backed stats with intersection-observer count-up
    ========================================================================== */
 
-function Testimonial() {
-  return (
-    <section className="relative overflow-hidden bg-paper py-24 md:py-36">
-      <div className="glow-accent absolute -right-40 top-1/2 h-[500px] w-[500px] -translate-y-1/2" />
+function StatCounter({
+  target,
+  suffix = "",
+  duration = 800,
+}: {
+  target: number;
+  suffix?: string;
+  duration?: number;
+}) {
+  const ref = useRef<HTMLSpanElement | null>(null);
+  const [display, setDisplay] = useState<string>(() =>
+    Number.isInteger(target) ? "0" : "0.0",
+  );
 
-      <div className="relative mx-auto grid max-w-[1400px] gap-12 px-6 md:grid-cols-12 md:px-10">
-        <div className="md:col-span-5">
-          <div className="aspect-[4/5] w-full overflow-hidden rounded-3xl border border-paper/10 bg-gradient-to-br from-cyan/15 via-royal/20 to-ink">
-            <div className="flex h-full w-full items-end justify-start p-6">
-              <div className="rounded-full bg-black/40 px-4 py-2 backdrop-blur">
-                <p className="font-mono text-xs tracking-[0.2em] text-paper/80">
-                  RYDER · FACILITY
-                </p>
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const node = ref.current;
+    if (!node) return;
+    let started = false;
+    let rafId = 0;
+    const isFloat = !Number.isInteger(target);
+
+    const obs = new IntersectionObserver(
+      (entries) => {
+        if (!started && entries.some((e) => e.isIntersecting)) {
+          started = true;
+          const start = performance.now();
+          const tick = (now: number) => {
+            const t = Math.min(1, (now - start) / duration);
+            const eased = 1 - Math.pow(1 - t, 3);
+            const current = target * eased;
+            setDisplay(isFloat ? current.toFixed(1) : String(Math.round(current)));
+            if (t < 1) rafId = requestAnimationFrame(tick);
+          };
+          rafId = requestAnimationFrame(tick);
+          obs.disconnect();
+        }
+      },
+      { threshold: 0.35 },
+    );
+    obs.observe(node);
+    return () => {
+      obs.disconnect();
+      if (rafId) cancelAnimationFrame(rafId);
+    };
+  }, [target, duration]);
+
+  return (
+    <span ref={ref} className="tabular-nums">
+      {display}
+      {suffix}
+    </span>
+  );
+}
+
+const EVIDENCE_STATS = [
+  {
+    num: 54.5,
+    suffix: "%",
+    label: "Success rate improvement",
+    caption:
+      "Force-aware imitation learning over vision-only on contact-rich tasks.",
+    source: "ForceMimic, IROS 2024",
+  },
+  {
+    num: 89,
+    suffix: "%",
+    label: "Faster execution",
+    caption:
+      "Bio-signal augmented teleoperation over traditional methods.",
+    source: "Intelligence & Robotics, 2026",
+  },
+  {
+    num: 91.4,
+    suffix: "%",
+    label: "Intent recognition",
+    caption:
+      "LSTM-based motion intention recognition accuracy under 10ms latency.",
+    source: "Intelligence & Robotics, 2026",
+  },
+  {
+    num: 542,
+    suffix: "K",
+    label: "Robots installed",
+    caption:
+      "Industrial robots installed globally in 2024. Demand growing.",
+    source: "World Robotics 2025 Report, IFR",
+  },
+  {
+    num: 79,
+    suffix: "%",
+    label: "Cite labor shortage",
+    caption:
+      "Manufacturing executives identify skilled-labor shortage as top challenge in 2026.",
+    source: "CADDi 2026 Manufacturing Outlook Study",
+  },
+  {
+    num: 60,
+    suffix: "%",
+    label: "Better precision",
+    caption:
+      "Improvement in placement accuracy on contact-rich assembly.",
+    source: "Intelligence & Robotics, 2026",
+  },
+] as const;
+
+function Evidence() {
+  return (
+    <section
+      className="relative overflow-hidden"
+      style={{
+        fontFamily:
+          "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
+        color: "#f5efe5",
+      }}
+    >
+      <PaperBackground />
+      <div className="relative mx-auto max-w-[1400px] px-6 py-16 md:px-10 md:py-20">
+        <SectionTag label="the evidence" />
+        <h2
+          className="text-balance text-[36px] leading-[1.05] tracking-[-0.02em] md:text-[64px]"
+          style={{ fontWeight: 600 }}
+        >
+          Peer-reviewed. Quantified. Settled.
+        </h2>
+        <p
+          className="mt-8 max-w-3xl text-base leading-[1.6] md:text-lg md:leading-[1.55]"
+          style={{ color: "rgba(245, 239, 229, 0.72)", fontWeight: 400 }}
+        >
+          Every claim we make about contact-rich manipulation is backed by
+          published research. The science is settled. The remaining question
+          is who builds the deployed product.
+        </p>
+
+        <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {EVIDENCE_STATS.map((s) => (
+            <motion.article
+              key={s.label}
+              initial={{ opacity: 0, y: 18 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-60px" }}
+              transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+              className="flex flex-col gap-3 rounded-2xl p-6 md:p-7"
+              style={{
+                border: "1px solid rgba(245, 239, 229, 0.14)",
+                background: "rgba(245, 239, 229, 0.03)",
+              }}
+            >
+              <div
+                className="text-[44px] leading-none tracking-[-0.025em] text-cyan md:text-[56px]"
+                style={{ fontWeight: 700 }}
+              >
+                <StatCounter target={s.num} suffix={s.suffix} />
               </div>
-            </div>
-          </div>
+              <p
+                className="font-mono text-[11px] uppercase tracking-[0.20em]"
+                style={{ color: "rgba(245, 239, 229, 0.85)" }}
+              >
+                {s.label}
+              </p>
+              <p
+                className="text-[13px] leading-[1.55]"
+                style={{ color: "rgba(245, 239, 229, 0.62)" }}
+              >
+                {s.caption}
+              </p>
+              <p
+                className="mt-auto pt-3 font-mono text-[10px] uppercase tracking-[0.18em]"
+                style={{ color: "rgba(245, 239, 229, 0.38)" }}
+              >
+                {s.source}
+              </p>
+            </motion.article>
+          ))}
         </div>
+      </div>
+    </section>
+  );
+}
+
+
+
+/* ============================================================================
+   TECHNICALS — animated terminal pipeline.
+
+   Lines reveal one-at-a-time with timed delays (no per-char typing per
+   spec). Progress bars fill from 0 → 20 segments over 800 ms with an
+   ease-out cubic curve. Once the sequence completes, the final cursor
+   keeps blinking forever via the .terminal-cursor CSS class.
+   Animation runs once per page load — triggered when the section
+   enters the viewport at 30% threshold. If the user has
+   prefers-reduced-motion enabled, every line and progress bar renders
+   fully filled immediately.
+   ========================================================================== */
+
+type TermItem =
+  | { kind: "comment"; text: string; delayBefore: number }
+  | { kind: "command"; text: string; delayBefore: number }
+  | { kind: "output"; text: string; delayBefore: number }
+  | { kind: "status"; marker: string; text: string; delayBefore: number }
+  | { kind: "progress"; delayBefore: number }
+  | { kind: "blank"; delayBefore: number }
+  | { kind: "promptCursor"; delayBefore: number };
+
+const TERM_BAR_SEGMENTS = 20;
+const TERM_BAR_DURATION = 800;
+
+const TERM_PIPELINE: TermItem[] = [
+  { kind: "comment", text: "# initializing novonus pipeline...", delayBefore: 0 },
+  { kind: "blank", delayBefore: 420 },
+
+  { kind: "command", text: "$ capture --emg --vision --imu --sync", delayBefore: 380 },
+  { kind: "output", text: "  → EMG channels (4): active", delayBefore: 260 },
+  { kind: "output", text: "  → RealSense D435i: streaming RGB-D", delayBefore: 220 },
+  { kind: "output", text: "  → IMU: orientation locked", delayBefore: 200 },
+  { kind: "output", text: "  → LSL sync: <1ms drift", delayBefore: 220 },
+  { kind: "status", marker: "OK", text: "all sensors online", delayBefore: 320 },
+  { kind: "blank", delayBefore: 240 },
+
+  { kind: "command", text: "$ process --filter --normalize --label", delayBefore: 360 },
+  { kind: "output", text: "  → bandpass 20-450Hz: applied", delayBefore: 240 },
+  { kind: "output", text: "  → mains rejection 60/120/180Hz: applied", delayBefore: 220 },
+  { kind: "output", text: "  → MVC normalization: per-operator calibrated", delayBefore: 220 },
+  { kind: "output", text: "  → LSTM intention estimator: running", delayBefore: 220 },
+  { kind: "progress", delayBefore: 280 },
+  { kind: "status", marker: "OK", text: "signals cleaned and labeled", delayBefore: 280 },
+  { kind: "blank", delayBefore: 240 },
+
+  { kind: "command", text: "$ fuse --multimodal", delayBefore: 360 },
+  { kind: "output", text: "  → vision encoder (DINOv2): 384-dim features", delayBefore: 240 },
+  { kind: "output", text: "  → emg encoder (1D-CNN): 128-dim features", delayBefore: 220 },
+  { kind: "output", text: "  → temporal alignment: sub-ms", delayBefore: 220 },
+  { kind: "status", marker: "OK", text: "observation tensor assembled", delayBefore: 300 },
+  { kind: "blank", delayBefore: 240 },
+
+  { kind: "command", text: "$ augment --newton --domain-random", delayBefore: 360 },
+  { kind: "output", text: "  → physics scene compiled", delayBefore: 240 },
+  { kind: "output", text: "  → variations: pose, friction, lighting", delayBefore: 220 },
+  { kind: "output", text: "  → real demos: 50 → synthetic samples: 5000", delayBefore: 220 },
+  { kind: "progress", delayBefore: 280 },
+  { kind: "status", marker: "OK", text: "dataset expanded 100x", delayBefore: 280 },
+  { kind: "blank", delayBefore: 240 },
+
+  { kind: "command", text: "$ train --diffusion-policy --multimodal", delayBefore: 360 },
+  { kind: "output", text: "  → architecture: Diffusion Policy", delayBefore: 240 },
+  { kind: "output", text: "  → action horizon: 16 frames", delayBefore: 220 },
+  { kind: "output", text: "  → conditioning: vision + emg + state", delayBefore: 220 },
+  { kind: "progress", delayBefore: 280 },
+  { kind: "status", marker: "OK", text: "policy trained, validation passed", delayBefore: 280 },
+  { kind: "blank", delayBefore: 240 },
+
+  { kind: "command", text: "$ deploy --tensorrt --edge", delayBefore: 360 },
+  { kind: "output", text: "  → model optimized: FP16", delayBefore: 240 },
+  { kind: "output", text: "  → target: Jetson AGX Orin", delayBefore: 220 },
+  { kind: "output", text: "  → middleware: ROS 2 Humble", delayBefore: 220 },
+  { kind: "output", text: "  → safety supervisor: active", delayBefore: 220 },
+  { kind: "status", marker: "DONE", text: "policy deployed to robot", delayBefore: 320 },
+  { kind: "blank", delayBefore: 280 },
+
+  { kind: "comment", text: "# pipeline complete.", delayBefore: 360 },
+  { kind: "comment", text: "# robots inherit human force intuition.", delayBefore: 260 },
+  { kind: "promptCursor", delayBefore: 320 },
+];
+
+const TERM_MONO_STACK =
+  'ui-monospace, "JetBrains Mono", "Fira Code", "IBM Plex Mono", "SF Mono", Menlo, Consolas, "Liberation Mono", monospace';
+const TERM_BODY = "rgba(245, 239, 229, 0.86)";
+const TERM_MUTED = "rgba(245, 239, 229, 0.42)";
+
+function ProgressBar({ filled }: { filled: number }) {
+  const total = TERM_BAR_SEGMENTS;
+  const pct = Math.round((filled / total) * 100);
+  return (
+    <>
+      <span>{"  ["}</span>
+      <span>{"█".repeat(filled)}</span>
+      <span style={{ color: TERM_MUTED }}>
+        {"█".repeat(Math.max(0, total - filled))}
+      </span>
+      <span>{"] "}</span>
+      <span>{String(pct).padStart(3, " ")}%</span>
+    </>
+  );
+}
+
+function Technicals() {
+  const ref = useRef<HTMLDivElement | null>(null);
+  const [visibleCount, setVisibleCount] = useState(0);
+  const [progress, setProgress] = useState<Record<number, number>>({});
+  const [completed, setCompleted] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const reduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+
+    if (reduced) {
+      // Show everything in final state immediately.
+      setVisibleCount(TERM_PIPELINE.length);
+      const filled: Record<number, number> = {};
+      TERM_PIPELINE.forEach((item, i) => {
+        if (item.kind === "progress") filled[i] = TERM_BAR_SEGMENTS;
+      });
+      setProgress(filled);
+      setCompleted(true);
+      return;
+    }
+
+    const node = ref.current;
+    if (!node) return;
+    let started = false;
+    const timeouts: ReturnType<typeof setTimeout>[] = [];
+    const rafs: number[] = [];
+
+    const run = () => {
+      let cumulative = 0;
+      TERM_PIPELINE.forEach((item, i) => {
+        cumulative += item.delayBefore;
+        const appearAt = cumulative;
+        timeouts.push(
+          setTimeout(() => {
+            setVisibleCount((c) => Math.max(c, i + 1));
+          }, appearAt),
+        );
+        if (item.kind === "progress") {
+          // Animate fill 0 → TERM_BAR_SEGMENTS over TERM_BAR_DURATION
+          // ms, ease-out cubic. Subsequent lines wait until done.
+          timeouts.push(
+            setTimeout(() => {
+              const start = performance.now();
+              const tick = (now: number) => {
+                const t = Math.min(1, (now - start) / TERM_BAR_DURATION);
+                const eased = 1 - Math.pow(1 - t, 3);
+                const fill = Math.round(TERM_BAR_SEGMENTS * eased);
+                setProgress((prev) =>
+                  prev[i] === fill ? prev : { ...prev, [i]: fill },
+                );
+                if (t < 1) {
+                  const id = requestAnimationFrame(tick);
+                  rafs.push(id);
+                }
+              };
+              const id = requestAnimationFrame(tick);
+              rafs.push(id);
+            }, appearAt),
+          );
+          cumulative += TERM_BAR_DURATION;
+        }
+      });
+      timeouts.push(
+        setTimeout(() => setCompleted(true), cumulative + 80),
+      );
+    };
+
+    const obs = new IntersectionObserver(
+      (entries) => {
+        if (!started && entries.some((e) => e.isIntersecting)) {
+          started = true;
+          run();
+          obs.disconnect();
+        }
+      },
+      { threshold: 0.3 },
+    );
+    obs.observe(node);
+
+    return () => {
+      obs.disconnect();
+      timeouts.forEach(clearTimeout);
+      rafs.forEach(cancelAnimationFrame);
+    };
+  }, []);
+
+  return (
+    <section
+      className="relative overflow-hidden"
+      style={{
+        fontFamily:
+          "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
+        color: "#f5efe5",
+      }}
+    >
+      <PaperBackground />
+      <div className="relative mx-auto max-w-[1200px] px-6 py-16 md:px-10 md:py-20">
+        <SectionTag label="technicals" />
+        <h2
+          className="max-w-4xl text-balance text-[36px] leading-[1.05] tracking-[-0.02em] md:text-[64px]"
+          style={{ fontWeight: 600 }}
+        >
+          The pipeline in motion.
+        </h2>
+        <p
+          className="mt-8 max-w-3xl text-base leading-[1.6] md:text-lg md:leading-[1.55]"
+          style={{ color: "rgba(245, 239, 229, 0.72)", fontWeight: 400 }}
+        >
+          Five stages, executed in sequence. Biological signals captured,
+          processed, fused with vision, augmented through simulation, and
+          trained into a deployable policy. Watch it run.
+        </p>
 
         <motion.div
-          initial={{ opacity: 0, y: 24 }}
+          ref={ref}
+          initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          className="flex flex-col justify-center md:col-span-7"
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+          className="mt-12 overflow-hidden"
+          style={{
+            background: "#0a0805",
+            border: "1px solid rgba(245, 239, 229, 0.14)",
+            borderRadius: "4px",
+          }}
         >
-          <Quote
-            className="mb-6 h-10 w-10 text-cyan"
-            strokeWidth={1.5}
-            aria-hidden
-          />
-          <blockquote className="text-balance text-3xl font-medium leading-tight tracking-[-0.01em] text-paper md:text-[44px]">
-            &ldquo;We have not seen this kind of accuracy with computer-vision
-            technology… this is a significant milestone in the race to modernize
-            the yard.&rdquo;
-          </blockquote>
-          <div className="mt-10 flex items-center gap-4">
-            <div className="grid h-12 w-12 place-items-center rounded-full bg-cyan/15 font-mono text-sm text-cyan">
-              KJ
+          {/* Top chrome bar — three dots + centered prompt label */}
+          <div
+            className="relative flex items-center px-4 py-3"
+            style={{
+              borderBottom: "1px solid rgba(245, 239, 229, 0.10)",
+              background: "rgba(245, 239, 229, 0.02)",
+            }}
+          >
+            <div className="flex items-center gap-1.5">
+              {["#ff5f56", "#ffbd2e", "#27c93f"].map((c, i) => (
+                <span
+                  key={i}
+                  aria-hidden
+                  style={{
+                    width: "10px",
+                    height: "10px",
+                    borderRadius: "50%",
+                    background: c,
+                    opacity: 0.4,
+                  }}
+                />
+              ))}
             </div>
-            <div>
-              <p className="text-base font-medium text-paper">Karen Jones</p>
-              <p className="font-mono text-xs uppercase tracking-[0.18em] text-paper/55">
-                Head of New Product · Ryder System, Inc.
-              </p>
-            </div>
+            <p
+              className="absolute left-1/2 -translate-x-1/2 text-[11px] md:text-[12px]"
+              style={{
+                fontFamily: TERM_MONO_STACK,
+                color: "rgba(245, 239, 229, 0.45)",
+              }}
+            >
+              novonus@pipeline ~ %
+            </p>
+          </div>
+
+          {/* Body — whiteSpace: pre preserves indentation and the
+              alignment of progress bars. overflow-x-auto keeps any
+              spill contained to this block (the page itself stays at
+              normal width). */}
+          <div
+            className="overflow-x-auto p-4 text-[11px] leading-[1.6] sm:p-5 sm:text-[12px] md:p-8 md:text-[14px]"
+            style={{
+              fontFamily: TERM_MONO_STACK,
+              color: TERM_BODY,
+              whiteSpace: "pre",
+            }}
+          >
+            {TERM_PIPELINE.slice(0, visibleCount).map((item, i) => {
+              if (item.kind === "comment") {
+                return (
+                  <div key={i} style={{ color: TERM_MUTED }}>
+                    {item.text}
+                  </div>
+                );
+              }
+              if (item.kind === "command") {
+                const rest = item.text.slice(1);
+                return (
+                  <div key={i}>
+                    <span style={{ color: "var(--cyan)" }}>$</span>
+                    <span>{rest}</span>
+                  </div>
+                );
+              }
+              if (item.kind === "output") {
+                return (
+                  <div key={i} style={{ color: TERM_MUTED }}>
+                    {item.text}
+                  </div>
+                );
+              }
+              if (item.kind === "status") {
+                return (
+                  <div key={i}>
+                    {"  ["}
+                    <span style={{ color: "var(--cyan)" }}>{item.marker}</span>
+                    {"] "}
+                    <span>{item.text}</span>
+                  </div>
+                );
+              }
+              if (item.kind === "progress") {
+                const filled = progress[i] ?? 0;
+                return (
+                  <div key={i} style={{ color: "var(--cyan)" }}>
+                    <ProgressBar filled={filled} />
+                  </div>
+                );
+              }
+              if (item.kind === "blank") {
+                return (
+                  <div key={i} aria-hidden>
+                    {" "}
+                  </div>
+                );
+              }
+              if (item.kind === "promptCursor") {
+                return (
+                  <div key={i}>
+                    <span style={{ color: "var(--cyan)" }}>$</span>{" "}
+                    <span
+                      className={completed ? "terminal-cursor" : undefined}
+                      style={{ color: "var(--cyan)" }}
+                      aria-hidden
+                    >
+                      ▊
+                    </span>
+                  </div>
+                );
+              }
+              return null;
+            })}
           </div>
         </motion.div>
       </div>
@@ -2714,345 +3080,28 @@ function Testimonial() {
 }
 
 /* ============================================================================
-   HOW IT WORKS
+   SITE FOOTER — minimal two-line strip
    ========================================================================== */
-
-const STEPS = [
-  {
-    icon: ScanLine,
-    label: "At the Gate",
-    body: "AI computer vision automates check-in, identifies assets, validates loads.",
-  },
-  {
-    icon: Truck,
-    label: "In the Yard",
-    body: "Spotter coordination and live location tracking from a single pane of glass.",
-  },
-  {
-    icon: Boxes,
-    label: "At the Dock",
-    body: "Predictive sequencing keeps trailers flowing and dock doors humming.",
-  },
-  {
-    icon: ShieldCheck,
-    label: "Across Operations",
-    body: "Closed-loop validation and performance supervision across every yard.",
-  },
-];
-
-function HowItWorks() {
+function SiteFooter() {
   return (
-    <section className="relative bg-paper py-24 md:py-32">
-      <div className="mx-auto max-w-[1400px] px-6 md:px-10">
-        <div className="mb-14 flex flex-col gap-4">
-          <p className="eyebrow">◆ How it works</p>
-          <h2 className="max-w-4xl text-balance text-4xl font-medium leading-[1.05] tracking-[-0.02em] text-paper md:text-6xl">
-            Revolutionary technology that transforms your yard{" "}
-            <span className="text-paper/55">from gate to dock.</span>
-          </h2>
-        </div>
-
-        <div className="grid gap-px overflow-hidden rounded-3xl border border-paper/10 bg-paper/10 md:grid-cols-4">
-          {STEPS.map((s, i) => {
-            const Icon = s.icon;
-            return (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-80px" }}
-                transition={{
-                  duration: 0.6,
-                  delay: i * 0.08,
-                  ease: [0.22, 1, 0.36, 1],
-                }}
-                className="group flex flex-col gap-6 bg-paper p-8 transition-colors hover:bg-ink/[0.04]"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs tracking-[0.22em] text-cyan/70">
-                    {String(i + 1).padStart(2, "0")} / 04
-                  </span>
-                  <Icon
-                    className="h-5 w-5 text-cyan transition-transform group-hover:scale-110"
-                    strokeWidth={1.5}
-                  />
-                </div>
-                <p className="font-mono text-xs uppercase tracking-[0.18em] text-paper/55">
-                  Novonus
-                </p>
-                <h3 className="text-2xl font-medium text-paper">{s.label}</h3>
-                <p className="text-sm leading-relaxed text-paper/65">
-                  {s.body}
-                </p>
-              </motion.div>
-            );
-          })}
-        </div>
-
-        <div className="mt-12 flex justify-center">
-          <a
-            href="#contact"
-            className="group inline-flex items-center gap-2 rounded-full border border-paper/20 px-6 py-3 text-sm text-paper transition-colors hover:border-cyan hover:bg-cyan/5 hover:text-cyan"
-          >
-            Take a closer look
-            <Arrow className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
-          </a>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ============================================================================
-   CONTACT
-   ========================================================================== */
-
-const OPTIONS = [
-  "Schedule a 30-minute meeting with a yard expert",
-  "Schedule a YOS™ Demo",
-  "Arrange ROI consultation",
-  "Set Up a 2-Day Proof of Value on site",
-  "Something else",
-];
-
-function Contact() {
-  const [option, setOption] = useState(OPTIONS[0]);
-
-  return (
-    <section
-      id="contact"
-      className="relative overflow-hidden border-t border-paper/10 bg-paper py-24 md:py-32"
+    <footer
+      className="relative overflow-hidden"
+      style={{
+        fontFamily:
+          "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
+      }}
     >
-      <div className="glow-accent absolute -left-40 top-0 h-[600px] w-[600px]" />
-
-      <div className="relative mx-auto grid max-w-[1400px] gap-16 px-6 md:grid-cols-12 md:px-10">
-        <div className="md:col-span-5">
-          <p className="eyebrow mb-5">◆ Contact</p>
-          <h2 className="text-balance text-4xl font-medium leading-[1.05] tracking-[-0.02em] text-paper md:text-6xl">
-            The yard of the future starts today.
-          </h2>
-          <p className="mt-8 max-w-md text-lg text-paper/65">
-            Reach out to learn more about Novonus, on your terms.
-          </p>
-
-          <ul className="mt-10 space-y-2">
-            {OPTIONS.map((o) => (
-              <li key={o}>
-                <button
-                  type="button"
-                  onClick={() => setOption(o)}
-                  suppressHydrationWarning
-                  className={`flex w-full items-center justify-between rounded-2xl border px-5 py-4 text-left transition-colors ${
-                    option === o
-                      ? "border-cyan bg-cyan/10 text-paper"
-                      : "border-paper/10 bg-white/[0.02] text-paper/70 hover:border-paper/25 hover:text-paper"
-                  }`}
-                >
-                  <span className="text-sm">{o}</span>
-                  <span
-                    className={`grid h-5 w-5 place-items-center rounded-full border ${
-                      option === o
-                        ? "border-cyan bg-cyan text-ink"
-                        : "border-paper/30"
-                    }`}
-                    aria-hidden
-                  >
-                    {option === o && (
-                      <svg viewBox="0 0 12 12" className="h-3 w-3" fill="none">
-                        <path
-                          d="M2.5 6.5l2.5 2.5 4.5-5"
-                          stroke="currentColor"
-                          strokeWidth="1.6"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    )}
-                  </span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <form
-          className="md:col-span-7"
-          onSubmit={(e) => {
-            e.preventDefault();
-            alert(`Thanks — we'll be in touch about: ${option}`);
-          }}
+      <PaperBackground />
+      <div
+        className="relative mx-auto max-w-[1400px] px-6 py-10 md:px-10 md:py-12"
+        style={{ borderTop: "1px solid rgba(245, 239, 229, 0.10)" }}
+      >
+        <div
+          className="flex flex-col items-start justify-between gap-2 text-[12px] md:flex-row md:items-center md:text-[13px]"
+          style={{ color: "rgba(245, 239, 229, 0.55)" }}
         >
-          <div className="grid gap-4 rounded-3xl border border-paper/10 bg-white/[0.02] p-6 md:p-8">
-            <p className="font-mono text-xs uppercase tracking-[0.18em] text-paper/55">
-              Tell us a bit about you
-            </p>
-            <div className="grid gap-4 md:grid-cols-2">
-              <Field label="Full name *" name="name" required />
-              <Field label="Role or position *" name="role" required />
-              <Field label="Phone number" name="phone" />
-              <Field label="Email *" name="email" type="email" required />
-              <Field label="Company name *" name="company" required full />
-            </div>
-            <div className="grid gap-2">
-              <label className="font-mono text-xs uppercase tracking-[0.18em] text-paper/55">
-                How can we help? *
-              </label>
-              <select
-                className="rounded-xl border border-paper/15 bg-paper px-4 py-3 text-sm text-paper outline-none transition-colors focus:border-cyan"
-                value={option}
-                onChange={(e) => setOption(e.target.value)}
-                suppressHydrationWarning
-              >
-                {OPTIONS.map((o) => (
-                  <option key={o} value={o} className="bg-paper">
-                    {o}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <button
-              type="submit"
-              suppressHydrationWarning
-              className="group mt-2 inline-flex items-center justify-center gap-2 rounded-full bg-cyan px-6 py-3.5 text-sm font-medium text-ink transition-all hover:bg-cyan/90"
-            >
-              Take charge of your yard
-              <Arrow className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
-            </button>
-          </div>
-        </form>
-      </div>
-    </section>
-  );
-}
-
-function Field({
-  label,
-  name,
-  type = "text",
-  required,
-  full,
-}: {
-  label: string;
-  name: string;
-  type?: string;
-  required?: boolean;
-  full?: boolean;
-}) {
-  return (
-    <label className={`flex flex-col gap-2 ${full ? "md:col-span-2" : ""}`}>
-      <span className="font-mono text-xs uppercase tracking-[0.18em] text-paper/55">
-        {label}
-      </span>
-      <input
-        name={name}
-        type={type}
-        required={required}
-        suppressHydrationWarning
-        className="rounded-xl border border-paper/15 bg-paper px-4 py-3 text-sm text-paper outline-none transition-colors placeholder:text-paper/30 focus:border-cyan"
-      />
-    </label>
-  );
-}
-
-/* ============================================================================
-   FOOTER
-   ========================================================================== */
-
-const COLS: { title: string; items: string[] }[] = [
-  {
-    title: "Technology",
-    items: [
-      "Homepage",
-      "Somatic Control Stack",
-      "The Agentic AI Yard",
-      "Yard Efficiency Calculator",
-    ],
-  },
-  {
-    title: "Company",
-    items: ["About", "Resources", "Contact"],
-  },
-  {
-    title: "Reach us",
-    items: [
-      "Ready for your yard of the future?",
-      "+1 (737) 279-5032",
-      "Give us a call today.",
-    ],
-  },
-];
-
-function Footer() {
-  return (
-    <footer className="relative overflow-hidden border-t border-paper/10 bg-paper pt-24 pb-10">
-      <div className="mx-auto max-w-[1400px] px-6 md:px-10">
-        <div className="grid gap-12 md:grid-cols-12">
-          <div className="md:col-span-5">
-            <div className="flex items-center gap-3">
-              <span className="grid h-9 w-9 place-items-center rounded-md border border-cyan/40 bg-cyan/10 text-cyan">
-                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none">
-                  <path
-                    d="M3 6h18M6 12h12M9 18h6"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              </span>
-              <span className="font-mono text-sm tracking-[0.18em] text-paper">
-                NOVONUS
-              </span>
-            </div>
-            <p className="mt-6 max-w-md text-base leading-relaxed text-paper/65">
-              Moving the world by making goods flow. AI-native technology for
-              the yard of the future.
-            </p>
-            <span className="mt-8 inline-flex items-center gap-3 rounded-full border border-paper/15 bg-white/[0.02] px-4 py-2 text-xs text-paper/70">
-              <span className="h-1.5 w-1.5 rounded-full bg-cyan" />
-              2025 Market Guide · Yard Management Featured Vendor
-            </span>
-          </div>
-
-          {COLS.map((col) => (
-            <div key={col.title} className="md:col-span-2">
-              <p className="font-mono text-xs uppercase tracking-[0.18em] text-paper/45">
-                {col.title}
-              </p>
-              <ul className="mt-5 space-y-3">
-                {col.items.map((it) => (
-                  <li key={it}>
-                    <a
-                      href="#"
-                      className="text-sm text-paper/80 transition-colors hover:text-cyan"
-                    >
-                      {it}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-20 select-none overflow-hidden">
-          <p className="text-center font-mono text-[14vw] font-medium leading-none tracking-[0.04em] text-paper/[0.08]">
-            NOVONUS
-          </p>
-        </div>
-
-        <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-paper/10 pt-6 text-xs text-paper/45 md:flex-row">
-          <p>Copyright Novonus © 2025 · All Rights Reserved</p>
-          <div className="flex items-center gap-5">
-            <a href="#" className="hover:text-paper">
-              Technical Index
-            </a>
-            <a href="#" className="hover:text-paper">
-              Privacy
-            </a>
-            <a href="#" className="hover:text-paper">
-              Terms
-            </a>
-          </div>
+          <p>Novonus / The somatic layer for industrial robotics</p>
+          <p>© 2026</p>
         </div>
       </div>
     </footer>
@@ -3071,7 +3120,11 @@ export default function Home() {
         <ProblemTriptych />
         <Manifesto />
         <FluidSection />
+        <WhatWeBuild />
         <Pipeline />
+        <Technicals />
+        <Evidence />
+        <SiteFooter />
       </main>
     </IntroProvider>
   );

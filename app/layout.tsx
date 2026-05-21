@@ -137,10 +137,9 @@ const kodeMono = Kode_Mono({
 });
 
 export const metadata: Metadata = {
-  title:
-    "Novonus Somatic Control Stack | The New Industry Standard in Yard Operations",
+  title: "Novonus — The somatic layer for industrial robotics",
   description:
-    "Max throughput. Easy-to-use. Rapid ROI. Novonus Somatic Control Stack is the only AI-native, fully-integrated platform for the yard of the future.",
+    "Novonus captures biological signals from human operators to train industrial robots on contact-rich assembly tasks vision-only systems plateau on. The layer foundation models cannot see.",
 };
 
 export default function RootLayout({
