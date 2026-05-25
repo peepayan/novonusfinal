@@ -35,36 +35,25 @@ import {
    ========================================================================== */
 
 type IntroPhase =
-  | "pop"
-  | "text"
-  | "linesExit"
+  | "loadingBar"
   | "logoPop"
   | "dock"
-  | "hero"
   | "done";
 
 /* Intro choreography:
-     pop        — line 1 'Thirty years.' enters, line 2 starts.
-     text       — line 3 enters, all three hold for read time.
-     linesExit  — lines fade up + away.
+     loadingBar — hero artwork centered, red fill rises bottom→top.
      logoPop    — logo scales into the center (large, glass), holds.
      dock       — logo shrinks down to the top, the persistent
                   rounded-rectangle top bar appears around it, and the
                   site fades in.
-     hero       — pinned hero artwork reveals.
      done       — site fully interactive. */
-const POP_MS = 700;
-const HOLD_MS = 200;
-const TEXT_MS = 900;
-const TEXT_HOLD_MS = 650;
-const LINES_EXIT_MS = 520;
+const LOADING_BAR_MS = 2200;
+const LOADING_BAR_HOLD_MS = 250;
 /* logoPop covers logo scale-in, wordmark wipe-in, and a hold for read
    time. The dock phase is the transition: wordmark and logo retract /
    fly to the top in one quick beat — no separate fade-out. */
 const LOGO_POP_MS = 2200;
 const DOCK_MS = 500;
-const HERO_DELAY_MS = 200;
-const HERO_MS = 900;
 const MORPH_S = 0.75;
 const POP_S = 0.45;
 const EASE_MORPH = [0.65, 0, 0.35, 1] as const;
@@ -81,34 +70,28 @@ function IntroProvider({
   sidebar?: ReactNode;
   children: ReactNode;
 }) {
-  const [phase, setPhase] = useState<IntroPhase>("pop");
+  const [phase, setPhase] = useState<IntroPhase>("loadingBar");
 
   useEffect(() => {
-    const t0 = POP_MS + HOLD_MS;
-    const t1 = t0 + TEXT_MS + TEXT_HOLD_MS;
-    const t2 = t1 + LINES_EXIT_MS;
-    const t3 = t2 + LOGO_POP_MS;
-    const t4 = t3 + DOCK_MS + HERO_DELAY_MS;
-    const t5 = t4 + HERO_MS;
+    const t0 = LOADING_BAR_MS + LOADING_BAR_HOLD_MS;
+    const t1 = t0 + LOGO_POP_MS;
+    const t2 = t1 + DOCK_MS;
 
     const timers = [
-      window.setTimeout(() => setPhase("text"), t0),
-      window.setTimeout(() => setPhase("linesExit"), t1),
-      window.setTimeout(() => setPhase("logoPop"), t2),
-      window.setTimeout(() => setPhase("dock"), t3),
-      window.setTimeout(() => setPhase("hero"), t4),
-      window.setTimeout(() => setPhase("done"), t5),
+      window.setTimeout(() => setPhase("logoPop"), t0),
+      window.setTimeout(() => setPhase("dock"), t1),
+      window.setTimeout(() => setPhase("done"), t2),
     ];
     return () => timers.forEach(window.clearTimeout);
   }, []);
 
-  /* Website content (excluding hero) fades in during the dock phase */
-  const siteVisible = phase === "dock" || phase === "hero" || phase === "done";
+  /* Website content fades in during the dock phase */
+  const siteVisible = phase === "dock" || phase === "done";
 
   return (
     <IntroContext.Provider value={{ phase }}>
       <Preloader />
-      <IntroLines />
+      <HeroLoadingBar />
       <BrandLockup />
       {sidebar}
       <motion.div
@@ -163,14 +146,14 @@ function LogoGlass({ glass }: { glass: boolean }) {
   const morph = { duration: MORPH_S, ease: EASE_MORPH };
   return (
     <>
-      {/* Cyan→royal tint on the logo body */}
+      {/* Light-violet → deep-violet tint on the logo body */}
       <motion.span
         aria-hidden
         className="pointer-events-none absolute inset-0"
         style={{
           ...mask,
           background:
-            "linear-gradient(135deg, rgba(125,224,255,0.85) 0%, rgba(34,211,238,0.7) 45%, rgba(70,130,255,0.55) 100%)",
+            "linear-gradient(135deg, rgba(167,139,250,0.85) 0%, rgba(109,40,217,0.85) 45%, rgba(76,29,149,0.7) 100%)",
           mixBlendMode: "screen",
         }}
         initial={{ opacity: 0.85 }}
@@ -216,15 +199,12 @@ function LogoGlass({ glass }: { glass: boolean }) {
 function Preloader() {
   const { phase } = useIntro();
   const overlayVisible =
-    phase === "pop" ||
-    phase === "text" ||
-    phase === "linesExit" ||
-    phase === "logoPop";
-  const haloVisible = overlayVisible;
+    phase === "loadingBar" || phase === "logoPop";
+  const haloVisible = phase === "logoPop";
 
   return (
     <AnimatePresence>
-      {phase !== "done" && phase !== "hero" && (
+      {phase !== "done" && (
         <motion.div
           key="preloader-overlay"
           aria-hidden
@@ -232,15 +212,17 @@ function Preloader() {
           animate={{ opacity: overlayVisible ? 1 : 0 }}
           exit={{ opacity: 0 }}
           transition={{ duration: MORPH_S * 0.9, ease: EASE_FADE }}
-          className="fixed inset-0 z-[100] bg-ink"
-          style={{ pointerEvents: overlayVisible ? "auto" : "none" }}
+          className="fixed inset-0 z-[100]"
+          style={{
+            backgroundColor: "#0f0e0d",
+            pointerEvents: overlayVisible ? "auto" : "none",
+          }}
         >
-          <div className="bg-grid absolute inset-0 opacity-25" />
           <div className="glow-accent absolute left-1/2 top-1/2 h-[700px] w-[700px] -translate-x-1/2 -translate-y-1/2" />
         </motion.div>
       )}
 
-      {/* Cyan halo — anchored at screen center during the centered intro
+      {/* Purple halo — anchored at screen center during the centered intro
           phases (lines + logo pop). */}
       {haloVisible && (
         <motion.div
@@ -264,7 +246,7 @@ function Preloader() {
               height: 240,
               borderRadius: "50%",
               background:
-                "radial-gradient(circle, rgba(34,211,238,0.65), rgba(120,200,255,0.25) 45%, transparent 72%)",
+                "radial-gradient(circle, rgba(109,40,217,0.7), rgba(124,58,237,0.3) 45%, transparent 72%)",
               filter: "blur(24px)",
             }}
           />
@@ -275,121 +257,127 @@ function Preloader() {
 }
 
 /* ============================================================================
-   INTRO LINES — three statement lines that stagger in at center during the
-   pop/text phases, fade up and out during the dock phase, and are gone for
-   the rest of the site.
+   HERO LOADING BAR — centred hero artwork during the loadingBar intro
+   phase. The helmet silhouette fills with a red gradient from the
+   bottom up over LOADING_BAR_MS, acting as a progress bar. When the
+   phase advances the whole stack fades out.
    ========================================================================== */
 
-const INTRO_LINES = [
-  { text: "Thirty years.", accent: false },
-  { text: "One missing signal.", accent: false },
-  { text: "We found it.", accent: true },
-] as const;
-
-function IntroLines() {
+function HeroLoadingBar() {
   const { phase } = useIntro();
-  const animateState =
-    phase === "pop" || phase === "text"
-      ? "visible"
-      : phase === "linesExit"
-        ? "exit"
-        : "hidden";
+  const visible = phase === "loadingBar";
+  const fillProgress = useMotionValue(0);
+  const fillHeight = useTransform(fillProgress, (v) => `${v * 100}%`);
+
+  useEffect(() => {
+    if (phase !== "loadingBar") return;
+    const controls = animate(fillProgress, 1, {
+      duration: LOADING_BAR_MS / 1000,
+      ease: [0.4, 0, 0.2, 1],
+    });
+    return () => controls.stop();
+  }, [phase, fillProgress]);
 
   return (
-    <motion.div
-      aria-hidden={animateState !== "visible"}
-      className="pointer-events-none fixed inset-0 z-[120] flex items-center justify-center px-8"
-    >
-      <motion.div
-        className="text-balance"
-        initial="hidden"
-        animate={animateState}
-        variants={{
-          hidden: {},
-          visible: {
-            transition: { staggerChildren: 0.5, delayChildren: 0.15 },
-          },
-          exit: {
-            transition: { staggerChildren: 0.05 },
-          },
-        }}
-        style={{
-          fontFamily: "var(--font-inter), ui-sans-serif, system-ui",
-          fontWeight: 800,
-          fontSize: "clamp(2.4rem, 5.4vw, 4.8rem)",
-          lineHeight: 1.05,
-          letterSpacing: "-0.045em",
-          color: "rgba(245, 250, 255, 0.98)",
-          maxWidth: "62rem",
-        }}
-      >
-        {INTRO_LINES.map(({ text, accent }) => (
-          <motion.span
-            key={text}
+    <AnimatePresence>
+      {phase !== "done" && phase !== "dock" && (
+        <motion.div
+          key="hero-loading-bar"
+          aria-hidden
+          className="pointer-events-none fixed inset-0 z-[115] flex items-center justify-center px-6"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: visible ? 1 : 0 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.55, ease: EASE_FADE }}
+        >
+          <div
+            className="relative aspect-[16/10] mix-blend-screen select-none"
             style={{
-              display: "block",
-              color: accent ? "rgba(34, 211, 238, 1)" : undefined,
-            }}
-            variants={{
-              hidden: { opacity: 0, y: 22 },
-              visible: {
-                opacity: 1,
-                y: 0,
-                transition: {
-                  duration: 0.7,
-                  ease: [0.22, 1, 0.36, 1],
-                },
-              },
-              exit: {
-                opacity: 0,
-                y: -10,
-                transition: {
-                  duration: 0.45,
-                  ease: [0.4, 0, 0.6, 1],
-                },
-              },
+              width: "min(62vw, calc(62svh * 1.6), 760px)",
+              WebkitUserSelect: "none",
+              userSelect: "none",
             }}
           >
-            {text}
-          </motion.span>
-        ))}
-        {/* KIMLAB credibility — small muted line beneath the three intro
-            statements, staggers in after them. */}
-        <motion.span
-          style={{
-            display: "block",
-            marginTop: "1.4em",
-            fontFamily:
-              "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
-            fontWeight: 400,
-            fontSize: "clamp(0.78rem, 1vw, 0.95rem)",
-            letterSpacing: "0.02em",
-            color: "rgba(245, 239, 229, 0.55)",
-          }}
-          variants={{
-            hidden: { opacity: 0, y: 12 },
-            visible: {
-              opacity: 1,
-              y: 0,
-              transition: {
-                duration: 0.6,
-                ease: [0.22, 1, 0.36, 1],
-              },
-            },
-            exit: {
-              opacity: 0,
-              y: -6,
-              transition: {
-                duration: 0.4,
-                ease: [0.4, 0, 0.6, 1],
-              },
-            },
-          }}
-        >
-          Built at KIMLAB, University of Illinois Urbana-Champaign
-        </motion.span>
-      </motion.div>
-    </motion.div>
+            {/* Cyan brain outline glow */}
+            <div
+              className="pointer-events-none absolute mix-blend-screen z-0"
+              style={{
+                left: "29%",
+                top: "6.5%",
+                width: "35%",
+                height: "47%",
+              }}
+            >
+              <Image
+                src="/brain_outline.png"
+                alt=""
+                fill
+                sizes="(min-width: 1300px) 760px, 62vw"
+                className="object-fill neon-reveal-cyan"
+              />
+            </div>
+
+            {/* Base hero image */}
+            <Image
+              src="/hero-image.png"
+              alt=""
+              fill
+              priority
+              sizes="(min-width: 1300px) 760px, 62vw"
+              className="object-contain mix-blend-screen"
+            />
+
+            {/* Timed red fill — rises from bottom of the helmet silhouette */}
+            <div
+              className="pointer-events-none absolute z-[15] overflow-hidden"
+              style={{
+                left: "19.38%",
+                top: "2.43%",
+                width: "48.70%",
+                height: "70.66%",
+                WebkitMaskImage: "url(/helmet-silhouette.png)",
+                maskImage: "url(/helmet-silhouette.png)",
+                WebkitMaskSize: "100% 100%",
+                maskSize: "100% 100%",
+                WebkitMaskRepeat: "no-repeat",
+                maskRepeat: "no-repeat",
+                WebkitMaskPosition: "center",
+                maskPosition: "center",
+              }}
+            >
+              <motion.div
+                className="absolute inset-x-0 bottom-0"
+                style={{
+                  height: fillHeight,
+                  background:
+                    "linear-gradient(to top, rgba(255, 25, 50, 0.82) 0%, rgba(255, 35, 65, 0.78) 55%, rgba(255, 55, 85, 0.62) 78%, rgba(255, 90, 120, 0.28) 92%, rgba(255, 130, 155, 0) 100%)",
+                  mixBlendMode: "screen",
+                }}
+              />
+            </div>
+
+            {/* Red neon helmet outline */}
+            <div
+              className="pointer-events-none absolute mix-blend-screen z-20"
+              style={{
+                left: "19.38%",
+                top: "2.43%",
+                width: "48.70%",
+                height: "70.66%",
+              }}
+            >
+              <Image
+                src="/hero-lines-overlay.png"
+                alt=""
+                fill
+                sizes="(min-width: 1300px) 380px, 31vw"
+                className="object-fill neon-reveal"
+              />
+            </div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
 
@@ -409,11 +397,10 @@ function BrandLockup() {
   const visible =
     phase === "logoPop" ||
     phase === "dock" ||
-    phase === "hero" ||
     phase === "done";
   const centered = phase === "logoPop";
   const docked =
-    phase === "dock" || phase === "hero" || phase === "done";
+    phase === "dock" || phase === "done";
 
   return (
     <>
@@ -422,20 +409,11 @@ function BrandLockup() {
       {docked && (
         <motion.div
           aria-hidden
-          className="pointer-events-none fixed inset-x-2.5 top-2.5 z-[119] h-14 md:inset-x-3 md:top-3 md:h-16"
+          className="pointer-events-none fixed inset-x-0 top-0 z-[119] h-[74px]"
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: EASE_FADE, delay: 0.3 }}
-          style={{
-            borderRadius: 18,
-            background:
-              "linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, rgba(8, 14, 24, 0.5) 100%)",
-            backdropFilter: "blur(22px) saturate(180%)",
-            WebkitBackdropFilter: "blur(22px) saturate(180%)",
-            border: "1px solid rgba(255, 255, 255, 0.1)",
-            boxShadow:
-              "inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 12px 32px rgba(0, 0, 0, 0.32)",
-          }}
+          style={{ backgroundColor: "#0f0e0d" }}
         />
       )}
 
@@ -450,15 +428,17 @@ function BrandLockup() {
           opacity: 0,
         }}
         animate={{
-          top: docked ? "1.125rem" : "50%",
+          top: docked ? "37px" : "50%",
           x: "-50%",
-          y: docked ? "0%" : "-50%",
+          y: "-50%",
+          height: centered ? 144 : 38,
           scale: visible ? 1 : 0,
           opacity: visible ? 1 : 0,
         }}
         transition={{
           top: { duration: 0.5, ease: EASE_MORPH },
           y: { duration: 0.5, ease: EASE_MORPH },
+          height: { duration: 0.55, ease: EASE_MORPH },
           scale: {
             duration: centered ? 0.55 : 0.5,
             ease: centered ? EASE_POP : EASE_MORPH,
@@ -526,7 +506,7 @@ const NAV_ITEMS = ["System", "Markets", "Insights", "Resources", "About"];
 
 function Sidebar() {
   const { phase } = useIntro();
-  const ready = phase === "hero" || phase === "done";
+  const ready = phase === "done";
   const [open, setOpen] = useState(false);
 
   /* Edge-hover trigger: opens when the cursor hits the extreme left
@@ -757,28 +737,241 @@ function LinenBackground({
 
 /* ============================================================================
    PAPER BACKGROUND — the redbud cream surface with a 96 × 96 grid in
-   #f5efe5 (rgba 0.085), small filled diamonds at every intersection.
+   #0f0e0d (rgba 0.085), small filled diamonds at every intersection.
    Drop-in replacement for LinenBackground in any section that should
    carry the light treatment. Absolute-positioned, so the parent must
    be relative. The diamond/grid layers were originally inlined in
    FluidSection — this component is the single source of truth.
    ========================================================================== */
 function PaperBackground() {
-  const PATTERN = [
-    `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='96' height='96'><path d='M 48 45 L 51 48 L 48 51 L 45 48 Z' fill='%23191218' fill-opacity='0.085'/></svg>")`,
-    `linear-gradient(to right, rgba(245, 239, 229, 0.085) 2px, transparent 2px)`,
-    `linear-gradient(to bottom, rgba(245, 239, 229, 0.085) 2px, transparent 2px)`,
-  ].join(", ");
   return (
     <div
       aria-hidden
       className="pointer-events-none absolute inset-0 z-0"
-      style={{
-        backgroundColor: "#17120d",
-        backgroundImage: PATTERN,
-        backgroundSize: "96px 96px, 96px 96px, 96px 96px",
-        backgroundPosition: "-48px -48px, 0 0, 0 0",
-      }}
+      style={{ backgroundColor: "#f5efe5" }}
+    />
+  );
+}
+
+/* ============================================================================
+   TOPOGRAPHICAL DOTS — canvas grid of dark dots that responds to cursor
+   motion only. A stationary cursor leaves the field flat. While moving,
+   the cursor raises a velocity-scaled peak directly under it AND emits
+   ring waves that expand outward and fade, like ripples on water.
+   ========================================================================== */
+function TopographicalDots() {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    const host = canvas.parentElement;
+    if (!host) return;
+
+    const SPACING = 26;
+    const SIGMA = 90;
+    const TWO_SIGMA_SQ = 2 * SIGMA * SIGMA;
+    const LIFT_PX = 34;
+    const PEAK_SIZE = 2.6;
+    const BASE_SIZE = 1.05;
+    const BASE_ALPHA = 0.32;
+
+    /* Velocity → peak amplitude. ~30px/frame ≈ a fast drag, saturates
+       the peak; small ~1px/frame drifts produce a barely-there bump. */
+    const VELOCITY_MAX = 30;
+    const SPEED_SMOOTH = 0.55;
+    const SPEED_FLOOR = 0.05;
+
+    /* Ring waves: thickness controls how broad each ripple looks; speed
+       controls how fast it travels; life caps how far it goes before
+       fading out completely. */
+    const WAVE_SPEED = 8.5;
+    const WAVE_LIFE = 75;
+    const WAVE_THICKNESS = 34;
+    const WAVE_AMP_SCALE = 0.85;
+    const EMIT_INTERVAL_FRAMES = 3;
+    const EMIT_MIN_AMP = 0.08;
+    const MAX_WAVES = 28;
+
+    const BASE_DARK = { r: 15, g: 14, b: 13 };
+    const PURPLE = { r: 109, g: 40, b: 217 };
+    const GREEN = { r: 110, g: 231, b: 183 };
+
+    type Wave = { x: number; y: number; t: number; amp: number };
+    const waves: Wave[] = [];
+
+    const cursor = { x: -9999, y: -9999, has: false };
+    const prev = { x: -9999, y: -9999 };
+    let smoothSpeed = 0;
+    let frame = 0;
+    let lastEmit = -1000;
+
+    let width = 0;
+    let height = 0;
+
+    const resize = () => {
+      const rect = host.getBoundingClientRect();
+      width = rect.width;
+      height = rect.height;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.max(1, Math.floor(width * dpr));
+      canvas.height = Math.max(1, Math.floor(height * dpr));
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+    resize();
+
+    const onMove = (e: PointerEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      cursor.x = e.clientX - rect.left;
+      cursor.y = e.clientY - rect.top;
+      if (!cursor.has) {
+        /* Reset prev on (re-)entry so re-entering doesn't fake a huge
+           teleport into a single-frame velocity spike. */
+        prev.x = cursor.x;
+        prev.y = cursor.y;
+        cursor.has = true;
+      }
+    };
+    const onLeave = () => {
+      cursor.has = false;
+    };
+
+    host.addEventListener("pointermove", onMove);
+    host.addEventListener("pointerleave", onLeave);
+    const ro = new ResizeObserver(resize);
+    ro.observe(host);
+
+    let raf = 0;
+    const render = () => {
+      frame++;
+
+      /* Per-frame velocity = displacement since last frame. If the
+         cursor isn't in the field, treat speed as 0 so existing waves
+         keep propagating but no new peak/waves get spawned. */
+      let rawSpeed = 0;
+      if (cursor.has) {
+        const dx = cursor.x - prev.x;
+        const dy = cursor.y - prev.y;
+        rawSpeed = Math.sqrt(dx * dx + dy * dy);
+        prev.x = cursor.x;
+        prev.y = cursor.y;
+      }
+      smoothSpeed = smoothSpeed * SPEED_SMOOTH + rawSpeed * (1 - SPEED_SMOOTH);
+      if (smoothSpeed < SPEED_FLOOR) smoothSpeed = 0;
+
+      const peakAmp = Math.min(1, smoothSpeed / VELOCITY_MAX);
+
+      if (
+        cursor.has &&
+        peakAmp > EMIT_MIN_AMP &&
+        frame - lastEmit >= EMIT_INTERVAL_FRAMES
+      ) {
+        waves.push({ x: cursor.x, y: cursor.y, t: 0, amp: peakAmp * WAVE_AMP_SCALE });
+        lastEmit = frame;
+        while (waves.length > MAX_WAVES) waves.shift();
+      }
+
+      for (let i = waves.length - 1; i >= 0; i--) {
+        waves[i].t += 1;
+        if (waves[i].t > WAVE_LIFE) waves.splice(i, 1);
+      }
+
+      ctx.clearRect(0, 0, width, height);
+
+      const cols = Math.ceil(width / SPACING) + 2;
+      const rows = Math.ceil(height / SPACING) + 2;
+      const ox = (width - (cols - 1) * SPACING) / 2;
+      const oy = (height - (rows - 1) * SPACING) / 2;
+
+      const peakActive = peakAmp > 0.01 && cursor.has;
+      const px = cursor.x;
+      const py = cursor.y;
+      const waveCount = waves.length;
+      const hasAnyMotion = peakActive || waveCount > 0;
+
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const bx = ox + c * SPACING;
+          const by = oy + r * SPACING;
+
+          let elev = 0;
+
+          if (peakActive) {
+            const dx = bx - px;
+            const dy = by - py;
+            elev += peakAmp * Math.exp(-(dx * dx + dy * dy) / TWO_SIGMA_SQ);
+          }
+
+          for (let i = 0; i < waveCount; i++) {
+            const w = waves[i];
+            const wdx = bx - w.x;
+            const wdy = by - w.y;
+            const dist = Math.sqrt(wdx * wdx + wdy * wdy);
+            const ringR = WAVE_SPEED * w.t;
+            const delta = dist - ringR;
+            const life = 1 - w.t / WAVE_LIFE;
+            const amp = w.amp * life * life;
+            elev +=
+              amp *
+              Math.exp(
+                -(delta * delta) /
+                  (2 * WAVE_THICKNESS * WAVE_THICKNESS),
+              );
+          }
+
+          if (!hasAnyMotion || elev < 0.012) {
+            ctx.fillStyle = `rgba(${BASE_DARK.r}, ${BASE_DARK.g}, ${BASE_DARK.b}, ${BASE_ALPHA})`;
+            ctx.beginPath();
+            ctx.arc(bx, by, BASE_SIZE, 0, Math.PI * 2);
+            ctx.fill();
+            continue;
+          }
+
+          const elevClamped = Math.min(elev, 1.2);
+          const lift = elevClamped * LIFT_PX;
+          const size = BASE_SIZE + Math.min(elevClamped, 1) * PEAK_SIZE;
+
+          /* Horizontal-across-canvas purple → green gradient. Using bx
+             (not relative-to-peak) keeps the gradient consistent across
+             ripple rings, so the whole field reveals one coherent
+             colour scheme rather than flipping per ripple. */
+          const m = width > 0 ? bx / width : 0.5;
+          const gr = PURPLE.r * (1 - m) + GREEN.r * m;
+          const gg = PURPLE.g * (1 - m) + GREEN.g * m;
+          const gb = PURPLE.b * (1 - m) + GREEN.b * m;
+          const blend = Math.min(1, elevClamped * 1.4);
+          const cr = BASE_DARK.r * (1 - blend) + gr * blend;
+          const cg = BASE_DARK.g * (1 - blend) + gg * blend;
+          const cb = BASE_DARK.b * (1 - blend) + gb * blend;
+          const alpha = BASE_ALPHA + Math.min(elevClamped, 1) * 0.55;
+
+          ctx.fillStyle = `rgba(${cr | 0}, ${cg | 0}, ${cb | 0}, ${alpha})`;
+          ctx.beginPath();
+          ctx.arc(bx, by - lift, size, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      raf = requestAnimationFrame(render);
+    };
+    raf = requestAnimationFrame(render);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      host.removeEventListener("pointermove", onMove);
+      host.removeEventListener("pointerleave", onLeave);
+      ro.disconnect();
+    };
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      aria-hidden
+      className="pointer-events-none absolute inset-0 z-[1]"
+      style={{ width: "100%", height: "100%", display: "block" }}
     />
   );
 }
@@ -823,11 +1016,11 @@ function RevealChar({
   });
 
   /* Char animation: cyan → cream. The dark page bg means the final
-     colour needs to land at #f5efe5 (rgba 245, 239, 229) for legibility. */
+     colour needs to land at #0f0e0d (rgba 245, 239, 229) for legibility. */
   const color = useTransform(head, (h) => {
     const local = h - index;
-    if (local <= 2.5) return "rgba(34, 211, 238, 1)";
-    if (local >= 6.5) return "rgba(245, 239, 229, 0.96)";
+    if (local <= 2.5) return "rgba(109, 40, 217, 1)";
+    if (local >= 6.5) return "rgba(15, 14, 13, 0.96)";
     const t = (local - 2.5) / 4;
     const r = Math.round(34 + (245 - 34) * t);
     const g = Math.round(211 + (239 - 211) * t);
@@ -922,7 +1115,7 @@ function BoxFrame({
           <span
             className={`block h-1 w-1 rounded-full transition-all ${
               active
-                ? "bg-cyan shadow-[0_0_6px_rgba(34,211,238,0.9)]"
+                ? "bg-cyan shadow-[0_0_6px_rgba(109,40,217,0.9)]"
                 : "bg-paper/30"
             }`}
           />
@@ -1252,7 +1445,7 @@ function ProblemTriptych() {
           style={{ color: "var(--cyan)" }}
         >
           [
-          <span style={{ color: "#f5efe5" }}> the problem </span>
+          <span style={{ color: "#0f0e0d" }}> the problem </span>
           ]
         </p>
         <TriptychFilters />
@@ -1357,7 +1550,7 @@ function Manifesto() {
             fontSize: "clamp(1.05rem, 1.55vw, 1.4rem)",
             lineHeight: 1.55,
             letterSpacing: "-0.005em",
-            color: "rgba(245, 239, 229, 0.92)",
+            color: "rgba(15, 14, 13, 0.92)",
             margin: 0,
             textAlign: "justify",
             hyphens: "auto",
@@ -1391,7 +1584,7 @@ function Manifesto() {
             fontSize: "clamp(0.7rem, 0.82vw, 0.85rem)",
             letterSpacing: "0.06em",
             textTransform: "uppercase",
-            color: "rgba(245, 239, 229, 0.55)",
+            color: "rgba(15, 14, 13, 0.55)",
             textAlign: "right",
             margin: 0,
           }}
@@ -1507,7 +1700,7 @@ function ProblemLabel({
         }}
       >
         [
-        <span style={{ color: "#f5efe5" }}> {text} </span>
+        <span style={{ color: "#0f0e0d" }}> {text} </span>
         ]
       </p>
     </motion.div>
@@ -1517,7 +1710,7 @@ function ProblemLabel({
 /* ============================================================================
    FLUID SECTION — warm cream panel after the hero, styled in the
    redbud.vc aesthetic: solid #191218 background and Inter Tight body
-   text on dark ink (#f5efe5). No grid; the surface stays calm and
+   text on dark ink (#0f0e0d). No grid; the surface stays calm and
    typographic, the way redbud presents itself.
    ========================================================================== */
 function FluidSection() {
@@ -1526,7 +1719,7 @@ function FluidSection() {
       className="relative w-full overflow-hidden"
       style={{
         fontFamily: "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
-        color: "#f5efe5",
+        color: "#0f0e0d",
       }}
     >
       <PaperBackground />
@@ -1536,7 +1729,7 @@ function FluidSection() {
           style={{
             fontFamily: "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
             fontWeight: 600,
-            color: "#f5efe5",
+            color: "#0f0e0d",
           }}
         >
           We built the layer everyone missed.
@@ -1546,7 +1739,7 @@ function FluidSection() {
           style={{
             fontFamily: "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
             fontWeight: 400,
-            color: "rgba(245, 239, 229, 0.72)",
+            color: "rgba(15, 14, 13, 0.72)",
             letterSpacing: "-0.005em",
           }}
         >
@@ -1611,8 +1804,8 @@ function PipelineArrow() {
         <motion.circle
           r="2.6"
           cy="12"
-          fill="rgba(34, 211, 238, 0.95)"
-          style={{ filter: "drop-shadow(0 0 4px rgba(34, 211, 238, 0.9))" }}
+          fill="rgba(109, 40, 217, 0.95)"
+          style={{ filter: "drop-shadow(0 0 4px rgba(109, 40, 217, 0.9))" }}
           initial={{ cx: 4 }}
           animate={{ cx: [4, 48, 48] }}
           transition={{
@@ -1629,14 +1822,14 @@ function PipelineArrow() {
           y1="12"
           x2="48"
           y2="12"
-          stroke="rgba(245, 239, 229, 0.28)"
+          stroke="rgba(15, 14, 13, 0.28)"
           strokeWidth="1.5"
           strokeDasharray="4 3"
         />
         {/* Arrow head */}
         <path
           d="M 48 6 L 56 12 L 48 18"
-          stroke="rgba(34, 211, 238, 0.85)"
+          stroke="rgba(109, 40, 217, 0.85)"
           strokeWidth="2"
           fill="none"
           strokeLinecap="round"
@@ -1653,7 +1846,7 @@ function Pipeline() {
       className="relative overflow-hidden py-20 md:py-28"
       style={{
         fontFamily: "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
-        color: "#f5efe5",
+        color: "#0f0e0d",
       }}
     >
       <PaperBackground />
@@ -1662,10 +1855,10 @@ function Pipeline() {
         {/* ============ HEADER RAIL ============ */}
         <div
           className="mb-6 flex items-center justify-between gap-4 pb-4 text-[10px] uppercase tracking-[0.28em] md:text-[11px]"
-          style={{ borderBottom: "1px solid rgba(245, 239, 229, 0.12)", color: "rgba(245, 239, 229, 0.55)" }}
+          style={{ borderBottom: "1px solid rgba(15, 14, 13, 0.12)", color: "rgba(15, 14, 13, 0.55)" }}
         >
           <span className="flex items-center gap-2 text-cyan">
-            <span className="block h-1.5 w-1.5 rounded-full bg-cyan shadow-[0_0_10px_rgba(34,211,238,0.9)]" />
+            <span className="block h-1.5 w-1.5 rounded-full bg-cyan shadow-[0_0_10px_rgba(109,40,217,0.9)]" />
             <span className="font-medium">Δ&nbsp;&nbsp;//&nbsp;&nbsp;the pipeline</span>
           </span>
           <span className="hidden md:inline">section&nbsp;/&nbsp;02</span>
@@ -1676,20 +1869,20 @@ function Pipeline() {
         <div className="mb-12 flex flex-col items-center text-center md:mb-16">
           <h2
             className="max-w-4xl text-balance text-[40px] leading-[0.98] tracking-[-0.015em] md:text-[72px]"
-            style={{ fontWeight: 600, color: "#f5efe5" }}
+            style={{ fontWeight: 600, color: "#0f0e0d" }}
           >
             Five steps from human demonstration{" "}
-            <span style={{ color: "rgba(245, 239, 229, 0.40)" }}>to deployed robot.</span>
+            <span style={{ color: "rgba(15, 14, 13, 0.40)" }}>to deployed robot.</span>
           </h2>
           <p
             className="mt-8 max-w-2xl text-balance text-[14px] leading-[1.65] md:text-[15px]"
-            style={{ color: "rgba(245, 239, 229, 0.72)" }}
+            style={{ color: "rgba(15, 14, 13, 0.72)" }}
           >
             A single integrated system that captures biological signals from
             a human operator and transforms them into a production-ready
             robot policy. Each step builds on the previous one. Together
             they form the only pipeline in the industry that captures{" "}
-            <span style={{ color: "#f5efe5", fontWeight: 500 }}>
+            <span style={{ color: "#0f0e0d", fontWeight: 500 }}>
               what the body knew before contact ever happened
             </span>
             .
@@ -1700,7 +1893,7 @@ function Pipeline() {
              chevron arrows between each step. */}
         <div
           className="mx-auto mb-10 hidden max-w-[1100px] items-center gap-3 text-[10px] uppercase tracking-[0.24em] md:flex"
-          style={{ color: "rgba(245, 239, 229, 0.55)" }}
+          style={{ color: "rgba(15, 14, 13, 0.55)" }}
         >
           {PIPELINE_STEPS.flatMap((s, i) => {
             const node = (
@@ -1710,11 +1903,11 @@ function Pipeline() {
               >
                 <span
                   className="grid h-6 w-6 place-items-center rounded-full text-[10px] leading-none text-cyan"
-                  style={{ border: "1px solid rgba(34, 211, 238, 0.55)", background: "rgba(34, 211, 238, 0.08)" }}
+                  style={{ border: "1px solid rgba(109, 40, 217, 0.55)", background: "rgba(109, 40, 217, 0.08)" }}
                 >
                   ●
                 </span>
-                <span style={{ color: "rgba(245, 239, 229, 0.75)" }}>
+                <span style={{ color: "rgba(15, 14, 13, 0.75)" }}>
                   {s.n}&nbsp;·&nbsp;{s.title}
                 </span>
               </span>
@@ -1732,8 +1925,8 @@ function Pipeline() {
                   className="h-3 w-full"
                   preserveAspectRatio="none"
                 >
-                  <line x1="0" y1="6" x2="56" y2="6" stroke="rgba(245, 239, 229, 0.18)" strokeWidth="1" />
-                  <path d="M 52 1 L 58 6 L 52 11" stroke="rgba(34, 211, 238, 0.7)" strokeWidth="1.4" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                  <line x1="0" y1="6" x2="56" y2="6" stroke="rgba(15, 14, 13, 0.18)" strokeWidth="1" />
+                  <path d="M 52 1 L 58 6 L 52 11" stroke="rgba(109, 40, 217, 0.7)" strokeWidth="1.4" fill="none" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </span>,
             ];
@@ -1756,8 +1949,8 @@ function Pipeline() {
                 }}
                 className="group relative isolate flex flex-1 flex-col rounded-2xl p-8 transition-colors md:p-9"
                 style={{
-                  background: "rgba(245, 239, 229, 0.04)",
-                  border: "1px solid rgba(245, 239, 229, 0.10)",
+                  background: "rgba(15, 14, 13, 0.04)",
+                  border: "1px solid rgba(15, 14, 13, 0.10)",
                 }}
               >
                 {/* corner brackets — technical-drawing feel */}
@@ -1781,11 +1974,11 @@ function Pipeline() {
                 {/* status row: sub-label + pulsing active dot */}
                 <div
                   className="mb-8 flex items-center justify-between text-[10px] uppercase tracking-[0.24em]"
-                  style={{ color: "rgba(245, 239, 229, 0.50)" }}
+                  style={{ color: "rgba(15, 14, 13, 0.50)" }}
                 >
                   <span className="lowercase tracking-[0.18em]">// {s.sub}</span>
                   <span className="flex items-center gap-1.5 text-cyan/80">
-                    <span className="block h-1 w-1 animate-pulse rounded-full bg-cyan shadow-[0_0_6px_rgba(34,211,238,0.9)]" />
+                    <span className="block h-1 w-1 animate-pulse rounded-full bg-cyan shadow-[0_0_6px_rgba(109,40,217,0.9)]" />
                     active
                   </span>
                 </div>
@@ -1797,20 +1990,20 @@ function Pipeline() {
                   </span>
                   <span
                     aria-hidden
-                    className="absolute -bottom-2 left-0 block h-px w-12 bg-cyan/60 shadow-[0_0_8px_rgba(34,211,238,0.6)]"
+                    className="absolute -bottom-2 left-0 block h-px w-12 bg-cyan/60 shadow-[0_0_8px_rgba(109,40,217,0.6)]"
                   />
                 </div>
 
                 {/* title + body */}
                 <h3
                   className="mb-3 text-[17px] font-medium uppercase tracking-[0.2em] md:text-[19px]"
-                  style={{ color: "#f5efe5" }}
+                  style={{ color: "#0f0e0d" }}
                 >
                   {s.title}
                 </h3>
                 <p
                   className="mb-10 text-[13px] leading-[1.6] md:text-[14px]"
-                  style={{ color: "rgba(245, 239, 229, 0.70)" }}
+                  style={{ color: "rgba(15, 14, 13, 0.70)" }}
                 >
                   {s.body}
                 </p>
@@ -1828,12 +2021,12 @@ function Pipeline() {
                       style={{
                         background:
                           j === i
-                            ? "rgba(34, 211, 238, 0.95)"
+                            ? "rgba(109, 40, 217, 0.95)"
                             : j < i
-                              ? "rgba(245, 239, 229, 0.35)"
-                              : "rgba(245, 239, 229, 0.14)",
+                              ? "rgba(15, 14, 13, 0.35)"
+                              : "rgba(15, 14, 13, 0.14)",
                         boxShadow:
-                          j === i ? "0 0 6px rgba(34, 211, 238, 0.9)" : "none",
+                          j === i ? "0 0 6px rgba(109, 40, 217, 0.9)" : "none",
                       }}
                     />
                   ))}
@@ -1849,7 +2042,7 @@ function Pipeline() {
         <p
           className="mx-auto mt-12 max-w-4xl text-balance text-center text-base leading-[1.6] md:mt-14 md:text-lg md:leading-[1.55]"
           style={{
-            color: "rgba(245, 239, 229, 0.78)",
+            color: "rgba(15, 14, 13, 0.78)",
             fontWeight: 400,
           }}
         >
@@ -1870,25 +2063,25 @@ function Pipeline() {
         {/* ============ FOOTER STATUS BAR ============ */}
         <div
           className="mt-6 flex flex-col gap-3 pt-5 text-[10px] uppercase tracking-[0.24em] md:mt-8 md:flex-row md:items-center md:justify-between md:text-[11px]"
-          style={{ borderTop: "1px solid rgba(245, 239, 229, 0.12)", color: "rgba(245, 239, 229, 0.55)" }}
+          style={{ borderTop: "1px solid rgba(15, 14, 13, 0.12)", color: "rgba(15, 14, 13, 0.55)" }}
         >
           <span
             className="lowercase tracking-[0.18em]"
-            style={{ color: "rgba(245, 239, 229, 0.65)" }}
+            style={{ color: "rgba(15, 14, 13, 0.65)" }}
           >
             //&nbsp;the body knew before contact ever happened
           </span>
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
             <span>
-              <span style={{ color: "rgba(245, 239, 229, 0.32)" }}>system:</span>
+              <span style={{ color: "rgba(15, 14, 13, 0.32)" }}>system:</span>
               &nbsp;novonus™
             </span>
             <span>
-              <span style={{ color: "rgba(245, 239, 229, 0.32)" }}>stages:</span>
+              <span style={{ color: "rgba(15, 14, 13, 0.32)" }}>stages:</span>
               &nbsp;05
             </span>
             <span>
-              <span style={{ color: "rgba(245, 239, 229, 0.32)" }}>status:</span>{" "}
+              <span style={{ color: "rgba(15, 14, 13, 0.32)" }}>status:</span>{" "}
               <span className="text-cyan">operational</span>
             </span>
           </div>
@@ -1917,61 +2110,26 @@ const fadeUp = {
 
 function Hero() {
   const { phase } = useIntro();
-  const heroReady = phase === "hero" || phase === "done";
+  /* Heading reveal is gated on `done` — the dark page sits empty while
+     the logo finishes docking, then the text smoothly fades in. */
+  const textReady = phase === "done";
   const sectionRef = useRef<HTMLElement | null>(null);
 
-  /* Click-to-pulse: bumping the key remounts the flash overlays so their
-     0 → 1 → 0 keyframe runs again on every click. */
-  const [flashKey, setFlashKey] = useState(0);
-  const triggerFlash = () => setFlashKey((k) => k + 1);
-
   /* Scroll-pin: section is 200svh tall with a sticky 100svh viewport inside.
-     Progress goes 0 → 1 over the 100svh of pinned scrolling — that drives
-     the red fill. Once it completes the section unpins and the page
-     continues scrolling normally to the stats / next sections. */
+     Progress goes 0 → 1 over the 100svh of pinned scrolling. */
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start start", "end end"],
   });
 
-  /* Mixed model:
-       0    → 0.32 : red helmet fill rises / drops          (scroll-driven)
-       0.4  → 0.5  : NOVONUS backdrop fades out / back in   (scroll-driven)
-       past 0.55   : stage 1 → hero artwork snaps right     (single scroll)
-       past 0.65   : stage 2 → tagline snaps in             (single scroll)
-       past 0.80   : stage 3 → hero + tagline fade out,
-                                manifesto replaces them      (single scroll)
-     The stage transitions use a duration-based animation, so a single
-     scroll past the threshold plays the whole beat regardless of how far
-     the user pushes the wheel. */
-  /* Scroll-driven phases on a 500svh section (400svh of pinned scroll
-     after the initial 100svh stick):
-         v=0     → 0.05 helmet mask fills with red.
-         v=0.10  → 0.18 NOVONUS heading fades out.
-         v=0.10  → 0.20 hero artwork fades out.
-         v=0.22  → 0.50 slide 2 reveals char-by-char.
-         v=0.50  → 0.55 slide 2 holds.
-         v=0.55  → 0.65 slide 2 fades out / triptych fades in
-                        (the last fade in the experience).
-         v=0.58  → 0.68 triptych settles fully visible.
-         v=0.68  → 1.00 triptych holds while the section unpins —
-                        gives the user a comfortable buffer to hover
-                        the cards before scrolling on to the
-                        Manifesto and the rest of the page. */
-  const fillHeight = useTransform(scrollYProgress, [0, 0.05], ["0%", "100%"]);
-  const fillOpacity = useTransform(
-    scrollYProgress,
-    [0, 0.01, 1],
-    [0, 1, 1],
-  );
+  /* Scroll-driven phases on the pinned section:
+         v=0.10  → 0.18 landing heading fades out.
+         v=0.22  → 0.80 slide 2 reveals char-by-char.
+         v>0.80         aria-hidden lifts so screen readers announce
+                        the full sentence as one unit. */
   const novonusOpacity = useTransform(
     scrollYProgress,
     [0.10, 0.18],
-    [1, 0],
-  );
-  const heroFadeOpacity = useTransform(
-    scrollYProgress,
-    [0.10, 0.20],
     [1, 0],
   );
   const revealHead = useTransform(
@@ -1982,8 +2140,6 @@ function Hero() {
 
   const [stage, setStage] = useState(0);
   useMotionValueEvent(scrollYProgress, "change", (v) => {
-    /* aria-hidden flips off once the reveal has fully completed, so
-       screen readers announce the finished sentence as one unit. */
     setStage(v > 0.80 ? 3 : 0);
   });
 
@@ -1996,238 +2152,11 @@ function Hero() {
       >
         <div className="sticky top-0 h-[100svh] overflow-hidden">
           <PaperBackground />
+          <TopographicalDots />
 
           {/* "[the problem]" — top-left tag that scrambles in just
               before slide 2 and stays visible through slide 6. */}
           <ProblemLabel scrollYProgress={scrollYProgress} />
-
-          <div className="relative z-[2] mx-auto flex h-full max-w-[1400px] flex-col items-center justify-center px-6 md:px-10">
-            {/* Hero fade wrapper — clean scroll-driven opacity fade-out.
-                No scale, no translate, no glow. Inner stack keeps its
-                intro reveal + 32% right-shift. */}
-            <motion.div
-              className="relative w-full max-w-[1100px]"
-              style={{ opacity: heroFadeOpacity }}
-            >
-            {/* Hero image container — graceful reveal after intro docking.
-                After the NOVONUS fade completes, a single scroll past the
-                stage-1 threshold snaps the artwork to its right-shifted
-                position via a fixed-duration animation, independent of how
-                far the user actually scrolls. */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.96, y: 24, x: "32%" }}
-              animate={{
-                opacity: heroReady ? 1 : 0,
-                scale: heroReady ? 1 : 0.96,
-                y: heroReady ? 0 : 24,
-                x: "32%",
-              }}
-              transition={{
-                duration: 0.9,
-                ease: [0.22, 1, 0.36, 1],
-                opacity: { duration: 0.7, ease: [0.4, 0, 0.2, 1] },
-              }}
-              className="hero-stack relative aspect-[16/10] w-full mix-blend-screen select-none"
-              style={{
-                WebkitUserSelect: "none",
-                userSelect: "none",
-              }}
-            >
-              {/* LAYER 1 (BACK): Cyan brain outline glow */}
-              <motion.div
-                aria-hidden
-                className="pointer-events-none absolute mix-blend-screen z-0"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: heroReady ? 1 : 0 }}
-                transition={{
-                  duration: 1.6,
-                  ease: [0.22, 1, 0.36, 1],
-                  delay: heroReady ? 0.3 : 0,
-                }}
-                style={{
-                  left: "29%",
-                  top: "6.5%",
-                  width: "35%",
-                  height: "47%",
-                }}
-              >
-                <Image
-                  src="/brain_outline.png"
-                  alt=""
-                  fill
-                  sizes="(min-width: 1280px) 1100px, (min-width: 768px) 80vw, 95vw"
-                  className="object-fill neon-reveal-cyan"
-                />
-              </motion.div>
-
-              {/* LAYER 2 (MIDDLE): Base hero image */}
-              <Image
-                src="/hero-image.png"
-                alt="Novonus pipeline overview"
-                fill
-                priority
-                sizes="(min-width: 1280px) 1100px, (min-width: 768px) 80vw, 95vw"
-                className="object-contain mix-blend-screen"
-              />
-
-              {/* LAYER 2.5: Scroll-driven red fill — rises from the bottom of
-                  the helmet, clipped to the outline silhouette so it stays
-                  inside the enclosed area defined by hero-lines-overlay.png. */}
-              <div
-                aria-hidden
-                className="pointer-events-none absolute z-[15] overflow-hidden"
-                style={{
-                  left: "19.38%",
-                  top: "2.43%",
-                  width: "48.70%",
-                  height: "70.66%",
-                  WebkitMaskImage: "url(/helmet-silhouette.png)",
-                  maskImage: "url(/helmet-silhouette.png)",
-                  WebkitMaskSize: "100% 100%",
-                  maskSize: "100% 100%",
-                  WebkitMaskRepeat: "no-repeat",
-                  maskRepeat: "no-repeat",
-                  WebkitMaskPosition: "center",
-                  maskPosition: "center",
-                }}
-              >
-                <motion.div
-                  className="absolute inset-x-0 bottom-0"
-                  style={{
-                    height: fillHeight,
-                    opacity: fillOpacity,
-                    background:
-                      "linear-gradient(to top, rgba(255, 25, 50, 0.82) 0%, rgba(255, 35, 65, 0.78) 55%, rgba(255, 55, 85, 0.62) 78%, rgba(255, 90, 120, 0.28) 92%, rgba(255, 130, 155, 0) 100%)",
-                    mixBlendMode: "screen",
-                  }}
-                />
-              </div>
-
-              {/* LAYER 3 (FRONT): Red neon outline */}
-              <motion.div
-                aria-hidden
-                className="pointer-events-none absolute mix-blend-screen z-20"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: heroReady ? 1 : 0 }}
-                transition={{
-                  duration: 1.4,
-                  ease: [0.22, 1, 0.36, 1],
-                  delay: heroReady ? 0.4 : 0,
-                }}
-                style={{
-                  left: "19.38%",
-                  top: "2.43%",
-                  width: "48.70%",
-                  height: "70.66%",
-                }}
-              >
-                <Image
-                  src="/hero-lines-overlay.png"
-                  alt=""
-                  fill
-                  sizes="(min-width: 1280px) 540px, (min-width: 768px) 40vw, 47vw"
-                  className="object-fill neon-reveal"
-                />
-              </motion.div>
-
-              {/* CLICK FLASH — cyan bloom inside the brain only. Brain
-                  outline is the mask, heavy blur lets cyan light bleed
-                  inward to fill the enclosed area. Smooth ramp/hold/fade. */}
-              {flashKey > 0 && (
-                <motion.div
-                  key={`flash-cyan-${flashKey}`}
-                  aria-hidden
-                  className="pointer-events-none absolute mix-blend-screen z-[17]"
-                  style={{
-                    left: "29%",
-                    top: "6.5%",
-                    width: "35%",
-                    height: "47%",
-                    background: "rgba(40, 220, 255, 1)",
-                    WebkitMaskImage: "url(/brain_outline.png)",
-                    maskImage: "url(/brain_outline.png)",
-                    WebkitMaskSize: "100% 100%",
-                    maskSize: "100% 100%",
-                    WebkitMaskRepeat: "no-repeat",
-                    maskRepeat: "no-repeat",
-                    filter: "blur(28px) saturate(1.4)",
-                  }}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: [0, 1, 1, 0] }}
-                  transition={{
-                    duration: 2.6,
-                    times: [0, 0.22, 0.5, 1],
-                    ease: [0.4, 0, 0.2, 1],
-                  }}
-                />
-              )}
-
-              {/* CLICK FLASH — red bloom inside the helmet silhouette. */}
-              {flashKey > 0 && (
-                <motion.div
-                  key={`flash-red-${flashKey}`}
-                  aria-hidden
-                  className="pointer-events-none absolute mix-blend-screen z-[18]"
-                  style={{
-                    left: "19.38%",
-                    top: "2.43%",
-                    width: "48.70%",
-                    height: "70.66%",
-                    background: "rgba(255, 22, 55, 1)",
-                    WebkitMaskImage: "url(/helmet-silhouette.png)",
-                    maskImage: "url(/helmet-silhouette.png)",
-                    WebkitMaskSize: "100% 100%",
-                    maskSize: "100% 100%",
-                    WebkitMaskRepeat: "no-repeat",
-                    maskRepeat: "no-repeat",
-                    filter: "saturate(1.4)",
-                  }}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: [0, 1, 1, 0] }}
-                  transition={{
-                    duration: 2.6,
-                    times: [0, 0.22, 0.5, 1],
-                    ease: [0.4, 0, 0.2, 1],
-                  }}
-                />
-              )}
-
-              {/* CLICK TARGET — pixel-precise to the helmet silhouette.
-                  SVG <image> with pointer-events="visiblePainted" only
-                  fires on opaque silhouette pixels, so clicks register
-                  anywhere inside the red helmet outline (and ignore the
-                  surrounding empty area). */}
-              <svg
-                viewBox="0 0 100 100"
-                preserveAspectRatio="none"
-                aria-hidden
-                className="absolute z-[19]"
-                style={{
-                  left: "19.38%",
-                  top: "2.43%",
-                  width: "48.70%",
-                  height: "70.66%",
-                  pointerEvents: "none",
-                }}
-              >
-                <image
-                  href="/helmet-silhouette.png"
-                  x={0}
-                  y={0}
-                  width={100}
-                  height={100}
-                  preserveAspectRatio="none"
-                  onClick={triggerFlash}
-                  style={{
-                    pointerEvents: "visiblePainted",
-                    cursor: "pointer",
-                    opacity: 0.01,
-                  }}
-                />
-              </svg>
-            </motion.div>
-            </motion.div>
-          </div>
 
           {/* Slide 2 — single sentence revealed letter by letter as the
               user scrolls. Vertically centered, generous max-width so
@@ -2266,93 +2195,277 @@ function Hero() {
             </div>
           </div>
 
-          {/* Main landing-page heading — big bold technical statement on
-              the left side of the viewport, balancing the hero artwork
-              shifted to the right. Outer wrapper fades it via
-              novonusOpacity so it leaves as the helmet glow takes over;
-              inner motion.div handles the intro fade-in. Both layers
-              are pointer-events-none so clicks pass through to the
-              brain SVG hit-target on the helmet. */}
+          {/* Main landing-page heading — big bold technical statement,
+              centered on the viewport. novonusOpacity fades it out as
+              the user scrolls toward slide 2. */}
           <motion.div
-            className="pointer-events-none absolute left-0 top-1/2 z-[5] hidden w-[56%] max-w-[820px] -translate-y-1/2 px-8 md:block md:pl-[6vw] lg:pl-[8vw]"
+            className="pointer-events-none absolute inset-0 z-[5] hidden items-center justify-center px-6 md:flex md:px-10"
             style={{ opacity: novonusOpacity }}
           >
-            <motion.div
-              className="pointer-events-none"
-              initial={{ opacity: 0, y: 16 }}
-              animate={{
-                opacity: heroReady ? 1 : 0,
-                y: heroReady ? 0 : 16,
-              }}
-              transition={{
-                duration: 0.85,
-                ease: [0.22, 1, 0.36, 1],
-                delay: heroReady ? 0.5 : 0,
-              }}
-            >
-              <p
-                className="pointer-events-none"
+            <div className="pointer-events-none flex w-full max-w-[1100px] flex-col items-center">
+              {/* Eyebrow — rises from its overflow-hidden barrier after the title */}
+              <div
                 style={{
-                  fontFamily:
-                    "var(--font-tt-norms-pro), ui-sans-serif, system-ui",
-                  fontWeight: 300,
-                  fontStyle: "normal",
-                  fontSize: "clamp(0.92rem, 1.1vw, 1.1rem)",
-                  lineHeight: 1.5,
-                  letterSpacing: "0.005em",
-                  color: "var(--cyan)",
-                  margin: 0,
+                  overflow: "hidden",
                   marginBottom: "1em",
+                  paddingBottom: "0.15em",
                 }}
               >
-                [<span style={{ color: "#f5efe5" }}> somatic pipeline for robots powered by humans </span>]
-              </p>
-              <h1
-                className="pointer-events-none text-balance"
-                style={{
-                  fontFamily:
-                    "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
-                  fontWeight: 600,
-                  fontStyle: "normal",
-                  fontSize: "clamp(2.1rem, 4.4vw, 3.8rem)",
-                  lineHeight: 1.05,
-                  letterSpacing: "-0.025em",
-                  margin: 0,
-                  color: "#f5efe5",
-                }}
-              >
-                Training Robots using Brain-Muscle signals
-              </h1>
-              <p
-                className="pointer-events-none"
-                style={{
-                  fontFamily:
-                    "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
-                  fontWeight: 400,
-                  fontStyle: "normal",
-                  fontSize: "clamp(1.15rem, 1.45vw, 1.45rem)",
-                  lineHeight: 1.6,
-                  letterSpacing: "-0.005em",
-                  color: "rgba(245, 239, 229, 0.78)",
-                  margin: 0,
-                  marginTop: "1.4em",
-                  maxWidth: "38em",
-                }}
-              >
-                We capture the biological signal that decides whether
-                contact-rich assembly succeeds or fails, and we just
-                solved the sim-to-real problem industrial automation
-                couldn&apos;t.{" "}
-                <span
+                <motion.p
+                  className="pointer-events-none"
+                  initial={{ y: "120%", opacity: 0 }}
+                  animate={{
+                    y: textReady ? "0%" : "120%",
+                    opacity: textReady ? 1 : 0,
+                  }}
+                  transition={{
+                    duration: 0.6,
+                    ease: [0.22, 1, 0.36, 1],
+                    delay: textReady ? 0.35 : 0,
+                  }}
                   style={{
+                    position: "relative",
+                    fontFamily:
+                      "var(--font-tt-norms-pro), ui-sans-serif, system-ui",
+                    fontWeight: 300,
+                    fontStyle: "normal",
+                    fontSize: "clamp(0.92rem, 1.1vw, 1.1rem)",
+                    lineHeight: 1.5,
+                    letterSpacing: "0.005em",
                     color: "var(--cyan)",
-                    fontWeight: 500,
+                    margin: 0,
+                    textAlign: "center",
                   }}
                 >
-                  Robots can finally feel.
-                </span>
-              </p>
-            </motion.div>
+                  [<span style={{ color: "#0f0e0d" }}> somatic pipeline for robots powered by humans </span>]
+                  <motion.span
+                    aria-hidden
+                    initial={{
+                      maskImage:
+                        "linear-gradient(45deg, transparent -18%, #000 0%)",
+                      WebkitMaskImage:
+                        "linear-gradient(45deg, transparent -18%, #000 0%)",
+                    }}
+                    animate={{
+                      maskImage: textReady
+                        ? [
+                            "linear-gradient(45deg, transparent -18%, #000 0%)",
+                            "linear-gradient(45deg, transparent 41%, #000 59%)",
+                            "linear-gradient(45deg, transparent 100%, #000 118%)",
+                          ]
+                        : "linear-gradient(45deg, transparent -18%, #000 0%)",
+                      WebkitMaskImage: textReady
+                        ? [
+                            "linear-gradient(45deg, transparent -18%, #000 0%)",
+                            "linear-gradient(45deg, transparent 41%, #000 59%)",
+                            "linear-gradient(45deg, transparent 100%, #000 118%)",
+                          ]
+                        : "linear-gradient(45deg, transparent -18%, #000 0%)",
+                    }}
+                    transition={{
+                      duration: 0.6,
+                      ease: "linear",
+                      times: [0, 0.5, 1],
+                      delay: textReady ? 0.35 : 0,
+                    }}
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      display: "block",
+                      backgroundImage:
+                        "linear-gradient(90deg, #cdbef3 0%, #b9c2ef 40%, #c5e8d1 75%, #9bd8b3 100%)",
+                      backgroundClip: "text",
+                      WebkitBackgroundClip: "text",
+                      color: "transparent",
+                      WebkitTextFillColor: "transparent",
+                      pointerEvents: "none",
+                    }}
+                  >
+                    [ somatic pipeline for robots powered by humans ]
+                  </motion.span>
+                </motion.p>
+              </div>
+
+              {/* Title — first to rise from below the barrier */}
+              <div
+                className="w-full"
+                style={{ overflow: "hidden", paddingBottom: "0.2em" }}
+              >
+                <motion.h1
+                  className="pointer-events-none text-balance"
+                  initial={{ y: "120%", opacity: 0 }}
+                  animate={{
+                    y: textReady ? "0%" : "120%",
+                    opacity: textReady ? 1 : 0,
+                  }}
+                  transition={{
+                    duration: 0.7,
+                    ease: [0.22, 1, 0.36, 1],
+                    delay: 0,
+                  }}
+                  style={{
+                    position: "relative",
+                    fontFamily:
+                      "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
+                    fontWeight: 900,
+                    fontStyle: "normal",
+                    fontSize: "clamp(2.4rem, 5.2vw, 4.6rem)",
+                    lineHeight: 1.03,
+                    letterSpacing: "-0.035em",
+                    margin: 0,
+                    color: "#0f0e0d",
+                    textAlign: "center",
+                  }}
+                >
+                  Training Robots using Brain-Muscle signals
+                  <motion.span
+                    aria-hidden
+                    className="text-balance"
+                    initial={{
+                      maskImage:
+                        "linear-gradient(45deg, transparent -18%, #000 0%)",
+                      WebkitMaskImage:
+                        "linear-gradient(45deg, transparent -18%, #000 0%)",
+                    }}
+                    animate={{
+                      maskImage: textReady
+                        ? [
+                            "linear-gradient(45deg, transparent -18%, #000 0%)",
+                            "linear-gradient(45deg, transparent 41%, #000 59%)",
+                            "linear-gradient(45deg, transparent 100%, #000 118%)",
+                          ]
+                        : "linear-gradient(45deg, transparent -18%, #000 0%)",
+                      WebkitMaskImage: textReady
+                        ? [
+                            "linear-gradient(45deg, transparent -18%, #000 0%)",
+                            "linear-gradient(45deg, transparent 41%, #000 59%)",
+                            "linear-gradient(45deg, transparent 100%, #000 118%)",
+                          ]
+                        : "linear-gradient(45deg, transparent -18%, #000 0%)",
+                    }}
+                    transition={{
+                      duration: 0.7,
+                      ease: "linear",
+                      times: [0, 0.5, 1],
+                      delay: 0,
+                    }}
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      display: "block",
+                      backgroundImage:
+                        "linear-gradient(90deg, #cdbef3 0%, #b9c2ef 40%, #c5e8d1 75%, #9bd8b3 100%)",
+                      backgroundClip: "text",
+                      WebkitBackgroundClip: "text",
+                      color: "transparent",
+                      WebkitTextFillColor: "transparent",
+                      pointerEvents: "none",
+                    }}
+                  >
+                    Training Robots using Brain-Muscle signals
+                  </motion.span>
+                </motion.h1>
+              </div>
+
+              {/* Subtitle — rises last, narrower max-width */}
+              <div
+                className="w-full"
+                style={{
+                  overflow: "hidden",
+                  marginTop: "1.4em",
+                  paddingBottom: "0.2em",
+                  maxWidth: "42em",
+                }}
+              >
+                <motion.p
+                  className="pointer-events-none"
+                  initial={{ y: "120%", opacity: 0 }}
+                  animate={{
+                    y: textReady ? "0%" : "120%",
+                    opacity: textReady ? 1 : 0,
+                  }}
+                  transition={{
+                    duration: 0.6,
+                    ease: [0.22, 1, 0.36, 1],
+                    delay: textReady ? 0.5 : 0,
+                  }}
+                  style={{
+                    position: "relative",
+                    fontFamily:
+                      "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
+                    fontWeight: 400,
+                    fontStyle: "normal",
+                    fontSize: "clamp(1.15rem, 1.45vw, 1.45rem)",
+                    lineHeight: 1.6,
+                    letterSpacing: "-0.005em",
+                    color: "rgba(15, 14, 13, 0.78)",
+                    margin: 0,
+                    textAlign: "center",
+                  }}
+                >
+                  We capture the biological signal that decides whether
+                  contact-rich assembly succeeds or fails, and we just
+                  solved the sim-to-real problem industrial automation
+                  couldn&apos;t.{" "}
+                  <span
+                    style={{
+                      color: "var(--cyan)",
+                      fontWeight: 500,
+                    }}
+                  >
+                    Robots can finally feel.
+                  </span>
+                  <motion.span
+                    aria-hidden
+                    initial={{
+                      maskImage:
+                        "linear-gradient(45deg, transparent -18%, #000 0%)",
+                      WebkitMaskImage:
+                        "linear-gradient(45deg, transparent -18%, #000 0%)",
+                    }}
+                    animate={{
+                      maskImage: textReady
+                        ? [
+                            "linear-gradient(45deg, transparent -18%, #000 0%)",
+                            "linear-gradient(45deg, transparent 41%, #000 59%)",
+                            "linear-gradient(45deg, transparent 100%, #000 118%)",
+                          ]
+                        : "linear-gradient(45deg, transparent -18%, #000 0%)",
+                      WebkitMaskImage: textReady
+                        ? [
+                            "linear-gradient(45deg, transparent -18%, #000 0%)",
+                            "linear-gradient(45deg, transparent 41%, #000 59%)",
+                            "linear-gradient(45deg, transparent 100%, #000 118%)",
+                          ]
+                        : "linear-gradient(45deg, transparent -18%, #000 0%)",
+                    }}
+                    transition={{
+                      duration: 0.6,
+                      ease: "linear",
+                      times: [0, 0.5, 1],
+                      delay: textReady ? 0.5 : 0,
+                    }}
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      display: "block",
+                      backgroundImage:
+                        "linear-gradient(90deg, #cdbef3 0%, #b9c2ef 40%, #c5e8d1 75%, #9bd8b3 100%)",
+                      backgroundClip: "text",
+                      WebkitBackgroundClip: "text",
+                      color: "transparent",
+                      WebkitTextFillColor: "transparent",
+                      pointerEvents: "none",
+                    }}
+                  >
+                    We capture the biological signal that decides whether
+                    contact-rich assembly succeeds or fails, and we just
+                    solved the sim-to-real problem industrial automation
+                    couldn&apos;t. Robots can finally feel.
+                  </motion.span>
+                </motion.p>
+              </div>
+            </div>
           </motion.div>
 
         </div>
@@ -2374,7 +2487,7 @@ function SectionTag({ label }: { label: string }) {
       className="mb-6 font-mono text-[11px] uppercase tracking-[0.22em] md:mb-7"
       style={{ color: "var(--cyan)" }}
     >
-      [<span style={{ color: "#f5efe5" }}> {label} </span>]
+      [<span style={{ color: "#0f0e0d" }}> {label} </span>]
     </p>
   );
 }
@@ -2411,15 +2524,15 @@ const WHAT_WE_BUILD_ROWS = [
 ] as const;
 
 function WhatWeBuild() {
-  const cellBorder = "1px solid rgba(245, 239, 229, 0.10)";
-  const tableBorder = "1px solid rgba(245, 239, 229, 0.14)";
+  const cellBorder = "1px solid rgba(15, 14, 13, 0.10)";
+  const tableBorder = "1px solid rgba(15, 14, 13, 0.14)";
   return (
     <section
       className="relative overflow-hidden"
       style={{
         fontFamily:
           "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
-        color: "#f5efe5",
+        color: "#0f0e0d",
       }}
     >
       <PaperBackground />
@@ -2433,7 +2546,7 @@ function WhatWeBuild() {
         </h2>
         <p
           className="mt-8 max-w-3xl text-base leading-[1.6] md:text-lg md:leading-[1.55]"
-          style={{ color: "rgba(245, 239, 229, 0.72)", fontWeight: 400 }}
+          style={{ color: "rgba(15, 14, 13, 0.72)", fontWeight: 400 }}
         >
           We deploy autonomous manipulation systems onto our customers&apos;
           existing robot infrastructure. We bring the biological-signal
@@ -2455,8 +2568,8 @@ function WhatWeBuild() {
           <div
             className="hidden font-mono text-[10px] uppercase tracking-[0.22em] md:grid md:grid-cols-[1.2fr_1fr_1fr_1fr]"
             style={{
-              background: "rgba(245, 239, 229, 0.04)",
-              color: "rgba(245, 239, 229, 0.55)",
+              background: "rgba(15, 14, 13, 0.04)",
+              color: "rgba(15, 14, 13, 0.55)",
             }}
           >
             <div className="p-5" />
@@ -2483,24 +2596,24 @@ function WhatWeBuild() {
               <div className="flex flex-col gap-1 p-5">
                 <span
                   className="font-mono text-[10px] uppercase tracking-[0.20em]"
-                  style={{ color: "rgba(245, 239, 229, 0.40)" }}
+                  style={{ color: "rgba(15, 14, 13, 0.40)" }}
                 >
                   // {String(i + 1).padStart(2, "0")}
                 </span>
                 <span
                   className="text-base md:text-[15px]"
-                  style={{ color: "#f5efe5", fontWeight: 500 }}
+                  style={{ color: "#0f0e0d", fontWeight: 500 }}
                 >
                   {r.label}
                 </span>
               </div>
               <div
                 className="flex flex-col gap-1 p-5 text-[14px] leading-[1.45] md:text-[14px]"
-                style={{ borderTop: cellBorder, color: "rgba(245, 239, 229, 0.62)" }}
+                style={{ borderTop: cellBorder, color: "rgba(15, 14, 13, 0.62)" }}
               >
                 <span
                   className="font-mono text-[10px] uppercase tracking-[0.20em] md:hidden"
-                  style={{ color: "rgba(245, 239, 229, 0.40)" }}
+                  style={{ color: "rgba(15, 14, 13, 0.40)" }}
                 >
                   Traditional
                 </span>
@@ -2510,7 +2623,7 @@ function WhatWeBuild() {
                 className="flex flex-col gap-1 p-5 text-[14px] leading-[1.45]"
                 style={{
                   borderTop: cellBorder,
-                  color: "#f5efe5",
+                  color: "#0f0e0d",
                   fontWeight: 500,
                 }}
               >
@@ -2528,7 +2641,7 @@ function WhatWeBuild() {
               >
                 <span
                   className="font-mono text-[10px] uppercase tracking-[0.20em] md:hidden"
-                  style={{ color: "rgba(245, 239, 229, 0.40)" }}
+                  style={{ color: "rgba(15, 14, 13, 0.40)" }}
                 >
                   Advantage
                 </span>
@@ -2660,7 +2773,7 @@ function Evidence() {
       style={{
         fontFamily:
           "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
-        color: "#f5efe5",
+        color: "#0f0e0d",
       }}
     >
       <PaperBackground />
@@ -2674,7 +2787,7 @@ function Evidence() {
         </h2>
         <p
           className="mt-8 max-w-3xl text-base leading-[1.6] md:text-lg md:leading-[1.55]"
-          style={{ color: "rgba(245, 239, 229, 0.72)", fontWeight: 400 }}
+          style={{ color: "rgba(15, 14, 13, 0.72)", fontWeight: 400 }}
         >
           Every claim we make about contact-rich manipulation is backed by
           published research. The science is settled. The remaining question
@@ -2691,8 +2804,8 @@ function Evidence() {
               transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
               className="flex flex-col gap-3 rounded-2xl p-6 md:p-7"
               style={{
-                border: "1px solid rgba(245, 239, 229, 0.14)",
-                background: "rgba(245, 239, 229, 0.03)",
+                border: "1px solid rgba(15, 14, 13, 0.14)",
+                background: "rgba(15, 14, 13, 0.03)",
               }}
             >
               <div
@@ -2703,19 +2816,19 @@ function Evidence() {
               </div>
               <p
                 className="font-mono text-[11px] uppercase tracking-[0.20em]"
-                style={{ color: "rgba(245, 239, 229, 0.85)" }}
+                style={{ color: "rgba(15, 14, 13, 0.85)" }}
               >
                 {s.label}
               </p>
               <p
                 className="text-[13px] leading-[1.55]"
-                style={{ color: "rgba(245, 239, 229, 0.62)" }}
+                style={{ color: "rgba(15, 14, 13, 0.62)" }}
               >
                 {s.caption}
               </p>
               <p
                 className="mt-auto pt-3 font-mono text-[10px] uppercase tracking-[0.18em]"
-                style={{ color: "rgba(245, 239, 229, 0.38)" }}
+                style={{ color: "rgba(15, 14, 13, 0.38)" }}
               >
                 {s.source}
               </p>
@@ -2813,8 +2926,8 @@ const TERM_PIPELINE: TermItem[] = [
 
 const TERM_MONO_STACK =
   'ui-monospace, "JetBrains Mono", "Fira Code", "IBM Plex Mono", "SF Mono", Menlo, Consolas, "Liberation Mono", monospace';
-const TERM_BODY = "rgba(245, 239, 229, 0.86)";
-const TERM_MUTED = "rgba(245, 239, 229, 0.42)";
+const TERM_BODY = "rgba(15, 14, 13, 0.86)";
+const TERM_MUTED = "rgba(15, 14, 13, 0.42)";
 
 function ProgressBar({ filled }: { filled: number }) {
   const total = TERM_BAR_SEGMENTS;
@@ -2927,7 +3040,7 @@ function Technicals() {
       style={{
         fontFamily:
           "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
-        color: "#f5efe5",
+        color: "#0f0e0d",
       }}
     >
       <PaperBackground />
@@ -2941,7 +3054,7 @@ function Technicals() {
         </h2>
         <p
           className="mt-8 max-w-3xl text-base leading-[1.6] md:text-lg md:leading-[1.55]"
-          style={{ color: "rgba(245, 239, 229, 0.72)", fontWeight: 400 }}
+          style={{ color: "rgba(15, 14, 13, 0.72)", fontWeight: 400 }}
         >
           Five stages, executed in sequence. Biological signals captured,
           processed, fused with vision, augmented through simulation, and
@@ -2957,7 +3070,7 @@ function Technicals() {
           className="mt-12 overflow-hidden"
           style={{
             background: "#0a0805",
-            border: "1px solid rgba(245, 239, 229, 0.14)",
+            border: "1px solid rgba(15, 14, 13, 0.14)",
             borderRadius: "4px",
           }}
         >
@@ -2965,8 +3078,8 @@ function Technicals() {
           <div
             className="relative flex items-center px-4 py-3"
             style={{
-              borderBottom: "1px solid rgba(245, 239, 229, 0.10)",
-              background: "rgba(245, 239, 229, 0.02)",
+              borderBottom: "1px solid rgba(15, 14, 13, 0.10)",
+              background: "rgba(15, 14, 13, 0.02)",
             }}
           >
             <div className="flex items-center gap-1.5">
@@ -2988,7 +3101,7 @@ function Technicals() {
               className="absolute left-1/2 -translate-x-1/2 text-[11px] md:text-[12px]"
               style={{
                 fontFamily: TERM_MONO_STACK,
-                color: "rgba(245, 239, 229, 0.45)",
+                color: "rgba(15, 14, 13, 0.45)",
               }}
             >
               novonus@pipeline ~ %
@@ -3094,11 +3207,11 @@ function SiteFooter() {
       <PaperBackground />
       <div
         className="relative mx-auto max-w-[1400px] px-6 py-10 md:px-10 md:py-12"
-        style={{ borderTop: "1px solid rgba(245, 239, 229, 0.10)" }}
+        style={{ borderTop: "1px solid rgba(15, 14, 13, 0.10)" }}
       >
         <div
           className="flex flex-col items-start justify-between gap-2 text-[12px] md:flex-row md:items-center md:text-[13px]"
-          style={{ color: "rgba(245, 239, 229, 0.55)" }}
+          style={{ color: "rgba(15, 14, 13, 0.55)" }}
         >
           <p>Novonus / The somatic layer for industrial robotics</p>
           <p>© 2026</p>
