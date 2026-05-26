@@ -1,9 +1,11 @@
 "use client";
 
 import {
+  Fragment,
   createContext,
   useContext,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
   type ReactNode,
@@ -19,17 +21,6 @@ import {
   useTransform,
   type MotionValue,
 } from "framer-motion";
-import {
-  Cpu,
-  Workflow,
-  TrendingUp,
-  ScanLine,
-  Truck,
-  Boxes,
-  ShieldCheck,
-  Quote,
-} from "lucide-react";
-
 /* ============================================================================
    INTRO PROVIDER — cinematic preloader phase machine
    ========================================================================== */
@@ -60,7 +51,10 @@ const EASE_MORPH = [0.65, 0, 0.35, 1] as const;
 const EASE_POP = [0.34, 1.56, 0.64, 1] as const;
 const EASE_FADE = [0.22, 1, 0.36, 1] as const;
 
-const IntroContext = createContext<{ phase: IntroPhase }>({ phase: "done" });
+const IntroContext = createContext<{ phase: IntroPhase; skipIntroAnim: boolean }>({
+  phase: "done",
+  skipIntroAnim: false,
+});
 const useIntro = () => useContext(IntroContext);
 
 function IntroProvider({
@@ -70,9 +64,28 @@ function IntroProvider({
   sidebar?: ReactNode;
   children: ReactNode;
 }) {
+  /* When the browser restores a non-zero scroll position on
+     refresh, the user is past the hero — playing the intro
+     choreography and the title-text entrance animation is jarring.
+     We can't resolve this in useState initializers without
+     mismatching SSR vs client first render (hydration error), so
+     we keep the defaults that match SSR and detect "skip" in a
+     post-hydration useEffect instead. Animated children that get
+     re-mounted after the flip pick up `skipIntroAnim = true` and
+     initialize in their already-settled state. */
   const [phase, setPhase] = useState<IntroPhase>("loadingBar");
+  const [skipIntroAnim, setSkipIntroAnim] = useState(false);
 
-  useEffect(() => {
+  /* useLayoutEffect runs synchronously BEFORE the browser paints, so
+     when we flip `skipIntroAnim` + `phase` here, the re-render and
+     subsequent remount of `key`-gated children happens before the
+     user ever sees the intro state. No flash, no animation. */
+  useLayoutEffect(() => {
+    if (typeof window !== "undefined" && window.scrollY > 0) {
+      setSkipIntroAnim(true);
+      setPhase("done");
+      return;
+    }
     const t0 = LOADING_BAR_MS + LOADING_BAR_HOLD_MS;
     const t1 = t0 + LOGO_POP_MS;
     const t2 = t1 + DOCK_MS;
@@ -89,15 +102,18 @@ function IntroProvider({
   const siteVisible = phase === "dock" || phase === "done";
 
   return (
-    <IntroContext.Provider value={{ phase }}>
+    <IntroContext.Provider value={{ phase, skipIntroAnim }}>
       <Preloader />
       <HeroLoadingBar />
       <BrandLockup />
       {sidebar}
       <motion.div
-        initial={{ opacity: 0 }}
+        initial={{ opacity: skipIntroAnim ? 1 : 0 }}
         animate={{ opacity: siteVisible ? 1 : 0 }}
-        transition={{ duration: MORPH_S * 0.9, ease: EASE_FADE }}
+        transition={{
+          duration: skipIntroAnim ? 0 : MORPH_S * 0.9,
+          ease: EASE_FADE,
+        }}
         aria-hidden={!siteVisible}
       >
         {children}
@@ -393,7 +409,7 @@ function HeroLoadingBar() {
    ========================================================================== */
 
 function BrandLockup() {
-  const { phase } = useIntro();
+  const { phase, skipIntroAnim } = useIntro();
   const visible =
     phase === "logoPop" ||
     phase === "dock" ||
@@ -405,28 +421,51 @@ function BrandLockup() {
   return (
     <>
       {/* Full-width top bar — only fades in once docked, persists for
-          the rest of the site. Rounded corners, glassy backdrop. */}
+          the rest of the site. When the intro is skipped (refresh
+          mid-scroll), it mounts in its already-settled state. */}
       {docked && (
         <motion.div
           aria-hidden
           className="pointer-events-none fixed inset-x-0 top-0 z-[119] h-[74px]"
-          initial={{ opacity: 0, y: -10 }}
+          initial={
+            skipIntroAnim ? { opacity: 1, y: 0 } : { opacity: 0, y: -10 }
+          }
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: EASE_FADE, delay: 0.3 }}
+          transition={{
+            duration: skipIntroAnim ? 0 : 0.6,
+            ease: EASE_FADE,
+            delay: skipIntroAnim ? 0 : 0.3,
+          }}
           style={{ backgroundColor: "#0f0e0d" }}
         />
       )}
 
-      {/* Logo + wordmark lockup. Floats above the bar (z-120 vs z-119). */}
+      {/* Logo + wordmark lockup. Floats above the bar (z-120 vs z-119).
+          When skipped, mounts already docked at the top bar with no
+          fly-in animation. The `key` changes when skipIntroAnim
+          flips so framer-motion remounts the element with fresh
+          initial values (mounted state from before is discarded). */}
       <motion.div
+        key={skipIntroAnim ? "lockup-skip" : "lockup-normal"}
         className="pointer-events-none fixed left-1/2 z-[120] flex items-center"
-        initial={{
-          top: "50%",
-          x: "-50%",
-          y: "-50%",
-          scale: 0,
-          opacity: 0,
-        }}
+        initial={
+          skipIntroAnim
+            ? {
+                top: "37px",
+                x: "-50%",
+                y: "-50%",
+                scale: 1,
+                opacity: 1,
+                height: 38,
+              }
+            : {
+                top: "50%",
+                x: "-50%",
+                y: "-50%",
+                scale: 0,
+                opacity: 0,
+              }
+        }
         animate={{
           top: docked ? "37px" : "50%",
           x: "-50%",
@@ -435,26 +474,38 @@ function BrandLockup() {
           scale: visible ? 1 : 0,
           opacity: visible ? 1 : 0,
         }}
-        transition={{
-          top: { duration: 0.5, ease: EASE_MORPH },
-          y: { duration: 0.5, ease: EASE_MORPH },
-          height: { duration: 0.55, ease: EASE_MORPH },
-          scale: {
-            duration: centered ? 0.55 : 0.5,
-            ease: centered ? EASE_POP : EASE_MORPH,
-          },
-          opacity: { duration: 0.45, ease: EASE_FADE },
-        }}
+        transition={
+          skipIntroAnim
+            ? { duration: 0 }
+            : {
+                top: { duration: 0.5, ease: EASE_MORPH },
+                y: { duration: 0.5, ease: EASE_MORPH },
+                height: { duration: 0.55, ease: EASE_MORPH },
+                scale: {
+                  duration: centered ? 0.55 : 0.5,
+                  ease: centered ? EASE_POP : EASE_MORPH,
+                },
+                opacity: { duration: 0.45, ease: EASE_FADE },
+              }
+        }
       >
         {/* Logo */}
         <motion.div
           className="relative shrink-0"
           style={{ zIndex: 2 }}
+          initial={
+            skipIntroAnim
+              ? { width: 38, height: 38 }
+              : { width: 144, height: 144 }
+          }
           animate={{
             width: centered ? 144 : 38,
             height: centered ? 144 : 38,
           }}
-          transition={{ duration: 0.55, ease: EASE_MORPH }}
+          transition={{
+            duration: skipIntroAnim ? 0 : 0.55,
+            ease: EASE_MORPH,
+          }}
         >
           <LogoMark glass={centered} />
         </motion.div>
@@ -754,12 +805,32 @@ function PaperBackground() {
 }
 
 /* ============================================================================
-   TOPOGRAPHICAL DOTS — canvas grid of dark dots that responds to cursor
-   motion only. A stationary cursor leaves the field flat. While moving,
-   the cursor raises a velocity-scaled peak directly under it AND emits
-   ring waves that expand outward and fade, like ripples on water.
+   TOPOGRAPHICAL DOTS — canvas grid of dots that (a) responds to cursor
+   velocity with a topographical peak + ring waves, and (b) when driven
+   by scroll, smoothly lerps every dot from its grid cell into a brain
+   silhouette while its color crossfades from dark to cream. The brain
+   target for each cell is computed once on resize via a square → disk
+   warp so no two grid points collide on the same target.
    ========================================================================== */
-function TopographicalDots() {
+function TopographicalDots({
+  morphProgress,
+  invertProgress,
+  eyeMorphProgress,
+  eyeOffsetProgress,
+  earthMorphProgress,
+  earthOffsetProgress,
+  cliffMorphProgress,
+  cliffPhaseProgress,
+}: {
+  morphProgress?: MotionValue<number>;
+  invertProgress?: MotionValue<number>;
+  eyeMorphProgress?: MotionValue<number>;
+  eyeOffsetProgress?: MotionValue<number>;
+  earthMorphProgress?: MotionValue<number>;
+  earthOffsetProgress?: MotionValue<number>;
+  cliffMorphProgress?: MotionValue<number>;
+  cliffPhaseProgress?: MotionValue<number>;
+} = {}) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
@@ -777,16 +848,13 @@ function TopographicalDots() {
     const PEAK_SIZE = 2.6;
     const BASE_SIZE = 1.05;
     const BASE_ALPHA = 0.32;
+    /* Cream needs more alpha to read on the dark inverted background. */
+    const INVERT_ALPHA = 0.78;
 
-    /* Velocity → peak amplitude. ~30px/frame ≈ a fast drag, saturates
-       the peak; small ~1px/frame drifts produce a barely-there bump. */
     const VELOCITY_MAX = 30;
     const SPEED_SMOOTH = 0.55;
     const SPEED_FLOOR = 0.05;
 
-    /* Ring waves: thickness controls how broad each ripple looks; speed
-       controls how fast it travels; life caps how far it goes before
-       fading out completely. */
     const WAVE_SPEED = 8.5;
     const WAVE_LIFE = 75;
     const WAVE_THICKNESS = 34;
@@ -796,6 +864,7 @@ function TopographicalDots() {
     const MAX_WAVES = 28;
 
     const BASE_DARK = { r: 15, g: 14, b: 13 };
+    const BASE_CREAM = { r: 245, g: 239, b: 229 };
     const PURPLE = { r: 109, g: 40, b: 217 };
     const GREEN = { r: 110, g: 231, b: 183 };
 
@@ -811,6 +880,503 @@ function TopographicalDots() {
     let width = 0;
     let height = 0;
 
+    type Cell = {
+      gx: number; gy: number;
+      bx: number; by: number;
+      ex: number; ey: number;
+      fx: number; fy: number;
+      cx: number; cy: number;
+    };
+    let cells: Cell[] = [];
+    /* Brain centre in canvas pixels — used to compute tilt direction
+       relative to the brain's centre rather than the canvas centre. */
+    let brainCenterX = 0;
+    let brainCenterY = 0;
+    /* Smoothed CSS perspective-tilt angles (degrees). The canvas
+       itself tilts in 3D toward the cursor, like a card surface. */
+    let smoothTiltX = 0;
+    let smoothTiltY = 0;
+    /* Previous-frame morph values, used to detect that dots are
+       actively transitioning. While they are, we partial-fade the
+       canvas instead of clearing so each moving dot leaves a
+       fading velocity trail behind it. */
+    let prevMorph = 0;
+    let prevEyeMorph = 0;
+    let prevEyeOffset = 0;
+    let prevEarthMorph = 0;
+    let prevEarthOffset = 0;
+    let prevCliffMorph = 0;
+    let prevCliffPhase = 0;
+
+    /* Brain silhouette comes from the real reference image at
+       /brain-reference.jpg. On image load we threshold dark pixels
+       and densify with a window-sum so only the solid brain region
+       survives — the scattered dispersing dots on the side get
+       filtered out. Until the image arrives we fall back to a
+       procedural side-profile (main cerebrum + cerebellum +
+       brainstem) so the morph still works during the brief load
+       window. */
+
+    /* Procedural fallback constants — side-profile brain facing LEFT. */
+    const MAIN_CX = -0.02;
+    const MAIN_CY = -0.06;
+    const MAIN_A = 0.46;
+    const MAIN_B = 0.42;
+    const MAIN_TILT = 0.122;
+    const MAIN_COS = Math.cos(MAIN_TILT);
+    const MAIN_SIN = Math.sin(MAIN_TILT);
+    const CEREB_X = 0.32;
+    const CEREB_Y = 0.30;
+    const CEREB_A = 0.16;
+    const CEREB_B = 0.14;
+    const STEM_X = 0.08;
+    const STEM_Y = 0.46;
+    const STEM_A = 0.06;
+    const STEM_B = 0.14;
+
+    const insideBrainProcedural = (x: number, y: number) => {
+      const tx = x - MAIN_CX;
+      const ty = y - MAIN_CY;
+      const rx = tx * MAIN_COS + ty * MAIN_SIN;
+      const ry = -tx * MAIN_SIN + ty * MAIN_COS;
+      const mdx = rx / MAIN_A;
+      const mdy = ry / MAIN_B;
+      if (mdx * mdx + mdy * mdy <= 1) return true;
+      const cdx = (x - CEREB_X) / CEREB_A;
+      const cdy = (y - CEREB_Y) / CEREB_B;
+      if (cdx * cdx + cdy * cdy <= 1) return true;
+      const sdx = (x - STEM_X) / STEM_A;
+      const sdy = (y - STEM_Y) / STEM_B;
+      if (sdx * sdx + sdy * sdy <= 1) return true;
+      return false;
+    };
+
+    /* Mask state — populated asynchronously after each image loads. */
+    let brainMask: Uint8Array | null = null;
+    let brainMaskW = 0;
+    let brainMaskH = 0;
+    let bboxMinX = 0;
+    let bboxMinY = 0;
+    let bboxMaxX = 0;
+    let bboxMaxY = 0;
+    /* Earth has its own mask + bbox, traced from a separate reference
+       image with the same pipeline (threshold → close → CC → bbox). */
+    let earthMask: Uint8Array | null = null;
+    let earthMaskW = 0;
+    let earthMaskH = 0;
+    let earthBboxMinX = 0;
+    let earthBboxMinY = 0;
+    let earthBboxMaxX = 0;
+    let earthBboxMaxY = 0;
+
+    const insideEarthMask = (u: number, v: number): boolean => {
+      if (!earthMask) return false;
+      const bbW = earthBboxMaxX - earthBboxMinX;
+      const bbH = earthBboxMaxY - earthBboxMinY;
+      if (bbW <= 0 || bbH <= 0) return false;
+      const px = earthBboxMinX + Math.floor(u * bbW);
+      const py = earthBboxMinY + Math.floor(v * bbH);
+      if (px < 0 || px >= earthMaskW || py < 0 || py >= earthMaskH) return false;
+      return earthMask[py * earthMaskW + px] > 0;
+    };
+
+    const insideBrainMask = (u: number, v: number): boolean => {
+      if (!brainMask) return false;
+      const bbW = bboxMaxX - bboxMinX;
+      const bbH = bboxMaxY - bboxMinY;
+      if (bbW <= 0 || bbH <= 0) return false;
+      const px = bboxMinX + Math.floor(u * bbW);
+      const py = bboxMinY + Math.floor(v * bbH);
+      if (px < 0 || px >= brainMaskW || py < 0 || py >= brainMaskH) return false;
+      return brainMask[py * brainMaskW + px] > 0;
+    };
+
+    /* Build the per-cell grid AND brain-target arrays. Run on resize
+       AND when the reference image finishes loading. Strategy:
+         1) build the grid, 2) reject-sample N brain interior points
+         using a seeded PRNG so the shape is stable, 3) sort both
+         lists by polar angle (then radius) around the brain centre
+         and pair index-by-index to minimise path crossings during
+         the morph. */
+    const buildCells = () => {
+      const cols = Math.ceil(width / SPACING) + 2;
+      const rows = Math.ceil(height / SPACING) + 2;
+      const ox = (width - (cols - 1) * SPACING) / 2;
+      const oy = (height - (rows - 1) * SPACING) / 2;
+
+      const next: Cell[] = [];
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          next.push({
+            gx: ox + c * SPACING,
+            gy: oy + r * SPACING,
+            bx: 0,
+            by: 0,
+            ex: 0,
+            ey: 0,
+            fx: 0,
+            fy: 0,
+            cx: 0,
+            cy: 0,
+          });
+        }
+      }
+
+      const usingMask = !!brainMask;
+      const BRAIN_SCALE = Math.min(width, height) * 0.58;
+      const cx = width * 0.5;
+      let cy = height * 0.5;
+
+      /* Pixel extent of the brain in canvas space. With the mask we
+         preserve the actual image-derived aspect ratio; without it
+         we use the procedural shape's own approximate aspect. */
+      let brainPxW: number;
+      let brainPxH: number;
+      if (usingMask) {
+        const bbW = bboxMaxX - bboxMinX;
+        const bbH = bboxMaxY - bboxMinY;
+        const aspect = bbW / bbH;
+        brainPxH = BRAIN_SCALE;
+        brainPxW = BRAIN_SCALE * aspect;
+        if (brainPxW > width * 0.92) {
+          brainPxW = width * 0.92;
+          brainPxH = brainPxW / aspect;
+        }
+      } else {
+        brainPxW = BRAIN_SCALE * 1.0;
+        brainPxH = BRAIN_SCALE * 1.18;
+        cy = height * 0.5 - 0.06 * BRAIN_SCALE;
+      }
+
+      /* Seeded LCG so the same canvas size always produces the same
+         brain — no per-frame jitter, no resampling on scroll. */
+      let seed = 0x1a2b3c4d;
+      const rnd = () => {
+        seed = (seed * 1664525 + 1013904223) >>> 0;
+        return seed / 0xffffffff;
+      };
+
+      const wanted = next.length;
+      const targets: { x: number; y: number }[] = [];
+      let attempts = 0;
+      const ATTEMPT_CAP = wanted * 80;
+      while (targets.length < wanted && attempts < ATTEMPT_CAP) {
+        attempts++;
+        if (usingMask) {
+          const u = rnd();
+          const v = rnd();
+          if (insideBrainMask(u, v)) {
+            const x = cx - brainPxW * 0.5 + u * brainPxW;
+            const y = cy - brainPxH * 0.5 + v * brainPxH;
+            targets.push({ x, y });
+          }
+        } else {
+          const u = rnd() * 1.05 - 0.55;
+          const v = rnd() * 1.20 - 0.55;
+          if (insideBrainProcedural(u, v)) {
+            targets.push({ x: cx + u * BRAIN_SCALE, y: cy + v * BRAIN_SCALE });
+          }
+        }
+      }
+      while (targets.length < wanted) targets.push({ x: cx, y: cy });
+
+      const sortKey = (px: number, py: number) => {
+        const dx = px - cx;
+        const dy = py - cy;
+        return { ang: Math.atan2(dy, dx), r: Math.sqrt(dx * dx + dy * dy) };
+      };
+      const cellOrder = next
+        .map((c, i) => ({ i, ...sortKey(c.gx, c.gy) }))
+        .sort((a, b) => a.ang - b.ang || a.r - b.r);
+      const targOrder = targets
+        .map((t, i) => ({ i, ...sortKey(t.x, t.y) }))
+        .sort((a, b) => a.ang - b.ang || a.r - b.r);
+
+      for (let k = 0; k < cellOrder.length; k++) {
+        const t = targets[targOrder[k].i];
+        const c = next[cellOrder[k].i];
+        c.bx = t.x;
+        c.by = t.y;
+      }
+
+      /* ------------------------------------------------------------
+         CLOCK TARGETS — dot-art clock. Composed explicitly per
+         feature so the result reads as a clock with all parts
+         visible, not a uniform disc:
+            · FACE RING   — thin annular outline (most dots)
+            · HOUR MARKERS — 12 small dense clusters around the ring
+            · HOUR HAND   — short thick line, pointing at 10
+            · MINUTE HAND — longer thin line, pointing at 2 (= :10)
+            · CENTRE PIVOT — small dense disc at the centre
+         Hands at 10:10 — the classic advertising-clock pose, looks
+         like a smile. Dot counts per feature are explicit so the
+         features stay legible regardless of how many cells exist.
+         ------------------------------------------------------------ */
+      const CLOCK_R = BRAIN_SCALE * 0.52;
+      const FACE_INNER = CLOCK_R * 0.88;
+      const FACE_OUTER = CLOCK_R * 1.0;
+      const MARKER_RING = CLOCK_R * 0.79;
+      const MARKER_DOT_R = CLOCK_R * 0.05;
+      const CENTER_R = CLOCK_R * 0.055;
+      const HOUR_HAND_LEN = CLOCK_R * 0.42;
+      const HOUR_HAND_W = CLOCK_R * 0.028;
+      const MIN_HAND_LEN = CLOCK_R * 0.70;
+      const MIN_HAND_W = CLOCK_R * 0.020;
+      /* Angles: 0° at 12 o'clock (top), increasing clockwise. */
+      const HOUR_ANGLE = (10 / 12) * Math.PI * 2 - Math.PI / 2;
+      const MIN_ANGLE = (2 / 12) * Math.PI * 2 - Math.PI / 2;
+
+      const clockTargets: { x: number; y: number }[] = [];
+
+      /* Reset seed for stable clock targets. */
+      seed = 0x5a3e9c11;
+      const rnd2 = () => {
+        seed = (seed * 1664525 + 1013904223) >>> 0;
+        return seed / 0xffffffff;
+      };
+      const pushAt = (u: number, v: number) =>
+        clockTargets.push({ x: cx + u, y: cy + v });
+
+      /* Centre pivot. */
+      const CENTRE_COUNT = Math.max(20, Math.floor(wanted * 0.018));
+      for (let i = 0; i < CENTRE_COUNT; i++) {
+        let placed = false;
+        for (let t = 0; t < 80 && !placed; t++) {
+          const u = (rnd2() * 2 - 1) * CENTER_R;
+          const v = (rnd2() * 2 - 1) * CENTER_R;
+          if (u * u + v * v <= CENTER_R * CENTER_R) {
+            pushAt(u, v);
+            placed = true;
+          }
+        }
+      }
+
+      /* Hour hand — line of dots from centre toward 10 o'clock. */
+      const HOUR_COUNT = Math.max(70, Math.floor(wanted * 0.05));
+      const huX = Math.cos(HOUR_ANGLE);
+      const huY = Math.sin(HOUR_ANGLE);
+      const huPerpX = -huY;
+      const huPerpY = huX;
+      for (let i = 0; i < HOUR_COUNT; i++) {
+        const t = rnd2();
+        const w = (rnd2() * 2 - 1) * HOUR_HAND_W;
+        const u = huX * (HOUR_HAND_LEN * t) + huPerpX * w;
+        const v = huY * (HOUR_HAND_LEN * t) + huPerpY * w;
+        pushAt(u, v);
+      }
+
+      /* Minute hand — longer thinner line toward 2 o'clock. */
+      const MIN_COUNT = Math.max(110, Math.floor(wanted * 0.072));
+      const mhX = Math.cos(MIN_ANGLE);
+      const mhY = Math.sin(MIN_ANGLE);
+      const mhPerpX = -mhY;
+      const mhPerpY = mhX;
+      for (let i = 0; i < MIN_COUNT; i++) {
+        const t = rnd2();
+        const w = (rnd2() * 2 - 1) * MIN_HAND_W;
+        const u = mhX * (MIN_HAND_LEN * t) + mhPerpX * w;
+        const v = mhY * (MIN_HAND_LEN * t) + mhPerpY * w;
+        pushAt(u, v);
+      }
+
+      /* 12 hour markers — small dense clusters around the perimeter. */
+      const MARKER_PER = Math.max(18, Math.floor(wanted * 0.015));
+      for (let h = 0; h < 12; h++) {
+        const ang = (h / 12) * Math.PI * 2 - Math.PI / 2;
+        const mx = Math.cos(ang) * MARKER_RING;
+        const my = Math.sin(ang) * MARKER_RING;
+        for (let i = 0; i < MARKER_PER; i++) {
+          let placed = false;
+          for (let t = 0; t < 60 && !placed; t++) {
+            const u = (rnd2() * 2 - 1) * MARKER_DOT_R;
+            const v = (rnd2() * 2 - 1) * MARKER_DOT_R;
+            if (u * u + v * v <= MARKER_DOT_R * MARKER_DOT_R) {
+              pushAt(mx + u, my + v);
+              placed = true;
+            }
+          }
+        }
+      }
+
+      /* Face ring fills the remainder. Random angle + radius inside
+         the face annulus. */
+      const RING_RADIAL = FACE_OUTER - FACE_INNER;
+      while (clockTargets.length < wanted) {
+        const a = rnd2() * Math.PI * 2;
+        const r = FACE_INNER + RING_RADIAL * rnd2();
+        pushAt(Math.cos(a) * r, Math.sin(a) * r);
+      }
+      /* Trim any overshoot. */
+      if (clockTargets.length > wanted) clockTargets.length = wanted;
+
+      /* Replicate the existing name so the assignment block below
+         keeps reading naturally. */
+      const eyeTargets = clockTargets;
+
+      const eyeOrder = eyeTargets
+        .map((t, i) => ({ i, ...sortKey(t.x, t.y) }))
+        .sort((a, b) => a.ang - b.ang || a.r - b.r);
+      for (let k = 0; k < cellOrder.length; k++) {
+        const t = eyeTargets[eyeOrder[k].i];
+        const c = next[cellOrder[k].i];
+        c.ex = t.x;
+        c.ey = t.y;
+      }
+
+      /* ------------------------------------------------------------
+         EARTH TARGETS — traced from the reference image silhouette
+         (same pipeline as the brain). Image-derived dots fill the
+         exact outline of the globe + visible continents. Procedural
+         disc + continent ellipses are used as a fallback while the
+         image is still loading.
+         ------------------------------------------------------------ */
+      const usingEarthMask = !!earthMask;
+      let earthPxW: number;
+      let earthPxH: number;
+      const EARTH_BASE = BRAIN_SCALE * 1.5;
+      if (usingEarthMask) {
+        const ebbW = earthBboxMaxX - earthBboxMinX;
+        const ebbH = earthBboxMaxY - earthBboxMinY;
+        const eAspect = ebbW / Math.max(1, ebbH);
+        earthPxH = EARTH_BASE;
+        earthPxW = EARTH_BASE * eAspect;
+        if (earthPxW > width * 0.95) {
+          earthPxW = width * 0.95;
+          earthPxH = earthPxW / eAspect;
+        }
+      } else {
+        earthPxW = EARTH_BASE;
+        earthPxH = EARTH_BASE;
+      }
+
+      const earthTargets: { x: number; y: number }[] = [];
+      const earthAttemptCap = wanted * 120;
+      let earthTries = 0;
+      if (usingEarthMask) {
+        while (earthTargets.length < wanted && earthTries < earthAttemptCap) {
+          earthTries++;
+          const u = rnd2();
+          const v = rnd2();
+          if (!insideEarthMask(u, v)) continue;
+          const x = cx - earthPxW * 0.5 + u * earthPxW;
+          const y = cy - earthPxH * 0.5 + v * earthPxH;
+          earthTargets.push({ x, y });
+        }
+      } else {
+        /* Procedural fallback — simple disc + continents (used only
+           while the image is still loading). */
+        const EARTH_R = EARTH_BASE * 0.5;
+        const EARTH_R2 = EARTH_R * EARTH_R;
+        const CONTINENTS = [
+          { cx: -0.06, cy: -0.12, rx: 0.20, ry: 0.32 },
+          { cx: 0.28, cy: 0.05, rx: 0.24, ry: 0.22 },
+          { cx: -0.42, cy: 0.18, rx: 0.14, ry: 0.22 },
+          { cx: 0.18, cy: -0.45, rx: 0.18, ry: 0.10 },
+        ];
+        const inContinent = (u: number, v: number) => {
+          for (let i = 0; i < CONTINENTS.length; i++) {
+            const c = CONTINENTS[i];
+            const dx = u - c.cx * EARTH_R;
+            const dy = v - c.cy * EARTH_R;
+            const rxp = c.rx * EARTH_R;
+            const ryp = c.ry * EARTH_R;
+            if ((dx * dx) / (rxp * rxp) + (dy * dy) / (ryp * ryp) <= 1) {
+              return true;
+            }
+          }
+          return false;
+        };
+        const OCEAN_ACCEPT = 0.42;
+        while (earthTargets.length < wanted && earthTries < earthAttemptCap) {
+          earthTries++;
+          const u = (rnd2() * 2 - 1) * EARTH_R;
+          const v = (rnd2() * 2 - 1) * EARTH_R;
+          if (u * u + v * v > EARTH_R2) continue;
+          if (!inContinent(u, v)) {
+            if (rnd2() > OCEAN_ACCEPT) continue;
+          }
+          earthTargets.push({ x: cx + u, y: cy + v });
+        }
+      }
+      while (earthTargets.length < wanted) {
+        earthTargets.push({ x: cx, y: cy });
+      }
+      const earthOrder = earthTargets
+        .map((t, i) => ({ i, ...sortKey(t.x, t.y) }))
+        .sort((a, b) => a.ang - b.ang || a.r - b.r);
+      for (let k = 0; k < cellOrder.length; k++) {
+        const t = earthTargets[earthOrder[k].i];
+        const c = next[cellOrder[k].i];
+        c.fx = t.x;
+        c.fy = t.y;
+      }
+
+      /* ------------------------------------------------------------
+         CLIFF TARGETS — two solid filled rectangles with irregular,
+         jagged top edges and a void/gap between them. The gap reads
+         as the "sim-to-real gap" the section text speaks to. Inner
+         edges of the cliffs are at ±0.18w from canvas centre so the
+         gap is roughly 36% of viewport wide.
+         ------------------------------------------------------------ */
+      const CLIFF_GAP_HALF = width * 0.18;
+      const CLIFF_OUTER_PAD = width * 0.04;
+      const CLIFF_TOP_BASE = height * 0.20;
+      const CLIFF_BOTTOM = height * 0.86;
+      const CLIFF_TOP_AMP = height * 0.06;
+      const cliffTopAt = (absX: number) =>
+        CLIFF_TOP_BASE +
+        Math.sin(absX * 0.013) * CLIFF_TOP_AMP +
+        Math.sin(absX * 0.041 + 1.3) * CLIFF_TOP_AMP * 0.55 +
+        Math.sin(absX * 0.087 + 2.7) * CLIFF_TOP_AMP * 0.28;
+
+      const leftCliffMaxX = cx - CLIFF_GAP_HALF;
+      const leftCliffMinX = CLIFF_OUTER_PAD;
+      const rightCliffMinX = cx + CLIFF_GAP_HALF;
+      const rightCliffMaxX = width - CLIFF_OUTER_PAD;
+      const leftCliffWidth = leftCliffMaxX - leftCliffMinX;
+      const rightCliffWidth = rightCliffMaxX - rightCliffMinX;
+
+      const cliffTargets: { x: number; y: number }[] = [];
+      const halfCliff = Math.ceil(wanted / 2);
+      const sampleCliff = (
+        xLo: number,
+        widthPx: number,
+        count: number,
+      ) => {
+        let made = 0;
+        let tries = 0;
+        const CAP = count * 40;
+        while (made < count && tries < CAP) {
+          tries++;
+          const x = xLo + rnd2() * widthPx;
+          const top = cliffTopAt(x);
+          if (top >= CLIFF_BOTTOM) continue;
+          const y = top + rnd2() * (CLIFF_BOTTOM - top);
+          cliffTargets.push({ x, y });
+          made++;
+        }
+      };
+      sampleCliff(leftCliffMinX, leftCliffWidth, halfCliff);
+      sampleCliff(rightCliffMinX, rightCliffWidth, wanted - halfCliff);
+      while (cliffTargets.length < wanted) {
+        cliffTargets.push({ x: cx, y: cy });
+      }
+
+      const cliffOrder = cliffTargets
+        .map((t, i) => ({ i, ...sortKey(t.x, t.y) }))
+        .sort((a, b) => a.ang - b.ang || a.r - b.r);
+      for (let k = 0; k < cellOrder.length; k++) {
+        const t = cliffTargets[cliffOrder[k].i];
+        const c = next[cellOrder[k].i];
+        c.cx = t.x;
+        c.cy = t.y;
+      }
+
+      cells = next;
+      brainCenterX = cx;
+      brainCenterY = cy;
+    };
+
     const resize = () => {
       const rect = host.getBoundingClientRect();
       width = rect.width;
@@ -819,16 +1385,258 @@ function TopographicalDots() {
       canvas.width = Math.max(1, Math.floor(width * dpr));
       canvas.height = Math.max(1, Math.floor(height * dpr));
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      buildCells();
     };
     resize();
 
+    /* Generic image-silhouette tracer. Pipeline:
+         1) downscale to 320 px wide, brightness-threshold to a raw
+            dark mask;
+         2) morphological closing (separable dilate → erode, R=5) so
+            individual dots merge into a solid region while the outer
+            outline is preserved;
+         3) iterative-DFS connected-component labelling — keep only
+            the largest component. Stray ink outside (e.g. dispersing
+            dots in the reference art) falls away as tiny components;
+         4) compute bounding box and hand the mask back to the caller.
+       Box morphology is separable so this all runs in well under a
+       frame at 320². */
+    let disposed = false;
+    const traceImage = (
+      url: string,
+      opts: {
+        closingR?: number;
+        keepLargestOnly?: boolean;
+        darkBrightness?: number;
+      },
+      onMask: (
+        mask: Uint8Array,
+        sw: number,
+        sh: number,
+        mnX: number,
+        mnY: number,
+        mxX: number,
+        mxY: number,
+      ) => void,
+    ) => {
+      const img = new window.Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        if (disposed) return;
+        const SW = 320;
+        const ratio =
+          img.naturalWidth > 0 ? img.naturalHeight / img.naturalWidth : 1;
+        const SH = Math.max(1, Math.round(SW * ratio));
+        const off = document.createElement("canvas");
+        off.width = SW;
+        off.height = SH;
+        const offCtx = off.getContext("2d", { willReadFrequently: true });
+        if (!offCtx) return;
+        offCtx.fillStyle = "#ffffff";
+        offCtx.fillRect(0, 0, SW, SH);
+        offCtx.drawImage(img, 0, 0, SW, SH);
+        const data = offCtx.getImageData(0, 0, SW, SH).data;
+
+        const DARK_BRIGHTNESS = opts.darkBrightness ?? 195;
+        const N = SW * SH;
+        const raw = new Uint8Array(N);
+        for (let i = 0, j = 0; i < N; i++, j += 4) {
+          const b = (data[j] + data[j + 1] + data[j + 2]) / 3;
+          if (b < DARK_BRIGHTNESS) raw[i] = 1;
+        }
+
+        const R = opts.closingR ?? 5;
+        const dilateH = (src: Uint8Array) => {
+          const out = new Uint8Array(N);
+          for (let y = 0; y < SH; y++) {
+            const row = y * SW;
+            for (let x = 0; x < SW; x++) {
+              const xs = x - R < 0 ? 0 : x - R;
+              const xe = x + R >= SW ? SW - 1 : x + R;
+              let hit = 0;
+              for (let nx = xs; nx <= xe; nx++) {
+                if (src[row + nx]) {
+                  hit = 1;
+                  break;
+                }
+              }
+              out[row + x] = hit;
+            }
+          }
+          return out;
+        };
+        const dilateV = (src: Uint8Array) => {
+          const out = new Uint8Array(N);
+          for (let x = 0; x < SW; x++) {
+            for (let y = 0; y < SH; y++) {
+              const ys = y - R < 0 ? 0 : y - R;
+              const ye = y + R >= SH ? SH - 1 : y + R;
+              let hit = 0;
+              for (let ny = ys; ny <= ye; ny++) {
+                if (src[ny * SW + x]) {
+                  hit = 1;
+                  break;
+                }
+              }
+              out[y * SW + x] = hit;
+            }
+          }
+          return out;
+        };
+        const erodeH = (src: Uint8Array) => {
+          const out = new Uint8Array(N);
+          for (let y = 0; y < SH; y++) {
+            const row = y * SW;
+            for (let x = 0; x < SW; x++) {
+              const xs = x - R < 0 ? 0 : x - R;
+              const xe = x + R >= SW ? SW - 1 : x + R;
+              let ok = 1;
+              for (let nx = xs; nx <= xe; nx++) {
+                if (!src[row + nx]) {
+                  ok = 0;
+                  break;
+                }
+              }
+              out[row + x] = ok;
+            }
+          }
+          return out;
+        };
+        const erodeV = (src: Uint8Array) => {
+          const out = new Uint8Array(N);
+          for (let x = 0; x < SW; x++) {
+            for (let y = 0; y < SH; y++) {
+              const ys = y - R < 0 ? 0 : y - R;
+              const ye = y + R >= SH ? SH - 1 : y + R;
+              let ok = 1;
+              for (let ny = ys; ny <= ye; ny++) {
+                if (!src[ny * SW + x]) {
+                  ok = 0;
+                  break;
+                }
+              }
+              out[y * SW + x] = ok;
+            }
+          }
+          return out;
+        };
+        const closed = R > 0 ? erodeV(erodeH(dilateV(dilateH(raw)))) : raw;
+
+        const keepLargest = opts.keepLargestOnly ?? true;
+        let finalMask: Uint8Array;
+        if (keepLargest) {
+          /* Connected-component labelling — keep only the largest
+             component. Filters scattered ink (e.g. dispersing dots in
+             the brain reference) into separate tiny components that
+             get discarded. */
+          const labels = new Int32Array(N);
+          let nextLabel = 0;
+          let bestLabel = 0;
+          let bestSize = 0;
+          const stack: number[] = [];
+          for (let seed = 0; seed < N; seed++) {
+            if (!closed[seed] || labels[seed]) continue;
+            nextLabel++;
+            let size = 0;
+            stack.push(seed);
+            while (stack.length > 0) {
+              const p = stack.pop() as number;
+              if (labels[p]) continue;
+              labels[p] = nextLabel;
+              size++;
+              const px = p % SW;
+              const py = (p - px) / SW;
+              if (px > 0 && closed[p - 1] && !labels[p - 1]) stack.push(p - 1);
+              if (px < SW - 1 && closed[p + 1] && !labels[p + 1])
+                stack.push(p + 1);
+              if (py > 0 && closed[p - SW] && !labels[p - SW])
+                stack.push(p - SW);
+              if (py < SH - 1 && closed[p + SW] && !labels[p + SW])
+                stack.push(p + SW);
+            }
+            if (size > bestSize) {
+              bestSize = size;
+              bestLabel = nextLabel;
+            }
+          }
+          if (bestLabel === 0) return;
+          finalMask = new Uint8Array(N);
+          for (let i = 0; i < N; i++) {
+            if (labels[i] === bestLabel) finalMask[i] = 1;
+          }
+        } else {
+          /* No CC — keep every ink pixel (the whole vector art). */
+          finalMask = closed;
+        }
+
+        let mnX = SW;
+        let mnY = SH;
+        let mxX = -1;
+        let mxY = -1;
+        for (let i = 0; i < N; i++) {
+          if (finalMask[i]) {
+            const px = i % SW;
+            const py = (i - px) / SW;
+            if (px < mnX) mnX = px;
+            if (px > mxX) mxX = px;
+            if (py < mnY) mnY = py;
+            if (py > mxY) mxY = py;
+          }
+        }
+        if (mxX < mnX) return;
+
+        onMask(finalMask, SW, SH, mnX, mnY, mxX + 1, mxY + 1);
+      };
+      img.onerror = () => {
+        /* Fail silently — procedural fallback stays. */
+      };
+      img.src = url;
+    };
+
+    /* Brain: halftone art with dispersing dots — needs closing (to
+       merge halftone dots into a solid mass) AND CC (to drop the
+       stray dispersing dots). */
+    traceImage(
+      "/brain-reference-2.png",
+      { closingR: 5, keepLargestOnly: true, darkBrightness: 195 },
+      (mask, sw, sh, mnX, mnY, mxX, mxY) => {
+        brainMask = mask;
+        brainMaskW = sw;
+        brainMaskH = sh;
+        bboxMinX = mnX;
+        bboxMinY = mnY;
+        bboxMaxX = mxX;
+        bboxMaxY = mxY;
+        buildCells();
+      },
+    );
+    /* Earth: clean black-on-white vector art. NO closing (else the
+       ocean space between outline ring + continents would fill in
+       and erase all interior detail). NO CC filter (keep every dark
+       pixel, including any continents that don't touch the ring). */
+    traceImage(
+      "/earth-vector.jpg",
+      { closingR: 0, keepLargestOnly: false, darkBrightness: 150 },
+      (mask, sw, sh, mnX, mnY, mxX, mxY) => {
+        earthMask = mask;
+        earthMaskW = sw;
+        earthMaskH = sh;
+        earthBboxMinX = mnX;
+        earthBboxMinY = mnY;
+        earthBboxMaxX = mxX;
+        earthBboxMaxY = mxY;
+        buildCells();
+      },
+    );
+
     const onMove = (e: PointerEvent) => {
-      const rect = canvas.getBoundingClientRect();
+      /* Use HOST's rect — the canvas may be CSS-transformed for the
+         card tilt, which would shift `canvas.getBoundingClientRect`
+         and silently break cursor coords. The host stays untransformed. */
+      const rect = host.getBoundingClientRect();
       cursor.x = e.clientX - rect.left;
       cursor.y = e.clientY - rect.top;
       if (!cursor.has) {
-        /* Reset prev on (re-)entry so re-entering doesn't fake a huge
-           teleport into a single-frame velocity spike. */
         prev.x = cursor.x;
         prev.y = cursor.y;
         cursor.has = true;
@@ -847,28 +1655,61 @@ function TopographicalDots() {
     const render = () => {
       frame++;
 
-      /* Per-frame velocity = displacement since last frame. If the
-         cursor isn't in the field, treat speed as 0 so existing waves
-         keep propagating but no new peak/waves get spawned. */
+      const morph = morphProgress
+        ? Math.max(0, Math.min(1, morphProgress.get()))
+        : 0;
+      const invert = invertProgress
+        ? Math.max(0, Math.min(1, invertProgress.get()))
+        : 0;
+      const eyeMorph = eyeMorphProgress
+        ? Math.max(0, Math.min(1, eyeMorphProgress.get()))
+        : 0;
+      const eyeOffset = eyeOffsetProgress
+        ? Math.max(0, Math.min(1, eyeOffsetProgress.get()))
+        : 0;
+      const earthMorph = earthMorphProgress
+        ? Math.max(0, Math.min(1, earthMorphProgress.get()))
+        : 0;
+      const earthOffset = earthOffsetProgress
+        ? Math.max(0, Math.min(1, earthOffsetProgress.get()))
+        : 0;
+      const cliffMorph = cliffMorphProgress
+        ? Math.max(0, Math.min(1, cliffMorphProgress.get()))
+        : 0;
+      const cliffPhase = cliffPhaseProgress
+        ? Math.max(0, Math.min(1, cliffPhaseProgress.get()))
+        : 0;
+      /* Cursor interaction belongs to the open grid. As the field morphs
+         into the brain we fade it, so the brain doesn't ripple under the
+         pointer. */
+      const cursorAttenuation = 1 - morph;
+
       let rawSpeed = 0;
       if (cursor.has) {
-        const dx = cursor.x - prev.x;
-        const dy = cursor.y - prev.y;
-        rawSpeed = Math.sqrt(dx * dx + dy * dy);
+        const dxc = cursor.x - prev.x;
+        const dyc = cursor.y - prev.y;
+        rawSpeed = Math.sqrt(dxc * dxc + dyc * dyc);
         prev.x = cursor.x;
         prev.y = cursor.y;
       }
       smoothSpeed = smoothSpeed * SPEED_SMOOTH + rawSpeed * (1 - SPEED_SMOOTH);
       if (smoothSpeed < SPEED_FLOOR) smoothSpeed = 0;
 
-      const peakAmp = Math.min(1, smoothSpeed / VELOCITY_MAX);
+      const peakAmp =
+        Math.min(1, smoothSpeed / VELOCITY_MAX) * cursorAttenuation;
 
       if (
         cursor.has &&
+        cursorAttenuation > 0.05 &&
         peakAmp > EMIT_MIN_AMP &&
         frame - lastEmit >= EMIT_INTERVAL_FRAMES
       ) {
-        waves.push({ x: cursor.x, y: cursor.y, t: 0, amp: peakAmp * WAVE_AMP_SCALE });
+        waves.push({
+          x: cursor.x,
+          y: cursor.y,
+          t: 0,
+          amp: peakAmp * WAVE_AMP_SCALE,
+        });
         lastEmit = frame;
         while (waves.length > MAX_WAVES) waves.shift();
       }
@@ -878,80 +1719,170 @@ function TopographicalDots() {
         if (waves[i].t > WAVE_LIFE) waves.splice(i, 1);
       }
 
-      ctx.clearRect(0, 0, width, height);
-
-      const cols = Math.ceil(width / SPACING) + 2;
-      const rows = Math.ceil(height / SPACING) + 2;
-      const ox = (width - (cols - 1) * SPACING) / 2;
-      const oy = (height - (rows - 1) * SPACING) / 2;
+      /* Velocity-trail clearing: while the field is actively
+         changing (brain → clock or color invert in progress), use a
+         destination-out partial fade so each dot's previous frame
+         lingers and decays — that's the trail behind the moving
+         dot. Once the field settles, fully clear so static dots
+         don't accumulate halos. */
+      /* Trails ONLY engage for the brain → clock → earth → cliff
+         transitions. grid → brain is excluded intentionally — dots
+         flying in from every corner would leave huge crisscrossing
+         streaks. We still track `morph`'s prev for parity but it
+         doesn't feed the trail-decision delta. */
+      const morphDelta =
+        Math.abs(eyeMorph - prevEyeMorph) +
+        Math.abs(eyeOffset - prevEyeOffset) +
+        Math.abs(earthMorph - prevEarthMorph) +
+        Math.abs(earthOffset - prevEarthOffset) +
+        Math.abs(cliffMorph - prevCliffMorph) +
+        Math.abs(cliffPhase - prevCliffPhase);
+      const transitioning = morphDelta > 0.0008;
+      if (transitioning) {
+        /* Lower FADE → each frame erases LESS of the previous frame,
+           so trails persist many more frames before they're gone.
+           0.06 lets a trail last roughly 60+ frames (~1 s) at full
+           visibility before fading. */
+        const FADE = 0.06;
+        ctx.globalCompositeOperation = "destination-out";
+        ctx.fillStyle = `rgba(0, 0, 0, ${FADE})`;
+        ctx.fillRect(0, 0, width, height);
+        ctx.globalCompositeOperation = "source-over";
+      } else {
+        ctx.clearRect(0, 0, width, height);
+      }
+      prevMorph = morph;
+      prevEyeMorph = eyeMorph;
+      prevEyeOffset = eyeOffset;
+      prevEarthMorph = earthMorph;
+      prevEarthOffset = earthOffset;
+      prevCliffMorph = cliffMorph;
+      prevCliffPhase = cliffPhase;
 
       const peakActive = peakAmp > 0.01 && cursor.has;
       const px = cursor.x;
       const py = cursor.y;
       const waveCount = waves.length;
-      const hasAnyMotion = peakActive || waveCount > 0;
+      const hasAnyMotion =
+        (peakActive || waveCount > 0) && cursorAttenuation > 0.02;
 
-      for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-          const bx = ox + c * SPACING;
-          const by = oy + r * SPACING;
+      /* Base color lerped between dark (initial) and cream (inverted). */
+      const baseR = BASE_DARK.r * (1 - invert) + BASE_CREAM.r * invert;
+      const baseG = BASE_DARK.g * (1 - invert) + BASE_CREAM.g * invert;
+      const baseB = BASE_DARK.b * (1 - invert) + BASE_CREAM.b * invert;
+      const baseAlpha = BASE_ALPHA * (1 - invert) + INVERT_ALPHA * invert;
+      const baseFill = `rgba(${baseR | 0}, ${baseG | 0}, ${baseB | 0}, ${baseAlpha})`;
 
-          let elev = 0;
+      /* Card-style 3D tilt: the canvas surface tilts toward the
+         cursor via CSS perspective + rotateX/Y, scaled by morph so
+         the effect only kicks in once the brain has formed. The
+         dots themselves stay flat — we tilt the surface they're
+         drawn on. Cursor position relative to the brain's centre
+         drives the tilt direction. */
+      const TILT_MAX_DEG = 22;
+      let targetTiltX = 0;
+      let targetTiltY = 0;
+      if (cursor.has && width > 0 && height > 0) {
+        const nx = (cursor.x - brainCenterX) / width;
+        const ny = (cursor.y - brainCenterY) / height;
+        /* Sign chosen so the side of the canvas closest to the
+           cursor tilts FORWARD (toward the viewer). */
+        targetTiltX = -ny * 2 * TILT_MAX_DEG;
+        targetTiltY = nx * 2 * TILT_MAX_DEG;
+      }
+      smoothTiltX += (targetTiltX - smoothTiltX) * 0.08;
+      smoothTiltY += (targetTiltY - smoothTiltY) * 0.08;
+      /* Cursor tilt is active for the brain, clock, and earth
+         poses — each tracks the cursor with a card-like swivel.
+         Only the cliffs pose disables it (two separate cliff
+         shapes shouldn't tilt as one unit). */
+      const tiltFade = morph * (1 - cliffPhase);
+      const effTiltX = smoothTiltX * tiltFade;
+      const effTiltY = smoothTiltY * tiltFade;
 
-          if (peakActive) {
-            const dx = bx - px;
-            const dy = by - py;
-            elev += peakAmp * Math.exp(-(dx * dx + dy * dy) / TWO_SIGMA_SQ);
-          }
+      /* Canvas scale + translate. Eye phase pushes RIGHT, earth
+         phase pushes LEFT, cliff phase lerps everything back to
+         centred + full scale so the gap between the cliffs lines
+         up with the viewport centre. */
+      const baseScale = 1 - 0.42 * Math.max(eyeOffset, earthOffset);
+      const eyeScale = baseScale + (1 - baseScale) * cliffPhase;
+      const baseTranslateX =
+        width * 0.22 * eyeOffset - width * 0.44 * earthOffset;
+      const eyeTranslateX = baseTranslateX * (1 - cliffPhase);
+      /* Order matters: translate + scale FIRST so the canvas's
+         centre lands at the shape's screen position, then rotate
+         around that point. With the previous order (rotate before
+         translate), the rotation pivot stayed at the canvas centre
+         and the clock/earth swung in an arc instead of swiveling
+         in place. */
+      canvas.style.transform = `perspective(1200px) translateX(${eyeTranslateX.toFixed(1)}px) scale(${eyeScale.toFixed(3)}) rotateX(${effTiltX.toFixed(2)}deg) rotateY(${effTiltY.toFixed(2)}deg)`;
 
-          for (let i = 0; i < waveCount; i++) {
-            const w = waves[i];
-            const wdx = bx - w.x;
-            const wdy = by - w.y;
-            const dist = Math.sqrt(wdx * wdx + wdy * wdy);
-            const ringR = WAVE_SPEED * w.t;
-            const delta = dist - ringR;
-            const life = 1 - w.t / WAVE_LIFE;
-            const amp = w.amp * life * life;
-            elev +=
-              amp *
-              Math.exp(
-                -(delta * delta) /
-                  (2 * WAVE_THICKNESS * WAVE_THICKNESS),
-              );
-          }
+      for (let i = 0; i < cells.length; i++) {
+        const cell = cells[i];
+        /* Four-stage morph: grid → brain → clock → earth → cliffs.
+           Each stage lerps from the previous result to its target
+           so partial morphs always travel along the path between
+           adjacent targets. */
+        const s1X = cell.gx + (cell.bx - cell.gx) * morph;
+        const s1Y = cell.gy + (cell.by - cell.gy) * morph;
+        const s2X = s1X + (cell.ex - s1X) * eyeMorph;
+        const s2Y = s1Y + (cell.ey - s1Y) * eyeMorph;
+        const s3X = s2X + (cell.fx - s2X) * earthMorph;
+        const s3Y = s2Y + (cell.fy - s2Y) * earthMorph;
+        const baseX = s3X + (cell.cx - s3X) * cliffMorph;
+        const baseY = s3Y + (cell.cy - s3Y) * cliffMorph;
 
-          if (!hasAnyMotion || elev < 0.012) {
-            ctx.fillStyle = `rgba(${BASE_DARK.r}, ${BASE_DARK.g}, ${BASE_DARK.b}, ${BASE_ALPHA})`;
-            ctx.beginPath();
-            ctx.arc(bx, by, BASE_SIZE, 0, Math.PI * 2);
-            ctx.fill();
-            continue;
-          }
-
-          const elevClamped = Math.min(elev, 1.2);
-          const lift = elevClamped * LIFT_PX;
-          const size = BASE_SIZE + Math.min(elevClamped, 1) * PEAK_SIZE;
-
-          /* Horizontal-across-canvas purple → green gradient. Using bx
-             (not relative-to-peak) keeps the gradient consistent across
-             ripple rings, so the whole field reveals one coherent
-             colour scheme rather than flipping per ripple. */
-          const m = width > 0 ? bx / width : 0.5;
-          const gr = PURPLE.r * (1 - m) + GREEN.r * m;
-          const gg = PURPLE.g * (1 - m) + GREEN.g * m;
-          const gb = PURPLE.b * (1 - m) + GREEN.b * m;
-          const blend = Math.min(1, elevClamped * 1.4);
-          const cr = BASE_DARK.r * (1 - blend) + gr * blend;
-          const cg = BASE_DARK.g * (1 - blend) + gg * blend;
-          const cb = BASE_DARK.b * (1 - blend) + gb * blend;
-          const alpha = BASE_ALPHA + Math.min(elevClamped, 1) * 0.55;
-
-          ctx.fillStyle = `rgba(${cr | 0}, ${cg | 0}, ${cb | 0}, ${alpha})`;
-          ctx.beginPath();
-          ctx.arc(bx, by - lift, size, 0, Math.PI * 2);
-          ctx.fill();
+        let elev = 0;
+        if (peakActive) {
+          const dx = baseX - px;
+          const dy = baseY - py;
+          elev += peakAmp * Math.exp(-(dx * dx + dy * dy) / TWO_SIGMA_SQ);
         }
+        for (let j = 0; j < waveCount; j++) {
+          const w = waves[j];
+          const wdx = baseX - w.x;
+          const wdy = baseY - w.y;
+          const dist = Math.sqrt(wdx * wdx + wdy * wdy);
+          const ringR = WAVE_SPEED * w.t;
+          const delta = dist - ringR;
+          const life = 1 - w.t / WAVE_LIFE;
+          const amp = w.amp * life * life;
+          elev +=
+            amp *
+            Math.exp(
+              -(delta * delta) /
+                (2 * WAVE_THICKNESS * WAVE_THICKNESS),
+            );
+        }
+        elev *= cursorAttenuation;
+
+        if (!hasAnyMotion || elev < 0.012) {
+          ctx.fillStyle = baseFill;
+          ctx.beginPath();
+          ctx.arc(baseX, baseY, BASE_SIZE, 0, Math.PI * 2);
+          ctx.fill();
+          continue;
+        }
+
+        const elevClamped = Math.min(elev, 1.2);
+        const lift = elevClamped * LIFT_PX;
+        const size = BASE_SIZE + Math.min(elevClamped, 1) * PEAK_SIZE;
+
+        const m = width > 0 ? baseX / width : 0.5;
+        const gr = PURPLE.r * (1 - m) + GREEN.r * m;
+        const gg = PURPLE.g * (1 - m) + GREEN.g * m;
+        const gb = PURPLE.b * (1 - m) + GREEN.b * m;
+        const blend = Math.min(1, elevClamped * 1.4);
+        const cr = baseR * (1 - blend) + gr * blend;
+        const cg = baseG * (1 - blend) + gg * blend;
+        const cb = baseB * (1 - blend) + gb * blend;
+        const alpha =
+          baseAlpha + Math.min(elevClamped, 1) * 0.55 * cursorAttenuation;
+
+        ctx.fillStyle = `rgba(${cr | 0}, ${cg | 0}, ${cb | 0}, ${alpha})`;
+        ctx.beginPath();
+        ctx.arc(baseX, baseY - lift, size, 0, Math.PI * 2);
+        ctx.fill();
       }
 
       raf = requestAnimationFrame(render);
@@ -959,19 +1890,35 @@ function TopographicalDots() {
     raf = requestAnimationFrame(render);
 
     return () => {
+      disposed = true;
       cancelAnimationFrame(raf);
       host.removeEventListener("pointermove", onMove);
       host.removeEventListener("pointerleave", onLeave);
       ro.disconnect();
     };
-  }, []);
+  }, [
+    morphProgress,
+    invertProgress,
+    eyeMorphProgress,
+    eyeOffsetProgress,
+    earthMorphProgress,
+    earthOffsetProgress,
+    cliffMorphProgress,
+    cliffPhaseProgress,
+  ]);
 
   return (
     <canvas
       ref={canvasRef}
       aria-hidden
       className="pointer-events-none absolute inset-0 z-[1]"
-      style={{ width: "100%", height: "100%", display: "block" }}
+      style={{
+        width: "100%",
+        height: "100%",
+        display: "block",
+        transformOrigin: "center center",
+        willChange: "transform",
+      }}
     />
   );
 }
@@ -1015,449 +1962,22 @@ function RevealChar({
     return local;
   });
 
-  /* Char animation: cyan → cream. The dark page bg means the final
-     colour needs to land at #0f0e0d (rgba 245, 239, 229) for legibility. */
+  /* Char animation: purple → white. The page background has inverted
+     to dark by the time slide 2 reveals, so white reads cleanest. */
   const color = useTransform(head, (h) => {
     const local = h - index;
     if (local <= 2.5) return "rgba(109, 40, 217, 1)";
-    if (local >= 6.5) return "rgba(15, 14, 13, 0.96)";
+    if (local >= 6.5) return "rgba(255, 255, 255, 0.96)";
     const t = (local - 2.5) / 4;
-    const r = Math.round(34 + (245 - 34) * t);
-    const g = Math.round(211 + (239 - 211) * t);
-    const b = Math.round(238 + (229 - 238) * t);
+    const r = Math.round(109 + (255 - 109) * t);
+    const g = Math.round(40 + (255 - 40) * t);
+    const b = Math.round(217 + (255 - 217) * t);
     return `rgba(${r}, ${g}, ${b}, 0.96)`;
   });
 
   return <motion.span style={{ opacity, color }}>{char}</motion.span>;
 }
 
-/* ============================================================================
-   THE PROBLEM TRIPTYCH — three hover-activated cards in a single slide.
-   Each card sits perfectly still at rest; the SVG animation only plays
-   while the pointer is over the card (or the card has keyboard focus).
-   The triptych crossfades in from slide 2's text reveal; from there on
-   the rest of the page scrolls naturally — no more pinned choreography
-   after this beat.
-
-     • Box 01  Vision can't see force.                  (eyes + red strip)
-     • Box 02  Sensors react too late.                  (alarm bell)
-     • Box 03  Simulators can't accurately model        (hammer + spikes)
-                  contact physics.
-   ========================================================================== */
-
-function BoxFrame({
-  caption,
-  index,
-  active,
-  onHoverChange,
-  children,
-}: {
-  caption: string;
-  index: number;
-  active: boolean;
-  onHoverChange: (next: boolean) => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <motion.div
-      onMouseEnter={() => onHoverChange(true)}
-      onMouseLeave={() => onHoverChange(false)}
-      onFocus={() => onHoverChange(true)}
-      onBlur={() => onHoverChange(false)}
-      tabIndex={0}
-      whileHover={{ y: -3 }}
-      transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-      className="group relative flex flex-col overflow-hidden rounded-2xl bg-black/40 outline-none transition-colors"
-      style={{
-        backdropFilter: "blur(3px)",
-        WebkitBackdropFilter: "blur(3px)",
-        border: "1px solid rgba(243, 238, 226, 0.13)",
-        boxShadow:
-          "inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 14px 32px rgba(0, 0, 0, 0.4)",
-      }}
-    >
-      {/* corner brackets — cyan only when the card itself is active. Driven
-          by React state rather than :hover / :focus so a click that leaves
-          focus behind doesn't strand the brackets in the active colour. */}
-      <span
-        aria-hidden
-        className={`pointer-events-none absolute left-2 top-2 h-3 w-3 border-l border-t transition-colors ${
-          active ? "border-cyan/80" : "border-paper/25"
-        }`}
-      />
-      <span
-        aria-hidden
-        className={`pointer-events-none absolute right-2 top-2 h-3 w-3 border-r border-t transition-colors ${
-          active ? "border-cyan/80" : "border-paper/25"
-        }`}
-      />
-      <span
-        aria-hidden
-        className={`pointer-events-none absolute bottom-2 left-2 h-3 w-3 border-b border-l transition-colors ${
-          active ? "border-cyan/80" : "border-paper/25"
-        }`}
-      />
-      <span
-        aria-hidden
-        className={`pointer-events-none absolute bottom-2 right-2 h-3 w-3 border-b border-r transition-colors ${
-          active ? "border-cyan/80" : "border-paper/25"
-        }`}
-      />
-
-      {/* top rail — index + state badge */}
-      <div className="flex items-center justify-between px-5 pt-5 text-[10px] uppercase tracking-[0.22em] text-paper/45">
-        <span className="font-mono">0{index + 1}&nbsp;/&nbsp;03</span>
-        <span
-          className={`flex items-center gap-1.5 transition-colors ${
-            active ? "text-cyan" : "text-paper/35"
-          }`}
-        >
-          <span
-            className={`block h-1 w-1 rounded-full transition-all ${
-              active
-                ? "bg-cyan shadow-[0_0_6px_rgba(109,40,217,0.9)]"
-                : "bg-paper/30"
-            }`}
-          />
-          {active ? "active" : "hover to play"}
-        </span>
-      </div>
-
-      {/* animation area */}
-      <div className="flex aspect-[5/4] items-center justify-center px-6 pb-3 pt-4 md:px-7 md:pt-5">
-        {children}
-      </div>
-
-      {/* divider */}
-      <div
-        aria-hidden
-        className="mx-6 h-px md:mx-7"
-        style={{
-          background:
-            "linear-gradient(to right, transparent 0%, rgba(243, 238, 226, 0.22) 50%, transparent 100%)",
-        }}
-      />
-
-      {/* caption */}
-      <div className="flex flex-1 items-center justify-center px-7 py-8 md:px-8 md:py-10">
-        <h3
-          className="text-balance text-center"
-          style={{
-            fontFamily:
-              "var(--font-tt-norms-pro), ui-sans-serif, system-ui",
-            fontWeight: 700,
-            fontSize: "clamp(1.2rem, 1.65vw, 1.6rem)",
-            lineHeight: 1.25,
-            letterSpacing: "-0.018em",
-            color: "rgba(245, 250, 255, 0.96)",
-            margin: 0,
-          }}
-        >
-          {caption}
-        </h3>
-      </div>
-    </motion.div>
-  );
-}
-
-/* Hidden SVG filter library shared by every card's crayon artwork. */
-function TriptychFilters() {
-  return (
-    <svg aria-hidden style={{ position: "absolute", width: 0, height: 0 }}>
-      <defs>
-        <filter id="tri-crayon" x="-10%" y="-10%" width="120%" height="120%">
-          <feTurbulence
-            type="fractalNoise"
-            baseFrequency="0.06"
-            numOctaves="2"
-            seed="5"
-          />
-          <feDisplacementMap in="SourceGraphic" scale="3" />
-        </filter>
-        <filter id="tri-vibrate" x="-15%" y="-15%" width="130%" height="130%">
-          <feTurbulence
-            type="fractalNoise"
-            baseFrequency="0.08"
-            numOctaves="2"
-            seed="0"
-          >
-            <animate
-              attributeName="seed"
-              values="0;3;6;9;12;15;18;21;24;27;30"
-              dur="0.35s"
-              repeatCount="indefinite"
-            />
-          </feTurbulence>
-          <feDisplacementMap in="SourceGraphic" scale="5" />
-        </filter>
-      </defs>
-    </svg>
-  );
-}
-
-/* ----- Box 01: Vision can't see force.
-   Hovering animates a red crayon strip drawing across two open eyes; at
-   25% of the strip the eyes blink shut, at 50% they open again. Reset
-   on hover-out retracts the strip and reopens the eyes. */
-function EyesBox() {
-  const [active, setActive] = useState(false);
-  const stripLength = useMotionValue(0);
-
-  useEffect(() => {
-    const controls = animate(stripLength, active ? 1 : 0, {
-      duration: active ? 1.2 : 0.4,
-      ease: active ? [0.22, 1, 0.36, 1] : [0.4, 0, 0.2, 1],
-    });
-    return () => controls.stop();
-  }, [active, stripLength]);
-
-  const openOpacity = useTransform(stripLength, (v) =>
-    v < 0.25 ? 1 : v < 0.5 ? 0 : 1,
-  );
-  const closedOpacity = useTransform(stripLength, (v) =>
-    v < 0.25 ? 0 : v < 0.5 ? 1 : 0,
-  );
-
-  const stroke = "#f3eee2";
-  const pupil = "#0a0a0a";
-
-  return (
-    <BoxFrame
-      caption="Vision can't see force."
-      index={0}
-      active={active}
-      onHoverChange={setActive}
-    >
-      <svg
-        viewBox="0 0 800 400"
-        preserveAspectRatio="xMidYMid meet"
-        className="h-full w-full"
-      >
-        <motion.g style={{ opacity: openOpacity }}>
-          <circle cx="260" cy="200" r="90" fill="none" stroke={stroke} strokeWidth="5" filter="url(#tri-crayon)" />
-          <circle cx="260" cy="200" r="32" fill={pupil} filter="url(#tri-crayon)" />
-          <circle cx="540" cy="200" r="90" fill="none" stroke={stroke} strokeWidth="5" filter="url(#tri-crayon)" />
-          <circle cx="540" cy="200" r="32" fill={pupil} filter="url(#tri-crayon)" />
-          <g stroke={stroke} strokeWidth="4" strokeLinecap="round" fill="none" filter="url(#tri-crayon)">
-            <line x1="200" y1="125" x2="186" y2="92" />
-            <line x1="225" y1="115" x2="220" y2="78" />
-            <line x1="260" y1="110" x2="260" y2="68" />
-            <line x1="295" y1="115" x2="300" y2="78" />
-            <line x1="320" y1="125" x2="334" y2="92" />
-            <line x1="480" y1="125" x2="466" y2="92" />
-            <line x1="505" y1="115" x2="500" y2="78" />
-            <line x1="540" y1="110" x2="540" y2="68" />
-            <line x1="575" y1="115" x2="580" y2="78" />
-            <line x1="600" y1="125" x2="614" y2="92" />
-          </g>
-        </motion.g>
-        <motion.g style={{ opacity: closedOpacity }}>
-          <path d="M 170 200 A 90 90 0 0 1 350 200" fill="none" stroke={stroke} strokeWidth="5" strokeLinecap="round" filter="url(#tri-crayon)" />
-          <line x1="170" y1="200" x2="350" y2="200" stroke={stroke} strokeWidth="5" strokeLinecap="round" filter="url(#tri-crayon)" />
-          <path d="M 450 200 A 90 90 0 0 1 630 200" fill="none" stroke={stroke} strokeWidth="5" strokeLinecap="round" filter="url(#tri-crayon)" />
-          <line x1="450" y1="200" x2="630" y2="200" stroke={stroke} strokeWidth="5" strokeLinecap="round" filter="url(#tri-crayon)" />
-          <g stroke={stroke} strokeWidth="4" strokeLinecap="round" fill="none" filter="url(#tri-crayon)">
-            <line x1="200" y1="215" x2="180" y2="237" />
-            <line x1="225" y1="215" x2="213" y2="243" />
-            <line x1="260" y1="215" x2="260" y2="245" />
-            <line x1="295" y1="215" x2="307" y2="243" />
-            <line x1="320" y1="215" x2="340" y2="237" />
-            <line x1="480" y1="215" x2="460" y2="237" />
-            <line x1="505" y1="215" x2="493" y2="243" />
-            <line x1="540" y1="215" x2="540" y2="245" />
-            <line x1="575" y1="215" x2="587" y2="243" />
-            <line x1="600" y1="215" x2="620" y2="237" />
-          </g>
-        </motion.g>
-        <motion.path
-          d="M 50 218 Q 200 208 400 213 T 750 220"
-          stroke="#dc2f3a"
-          strokeWidth="42"
-          strokeLinecap="round"
-          fill="none"
-          filter="url(#tri-crayon)"
-          style={{ pathLength: stripLength, opacity: 0.94 }}
-        />
-      </svg>
-    </BoxFrame>
-  );
-}
-
-/* ----- Box 02: Sensors react too late.
-   Bell stays still at rest. Hover rocks the bell continuously (keyframed
-   via framer-motion so leaving smoothly returns it upright) and reveals
-   the red alarm waves on either side, whose edges shimmer continuously
-   via the SMIL-driven seed cycle on #tri-vibrate. */
-function BellBox() {
-  const [active, setActive] = useState(false);
-  const stroke = "#f3eee2";
-
-  return (
-    <BoxFrame
-      caption="Sensors react too late."
-      index={1}
-      active={active}
-      onHoverChange={setActive}
-    >
-      <svg
-        viewBox="0 0 800 500"
-        preserveAspectRatio="xMidYMid meet"
-        className="h-full w-full"
-      >
-        <motion.g
-          stroke="#dc2f3a"
-          strokeWidth="4"
-          strokeLinecap="round"
-          fill="none"
-          filter="url(#tri-vibrate)"
-          animate={{ opacity: active ? 1 : 0 }}
-          transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-        >
-          <path d="M 245 195 Q 225 240 245 285" />
-          <path d="M 215 175 Q 190 240 215 305" />
-          <path d="M 185 155 Q 155 240 185 325" />
-          <path d="M 555 195 Q 575 240 555 285" />
-          <path d="M 585 175 Q 610 240 585 305" />
-          <path d="M 615 155 Q 645 240 615 325" />
-        </motion.g>
-
-        <motion.g
-          initial={false}
-          animate={{ rotate: active ? [0, -9, 0, 9, 0] : 0 }}
-          transition={
-            active
-              ? { duration: 0.55, repeat: Infinity, ease: "easeInOut" }
-              : { duration: 0.4, ease: [0.22, 1, 0.36, 1] }
-          }
-          style={{ transformOrigin: "400px 92px" }}
-        >
-          <path
-            d="M 280 320 Q 280 160 400 130 Q 520 160 520 320 Z"
-            fill="none"
-            stroke={stroke}
-            strokeWidth="5"
-            strokeLinejoin="round"
-            strokeLinecap="round"
-            filter="url(#tri-crayon)"
-          />
-          <line x1="265" y1="320" x2="535" y2="320" stroke={stroke} strokeWidth="5" strokeLinecap="round" filter="url(#tri-crayon)" />
-          <line x1="400" y1="130" x2="400" y2="94" stroke={stroke} strokeWidth="5" strokeLinecap="round" filter="url(#tri-crayon)" />
-          <circle cx="400" cy="86" r="12" fill={stroke} filter="url(#tri-crayon)" />
-          <line x1="400" y1="320" x2="400" y2="350" stroke={stroke} strokeWidth="4" strokeLinecap="round" filter="url(#tri-crayon)" />
-          <circle cx="400" cy="362" r="14" fill={stroke} filter="url(#tri-crayon)" />
-        </motion.g>
-      </svg>
-    </BoxFrame>
-  );
-}
-
-/* ----- Box 03: Simulators can't accurately model contact physics.
-   Hammer rests raised at -75°. Hover swings it down to 0° (impact on the
-   ground line) with a brief bounce-back to -8° before settling; six red
-   reaction spikes burst out of the impact point as the hammer lands. */
-function HammerBox() {
-  const [active, setActive] = useState(false);
-  const stroke = "#f3eee2";
-
-  const swingTransition = active
-    ? {
-        duration: 0.9,
-        times: [0, 0.55, 0.78, 1],
-        ease: ["easeIn", "easeOut", "easeOut"] as const,
-      }
-    : { duration: 0.45, ease: [0.22, 1, 0.36, 1] as const };
-
-  const reactionTransition = active
-    ? {
-        duration: 0.9,
-        times: [0, 0.55, 0.85, 1],
-        ease: "easeOut" as const,
-      }
-    : { duration: 0.25 };
-
-  const reactionLines = [
-    "M 400 380 L 320 360",
-    "M 400 380 L 340 320",
-    "M 400 380 L 375 300",
-    "M 400 380 L 425 300",
-    "M 400 380 L 460 320",
-    "M 400 380 L 480 360",
-  ];
-
-  return (
-    <BoxFrame
-      caption="Simulators can't accurately model contact physics."
-      index={2}
-      active={active}
-      onHoverChange={setActive}
-    >
-      <svg
-        viewBox="0 0 800 500"
-        preserveAspectRatio="xMidYMid meet"
-        className="h-full w-full"
-      >
-        <line x1="150" y1="380" x2="650" y2="380" stroke={stroke} strokeWidth="5" strokeLinecap="round" filter="url(#tri-crayon)" />
-
-        <motion.g
-          initial={{ rotate: -75 }}
-          animate={{ rotate: active ? [-75, 0, -8, 0] : -75 }}
-          transition={swingTransition}
-          style={{ transformOrigin: "400px 100px" }}
-        >
-          <line x1="400" y1="100" x2="400" y2="350" stroke={stroke} strokeWidth="6" strokeLinecap="round" filter="url(#tri-crayon)" />
-          <path d="M 350 350 L 450 350 L 450 380 L 350 380 Z" fill="none" stroke={stroke} strokeWidth="5" strokeLinejoin="round" strokeLinecap="round" filter="url(#tri-crayon)" />
-          <circle cx="400" cy="100" r="8" fill={stroke} filter="url(#tri-crayon)" />
-        </motion.g>
-
-        <motion.g
-          stroke="#dc2f3a"
-          strokeWidth="4"
-          strokeLinecap="round"
-          fill="none"
-          filter="url(#tri-vibrate)"
-          animate={{ opacity: active ? [0, 0, 1, 1] : 0 }}
-          transition={reactionTransition}
-        >
-          {reactionLines.map((d, i) => (
-            <motion.path
-              key={i}
-              d={d}
-              animate={{ pathLength: active ? [0, 0, 1, 1] : 0 }}
-              transition={reactionTransition}
-            />
-          ))}
-        </motion.g>
-      </svg>
-    </BoxFrame>
-  );
-}
-
-/* Standalone section — sits below the hero and is reached by normal
-   scrolling. No fade-in, no scroll-pinning, just the three cards on the
-   shared chart-paper backdrop. */
-function ProblemTriptych() {
-  return (
-    <section className="relative overflow-hidden">
-      <PaperBackground />
-      <div className="relative mx-auto max-w-[1440px] px-6 pb-16 pt-8 md:px-8 md:pb-20 md:pt-10">
-        <p
-          className="mb-6 font-mono text-[11px] uppercase tracking-[0.22em] md:mb-7"
-          style={{ color: "var(--cyan)" }}
-        >
-          [
-          <span style={{ color: "#0f0e0d" }}> the problem </span>
-          ]
-        </p>
-        <TriptychFilters />
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-3 md:gap-7">
-          <EyesBox />
-          <BellBox />
-          <HammerBox />
-        </div>
-      </div>
-    </section>
-  );
-}
 
 /* ============================================================================
    MANIFESTO — flowing section that follows the hero. No fade-in; the
@@ -1596,116 +2116,6 @@ function Manifesto() {
   );
 }
 
-/* ============================================================================
-   PROBLEM LABEL — small "[the problem]" tag at the top-left of the
-   pinned hero. Loads with a scrambled-character animation: each
-   non-space slot cycles through random letters / numbers / symbols
-   for ~0.9 s, settling into the final phrase letter-by-letter from
-   left to right. Fades in at scrollYProgress 0.13 (just before slide
-   2 starts) and stays visible until the section unpins.
-
-   Same font size as the "[ pipeline for robots powered by humans ]"
-   tag in slide 1. Brackets stay cyan, inner text is white — matching
-   the styling of that pipeline tag exactly.
-
-   Initial state uses static placeholder dots ("·") so server-rendered
-   markup matches client-rendered markup (avoiding hydration warnings
-   from a Math.random() initial state). The actual scramble runs only
-   after the user scrolls past the trigger threshold on the client.
-   ========================================================================== */
-function ProblemLabel({
-  scrollYProgress,
-}: {
-  scrollYProgress: MotionValue<number>;
-}) {
-  const TARGET = "the problem";
-  const PLACEHOLDER = TARGET.split("")
-    .map((c) => (c === " " ? " " : "·"))
-    .join("");
-  const [text, setText] = useState(PLACEHOLDER);
-  const [active, setActive] = useState(false);
-
-  /* Activate when scroll crosses the threshold downwards, deactivate
-     when it crosses back upwards. Each fresh down-cross retriggers
-     the scramble effect via the useEffect below. */
-  useMotionValueEvent(scrollYProgress, "change", (v) => {
-    if (v > 0.20) {
-      if (!active) setActive(true);
-    } else {
-      if (active) {
-        setActive(false);
-        setText(PLACEHOLDER);
-      }
-    }
-  });
-
-  useEffect(() => {
-    if (!active) return;
-    const POOL =
-      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*<>?/+=";
-    const TOTAL_MS = 900;
-    const TICK_MS = 45;
-    const start = Date.now();
-    let timeout: ReturnType<typeof setTimeout> | null = null;
-
-    const tick = () => {
-      const elapsed = Date.now() - start;
-      const progress = Math.min(1, elapsed / TOTAL_MS);
-      const lockedCount = Math.floor(progress * TARGET.length);
-
-      let result = "";
-      for (let i = 0; i < TARGET.length; i++) {
-        if (i < lockedCount) {
-          result += TARGET[i];
-        } else if (TARGET[i] === " ") {
-          result += " ";
-        } else {
-          result += POOL[Math.floor(Math.random() * POOL.length)];
-        }
-      }
-      setText(result);
-
-      if (progress < 1) {
-        timeout = setTimeout(tick, TICK_MS);
-      } else {
-        setText(TARGET);
-      }
-    };
-
-    tick();
-
-    return () => {
-      if (timeout) clearTimeout(timeout);
-    };
-  }, [active]);
-
-  const opacity = useTransform(scrollYProgress, [0.20, 0.24], [0, 1]);
-
-  return (
-    <motion.div
-      className="pointer-events-none absolute left-6 top-24 z-[15] md:left-10 md:top-32"
-      style={{ opacity }}
-      aria-hidden
-    >
-      <p
-        style={{
-          fontFamily:
-            "var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace",
-          fontWeight: 400,
-          fontSize: "clamp(0.92rem, 1.1vw, 1.1rem)",
-          letterSpacing: "0.02em",
-          color: "var(--cyan)",
-          margin: 0,
-          whiteSpace: "pre",
-        }}
-      >
-        [
-        <span style={{ color: "#0f0e0d" }}> {text} </span>
-        ]
-      </p>
-    </motion.div>
-  );
-}
 
 /* ============================================================================
    FLUID SECTION — warm cream panel after the hero, styled in the
@@ -2108,8 +2518,171 @@ const fadeUp = {
   }),
 };
 
+/* ============================================================================
+   HERO WORD — each hero text token (word, bracket, or punctuated word)
+   is its own inline-block that, on scroll, slides a fraction of an em
+   to the right and fades out. The literal space between tokens stays
+   put, so visually each word disappears into the space adjacent to it
+   ("the invisible barrier"). Per-token start/end windows give a left-
+   to-right cascade rather than a synchronized block move.
+   ========================================================================== */
+function HeroWord({
+  scrollProgress,
+  start,
+  end,
+  children,
+  color,
+}: {
+  scrollProgress: MotionValue<number>;
+  start: number;
+  end: number;
+  children: ReactNode;
+  color?: string;
+}) {
+  const opacity = useTransform(scrollProgress, [start, end], [1, 0]);
+  const x = useTransform(scrollProgress, [start, end], ["0em", "0.45em"]);
+  return (
+    <motion.span
+      style={{
+        display: "inline-block",
+        opacity,
+        x,
+        color,
+        whiteSpace: "nowrap",
+      }}
+    >
+      {children}
+    </motion.span>
+  );
+}
+
+/* Build N staggered scroll windows of width `perWord` between `start`
+   and `end` so the cascade fits inside the disappear scroll range. */
+function staggerWindows(
+  n: number,
+  start: number,
+  end: number,
+  perWord: number,
+) {
+  const spread = Math.max(0, end - start - perWord);
+  const step = n <= 1 ? 0 : spread / (n - 1);
+  return Array.from({ length: n }, (_, i) => ({
+    start: start + i * step,
+    end: start + i * step + perWord,
+  }));
+}
+
+/* Subtitle token arrays — also used by the overlay wipes so the
+   overlay text wraps at the EXACT same points as the base token
+   spans. Without this, hyphenated words like "latency-corrupted"
+   wrap differently in the overlays (plain text breaks at the
+   hyphen) vs the base text (each token is whitespace:nowrap so it
+   never breaks). That mismatch made the green/purple overlay text
+   sit on different lines than the white base, misaligning the
+   colored wipe. */
+const MODERN_TELEOP_SUBTITLE_TOKENS = [
+  "It's", "reactive", "by", "nature.",
+  "It", "takes", "weeks", "to", "collect,",
+  "gets", "latency-corrupted", "at", "capture,",
+  "and", "only", "captures", "kinematics,",
+  "never", "force.", "Built", "for", "trajectory",
+  "replay,", "not", "contact-rich", "manipulation,",
+  "the", "signal", "that", "decides", "whether",
+  "fragile", "parts", "survive", "was", "never",
+  "in", "the", "data.",
+] as const;
+
+const ERODING_SUBTITLE_TOKENS = [
+  "79%", "of", "US", "manufacturers", "cite", "skilled",
+  "labor", "as", "their", "top", "constraint,", "with",
+  "50", "million", "manufacturing", "jobs", "projected",
+  "unfilled", "by", "2030.", "Modern", "assembly", "demands",
+  "more", "precision", "than", "ever,", "but", "training",
+  "takes", "6-12", "months", "and", "fewer", "workers",
+  "are", "entering", "the", "trade.",
+] as const;
+
+const HERO_TITLE_TOKENS = [
+  "Training", "Robots", "using", "Brain-Muscle", "signals",
+] as const;
+
+const HERO_SUBTITLE_TOKENS = [
+  "We", "capture", "the", "biological", "signal", "that",
+  "decides", "whether", "contact-rich", "assembly", "succeeds",
+  "or", "fails,", "and", "we", "just", "solved", "the",
+  "sim-to-real", "problem", "industrial", "automation",
+  "couldn't.", "Robots", "can", "finally", "feel.",
+] as const;
+
+const MODERN_TELEOP_TITLE_TOKENS = [
+  "Current", "Teleoperation", "systems", "are", "outdated",
+] as const;
+
+const ERODING_TITLE_TOKENS = [
+  "The", "skilled", "labor", "base", "is", "eroding",
+] as const;
+
+const GAP_TITLE_TOKENS = [
+  "The", "sim-to-real", "gap", "is", "still", "wide",
+] as const;
+
+const GAP_SUBTITLE_TOKENS = [
+  "Visual", "and", "kinematic", "accuracy", "have", "been",
+  "advancing,", "but", "contact", "dynamics", "remain",
+  "unsolved.", "No", "simulator", "can", "model", "the",
+  "friction,", "deformation,", "and", "multi-point",
+  "interactions", "that", "determine", "whether", "industrial",
+  "assembly", "automation", "succeeds.",
+] as const;
+
+/* Shared initial/final states for the text-block entrance animations.
+   When `skipIntroAnim` is true (page loaded with browser-restored
+   scroll past the top), every text wrapper picks the FINAL value as
+   its initial — so framer-motion mounts already settled and no
+   entrance animation can ever fire on mount. */
+const TEXT_INITIAL = { y: "120%", opacity: 0 };
+const TEXT_FINAL = { y: "0%", opacity: 1 };
+const MASK_OPAQUE = {
+  maskImage: "linear-gradient(45deg, transparent -100%, #000 0%)",
+  WebkitMaskImage: "linear-gradient(45deg, transparent -100%, #000 0%)",
+};
+const MASK_WIPED = {
+  maskImage: "linear-gradient(45deg, transparent 100%, #000 200%)",
+  WebkitMaskImage: "linear-gradient(45deg, transparent 100%, #000 200%)",
+};
+
+/* Render a token array as inline-block + nowrap spans, joined by
+   regular spaces. Matches HeroWord's flow behavior exactly so the
+   overlay text wraps to the same lines as the base.
+
+   Optional `accent` predicate marks tokens that should render at
+   fontWeight 500 — used by the hero subtitle whose base text bolds
+   the trailing "Robots can finally feel." phrase. Without matching
+   weights, those tokens render slightly narrower in the overlay
+   and break onto different lines than the base. */
+function renderTokenOverlay(
+  tokens: readonly string[],
+  options?: { accent?: (i: number) => boolean },
+) {
+  const isAccent = options?.accent ?? (() => false);
+  return tokens.map((tok, i) => (
+    <Fragment key={i}>
+      <span
+        style={{
+          display: "inline-block",
+          whiteSpace: "nowrap",
+          fontWeight: isAccent(i) ? 500 : undefined,
+        }}
+      >
+        {tok}
+      </span>
+      {i < tokens.length - 1 ? " " : ""}
+    </Fragment>
+  ));
+}
+
 function Hero() {
-  const { phase } = useIntro();
+  const { phase, skipIntroAnim } = useIntro();
   /* Heading reveal is gated on `done` — the dark page sits empty while
      the logo finishes docking, then the text smoothly fades in. */
   const textReady = phase === "done";
@@ -2122,41 +2695,129 @@ function Hero() {
     offset: ["start start", "end end"],
   });
 
-  /* Scroll-driven phases on the pinned section:
-         v=0.10  → 0.18 landing heading fades out.
-         v=0.22  → 0.80 slide 2 reveals char-by-char.
-         v>0.80         aria-hidden lifts so screen readers announce
-                        the full sentence as one unit. */
-  const novonusOpacity = useTransform(
-    scrollYProgress,
-    [0.10, 0.18],
-    [1, 0],
-  );
+  /* Scroll-driven phases on the pinned section, sequenced cleanly:
+         v=0.03 → 0.10  hero heading words cascade-disappear into
+                        the invisible barriers beside them.
+         v=0.10 → 0.15  hero bg flips cream → dark, dots flip dark
+                        → cream (the screen turns dark BEFORE the
+                        brain forms).
+         v=0.15 → 0.27  every dot lerps from its grid cell into the
+                        brain-silhouette target on the dark bg.
+         v=0.27 → 0.48  slide 2 sentence reveals char-by-char,
+                        starting the moment the brain is done.
+         v=0.48 → 0.55  hold the fully-revealed sentence.
+         v=0.55 → 0.62  slide 2 sentence reverses out (the same
+                        wipe animation played backwards).
+         v=0.60 → 0.78  brain morphs into a dot-art CLOCK while
+                        simultaneously scaling down and translating
+                        to the right edge of the viewport.
+         v=0.78 → 0.90  "Current Teleoperation systems are outdated"
+                        text + subtitle reveal on the LEFT with the
+                        same purple-wipe pattern as the title.
+         v=0.50 → 0.58  "Current Teleoperation systems are outdated"
+                        reveal on the LEFT.
+         v=0.58 → 0.64  hold the modern-teleop block.
+         v=0.64 → 0.69  modern-teleop block reverses out (same
+                        wipe pattern, reversed).
+         v=0.67 → 0.82  clock morphs into EARTH and the canvas
+                        sweeps from the right edge over to the
+                        LEFT edge — velocity trails throughout.
+         v=0.82 → 0.90  "The skilled labor base is eroding" +
+                        subtitle reveal on the RIGHT.
+         v>0.90         hold the final state. */
+  const HERO_DISAPPEAR_START = 0.02;
+  const HERO_DISAPPEAR_END = 0.07;
+  const HERO_WORD_DURATION = 0.04;
+  const invertProgress = useTransform(scrollYProgress, [0.07, 0.11], [0, 1]);
+  const morphProgress = useTransform(scrollYProgress, [0.11, 0.19], [0, 1]);
+  const heroBg = useTransform(invertProgress, [0, 1], ["#f5efe5", "#0f0e0d"]);
   const revealHead = useTransform(
     scrollYProgress,
-    [0.22, 0.80],
-    [0, SLIDE2_TEXT.length + 7],
+    [0.19, 0.30, 0.34, 0.39],
+    [
+      0,
+      SLIDE2_TEXT.length + 7,
+      SLIDE2_TEXT.length + 7,
+      0,
+    ],
   );
+  const eyeMorphProgress = useTransform(scrollYProgress, [0.37, 0.50], [0, 1]);
+  const eyeOffsetProgress = useTransform(scrollYProgress, [0.37, 0.50], [0, 1]);
+  /* Earth morph + earth offset run concurrently. The offset eases
+     the canvas from +right (clock pose) all the way to −left so
+     the earth ends up on the OPPOSITE side from the clock. The
+     long sweep automatically pulls velocity trails out of every
+     dot via the existing partial-fade clear. */
+  const earthMorphProgress = useTransform(scrollYProgress, [0.67, 0.82], [0, 1]);
+  const earthOffsetProgress = useTransform(scrollYProgress, [0.67, 0.82], [0, 1]);
+  /* Cliffs morph + phase. cliffMorph drives the dot positions from
+     the earth → two-cliff-with-a-gap layout. cliffPhase ALSO drives
+     the canvas back to centered+full-scale (lerps the eyeOffset/
+     earthOffset translate and scale back to neutral) so the cliffs
+     read at full size with the gap centered on the viewport. */
+  const cliffMorphProgress = useTransform(scrollYProgress, [0.91, 0.97], [0, 1]);
+  const cliffPhaseProgress = useTransform(scrollYProgress, [0.91, 0.97], [0, 1]);
 
   const [stage, setStage] = useState(0);
+  const [visionReady, setVisionReady] = useState(false);
+  const [erodingReady, setErodingReady] = useState(false);
+  const [cliffReady, setCliffReady] = useState(false);
+  /* `hydrated` flips true after the first useLayoutEffect runs.
+     The animated text blocks render conditionally on it, which
+     means they only MOUNT after we've synced ready flags with the
+     current scroll position. Combined with `skipIntroAnim`-aware
+     `initial` values on every motion component, this guarantees
+     scrolled-refreshes show the text in its already-settled state
+     with zero entrance animation. */
+  const [hydrated, setHydrated] = useState(false);
   useMotionValueEvent(scrollYProgress, "change", (v) => {
-    setStage(v > 0.80 ? 3 : 0);
+    setStage(v > 0.30 && v < 0.39 ? 3 : 0);
+    /* visionReady / erodingReady trigger the entrance only — once
+       true they stay true. The sideways exit is owned per-word by
+       HeroWord components that slide each token rightward on
+       scroll past their exit-window thresholds. */
+    setVisionReady(v > 0.50);
+    setErodingReady(v > 0.82);
+    setCliffReady(v > 0.96);
   });
+  useLayoutEffect(() => {
+    /* Initial scroll-based sync runs once, BEFORE first paint, so
+       motion components mount with the correct ready-flag state
+       (and `initial` matches `animate` → no entrance animation). */
+    const v = scrollYProgress.get();
+    if (v > 0.50) setVisionReady(true);
+    if (v > 0.82) setErodingReady(true);
+    if (v > 0.96) setCliffReady(true);
+    setHydrated(true);
+  }, [scrollYProgress]);
 
   return (
     <>
       <section
         ref={sectionRef}
         className="relative"
-        style={{ height: "260svh" }}
+        style={{ height: "880svh" }}
       >
         <div className="sticky top-0 h-[100svh] overflow-hidden">
-          <PaperBackground />
-          <TopographicalDots />
+          {/* Scroll-driven cream → dark backdrop. Replaces the static
+              PaperBackground for the hero so it can invert with the
+              dot color crossfade. */}
+          <motion.div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 z-0"
+            style={{ backgroundColor: heroBg }}
+          />
+          <TopographicalDots
+            morphProgress={morphProgress}
+            invertProgress={invertProgress}
+            eyeMorphProgress={eyeMorphProgress}
+            eyeOffsetProgress={eyeOffsetProgress}
+            earthMorphProgress={earthMorphProgress}
+            earthOffsetProgress={earthOffsetProgress}
+            cliffMorphProgress={cliffMorphProgress}
+            cliffPhaseProgress={cliffPhaseProgress}
+          />
 
-          {/* "[the problem]" — top-left tag that scrambles in just
-              before slide 2 and stays visible through slide 6. */}
-          <ProblemLabel scrollYProgress={scrollYProgress} />
 
           {/* Slide 2 — single sentence revealed letter by letter as the
               user scrolls. Vertically centered, generous max-width so
@@ -2174,8 +2835,8 @@ function Hero() {
                 className="text-balance"
                 style={{
                   fontFamily:
-                    "var(--font-tt-norms-pro), ui-sans-serif, system-ui",
-                  fontWeight: 800,
+                    "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
+                  fontWeight: 700,
                   fontSize: "clamp(2.6rem, 5.6vw, 5.2rem)",
                   lineHeight: 1.04,
                   letterSpacing: "-0.025em",
@@ -2195,12 +2856,843 @@ function Hero() {
             </div>
           </div>
 
+          {/* "Current Teleoperation systems are outdated" — appears on the LEFT side of
+              the viewport once the brain has reformed into the eyes
+              on the right. Same 3-stage colour reveal as the title:
+              green → purple/pink → white, with two diagonal mask
+              wipes. Gated on `visionReady` which flips when scroll
+              progress crosses the cue. Outer rendering is gated on
+              `hydrated` so motion components only mount AFTER the
+              initial scroll-flag sync — no on-mount animation runs
+              on a scrolled-refresh. */}
+          {hydrated && (
+          <div
+            className="pointer-events-none absolute inset-0 z-[7] hidden items-center md:flex"
+            aria-hidden={!visionReady}
+          >
+            <div
+              className="pointer-events-none w-full"
+              style={{
+                paddingLeft: "8vw",
+                paddingRight: "55vw",
+              }}
+            >
+              <div
+                style={{
+                  overflow: "hidden",
+                  paddingBottom: "0.2em",
+                }}
+              >
+                <motion.h2
+                  className="text-balance"
+                  initial={skipIntroAnim ? TEXT_FINAL : TEXT_INITIAL}
+                  animate={{
+                    y: visionReady ? "0%" : "120%",
+                    opacity: visionReady ? 1 : 0,
+                  }}
+                  transition={{
+                    duration: 0.7,
+                    ease: [0.22, 1, 0.36, 1],
+                    delay: 0,
+                  }}
+                  style={{
+                    position: "relative",
+                    fontFamily:
+                      "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
+                    fontWeight: 600,
+                    fontSize: "clamp(1.7rem, 3.4vw, 3.2rem)",
+                    lineHeight: 1.1,
+                    letterSpacing: "-0.025em",
+                    margin: 0,
+                    color: "#ffffff",
+                    textAlign: "left",
+                  }}
+                >
+                  {(() => {
+                    const tokens = MODERN_TELEOP_TITLE_TOKENS;
+                    const wins = staggerWindows(
+                      tokens.length,
+                      0.64,
+                      0.70,
+                      0.04,
+                    );
+                    return tokens.map((tok, i) => (
+                      <Fragment key={i}>
+                        <HeroWord
+                          scrollProgress={scrollYProgress}
+                          start={wins[i].start}
+                          end={wins[i].end}
+                        >
+                          {tok}
+                        </HeroWord>
+                        {i < tokens.length - 1 ? " " : ""}
+                      </Fragment>
+                    ));
+                  })()}
+                  {/* Purple/pink overlay — wipes off in the second
+                      half so the white base shows through. */}
+                  <motion.span
+                    aria-hidden
+                    className="text-balance"
+                    initial={skipIntroAnim ? MASK_WIPED : MASK_OPAQUE}
+                    animate={{
+                      maskImage: visionReady
+                        ? [
+                            "linear-gradient(45deg, transparent -100%, #000 0%)",
+                            "linear-gradient(45deg, transparent 0%, #000 100%)",
+                            "linear-gradient(45deg, transparent 100%, #000 200%)",
+                          ]
+                        : [
+                            "linear-gradient(45deg, transparent 100%, #000 200%)",
+                            "linear-gradient(45deg, transparent 0%, #000 100%)",
+                            "linear-gradient(45deg, transparent -100%, #000 0%)",
+                          ],
+                      WebkitMaskImage: visionReady
+                        ? [
+                            "linear-gradient(45deg, transparent -100%, #000 0%)",
+                            "linear-gradient(45deg, transparent 0%, #000 100%)",
+                            "linear-gradient(45deg, transparent 100%, #000 200%)",
+                          ]
+                        : [
+                            "linear-gradient(45deg, transparent 100%, #000 200%)",
+                            "linear-gradient(45deg, transparent 0%, #000 100%)",
+                            "linear-gradient(45deg, transparent -100%, #000 0%)",
+                          ],
+                    }}
+                    transition={{
+                      duration: 0.42,
+                      ease: "linear",
+                      times: [0, 0.5, 1],
+                      delay: visionReady ? 0.28 : 0,
+                    }}
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      display: "block",
+                      color: "#883a8d",
+                      pointerEvents: "none",
+                    }}
+                  >
+                    {renderTokenOverlay(MODERN_TELEOP_TITLE_TOKENS)}
+                  </motion.span>
+                  {/* Green overlay — wipes off first; reveal order:
+                      green → purple → normal (white). */}
+                  <motion.span
+                    aria-hidden
+                    className="text-balance"
+                    initial={skipIntroAnim ? MASK_WIPED : MASK_OPAQUE}
+                    animate={{
+                      maskImage: visionReady
+                        ? [
+                            "linear-gradient(45deg, transparent -100%, #000 0%)",
+                            "linear-gradient(45deg, transparent 0%, #000 100%)",
+                            "linear-gradient(45deg, transparent 100%, #000 200%)",
+                          ]
+                        : [
+                            "linear-gradient(45deg, transparent 100%, #000 200%)",
+                            "linear-gradient(45deg, transparent 0%, #000 100%)",
+                            "linear-gradient(45deg, transparent -100%, #000 0%)",
+                          ],
+                      WebkitMaskImage: visionReady
+                        ? [
+                            "linear-gradient(45deg, transparent -100%, #000 0%)",
+                            "linear-gradient(45deg, transparent 0%, #000 100%)",
+                            "linear-gradient(45deg, transparent 100%, #000 200%)",
+                          ]
+                        : [
+                            "linear-gradient(45deg, transparent 100%, #000 200%)",
+                            "linear-gradient(45deg, transparent 0%, #000 100%)",
+                            "linear-gradient(45deg, transparent -100%, #000 0%)",
+                          ],
+                    }}
+                    transition={{
+                      duration: 0.32,
+                      ease: "linear",
+                      times: [0, 0.5, 1],
+                      delay: 0,
+                    }}
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      display: "block",
+                      color: "#059669",
+                      pointerEvents: "none",
+                    }}
+                  >
+                    {renderTokenOverlay(MODERN_TELEOP_TITLE_TOKENS)}
+                  </motion.span>
+                </motion.h2>
+              </div>
+              {/* Subtitle — same 3-stage colour wipe, slightly
+                  delayed so it lands after the h2 settles. */}
+              <div
+                style={{
+                  overflow: "hidden",
+                  marginTop: "1em",
+                  paddingBottom: "0.25em",
+                  maxWidth: "32em",
+                }}
+              >
+                <motion.p
+                  initial={skipIntroAnim ? TEXT_FINAL : TEXT_INITIAL}
+                  animate={{
+                    y: visionReady ? "0%" : "120%",
+                    opacity: visionReady ? 1 : 0,
+                  }}
+                  transition={{
+                    duration: 0.6,
+                    ease: [0.22, 1, 0.36, 1],
+                    delay: visionReady ? 0.35 : 0,
+                  }}
+                  style={{
+                    position: "relative",
+                    fontFamily:
+                      "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
+                    fontWeight: 400,
+                    fontSize: "clamp(0.95rem, 1.15vw, 1.15rem)",
+                    lineHeight: 1.55,
+                    letterSpacing: "-0.005em",
+                    margin: 0,
+                    color: "rgba(255, 255, 255, 0.78)",
+                    textAlign: "left",
+                  }}
+                >
+                  {(() => {
+                    const tokens = MODERN_TELEOP_SUBTITLE_TOKENS;
+                    const wins = staggerWindows(
+                      tokens.length,
+                      0.64,
+                      0.72,
+                      0.03,
+                    );
+                    return tokens.map((tok, i) => (
+                      <Fragment key={i}>
+                        <HeroWord
+                          scrollProgress={scrollYProgress}
+                          start={wins[i].start}
+                          end={wins[i].end}
+                        >
+                          {tok}
+                        </HeroWord>
+                        {i < tokens.length - 1 ? " " : ""}
+                      </Fragment>
+                    ));
+                  })()}
+                  {/* Purple/pink overlay — wipes off second. */}
+                  <motion.span
+                    aria-hidden
+                    initial={skipIntroAnim ? MASK_WIPED : MASK_OPAQUE}
+                    animate={{
+                      maskImage: visionReady
+                        ? [
+                            "linear-gradient(45deg, transparent -100%, #000 0%)",
+                            "linear-gradient(45deg, transparent 0%, #000 100%)",
+                            "linear-gradient(45deg, transparent 100%, #000 200%)",
+                          ]
+                        : [
+                            "linear-gradient(45deg, transparent 100%, #000 200%)",
+                            "linear-gradient(45deg, transparent 0%, #000 100%)",
+                            "linear-gradient(45deg, transparent -100%, #000 0%)",
+                          ],
+                      WebkitMaskImage: visionReady
+                        ? [
+                            "linear-gradient(45deg, transparent -100%, #000 0%)",
+                            "linear-gradient(45deg, transparent 0%, #000 100%)",
+                            "linear-gradient(45deg, transparent 100%, #000 200%)",
+                          ]
+                        : [
+                            "linear-gradient(45deg, transparent 100%, #000 200%)",
+                            "linear-gradient(45deg, transparent 0%, #000 100%)",
+                            "linear-gradient(45deg, transparent -100%, #000 0%)",
+                          ],
+                    }}
+                    transition={{
+                      duration: 0.35,
+                      ease: "linear",
+                      times: [0, 0.5, 1],
+                      delay: visionReady ? 0.65 : 0,
+                    }}
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      display: "block",
+                      color: "#883a8d",
+                      pointerEvents: "none",
+                    }}
+                  >
+                    {renderTokenOverlay(MODERN_TELEOP_SUBTITLE_TOKENS)}
+                  </motion.span>
+                  {/* Green overlay — wipes off first. */}
+                  <motion.span
+                    aria-hidden
+                    initial={skipIntroAnim ? MASK_WIPED : MASK_OPAQUE}
+                    animate={{
+                      maskImage: visionReady
+                        ? [
+                            "linear-gradient(45deg, transparent -100%, #000 0%)",
+                            "linear-gradient(45deg, transparent 0%, #000 100%)",
+                            "linear-gradient(45deg, transparent 100%, #000 200%)",
+                          ]
+                        : [
+                            "linear-gradient(45deg, transparent 100%, #000 200%)",
+                            "linear-gradient(45deg, transparent 0%, #000 100%)",
+                            "linear-gradient(45deg, transparent -100%, #000 0%)",
+                          ],
+                      WebkitMaskImage: visionReady
+                        ? [
+                            "linear-gradient(45deg, transparent -100%, #000 0%)",
+                            "linear-gradient(45deg, transparent 0%, #000 100%)",
+                            "linear-gradient(45deg, transparent 100%, #000 200%)",
+                          ]
+                        : [
+                            "linear-gradient(45deg, transparent 100%, #000 200%)",
+                            "linear-gradient(45deg, transparent 0%, #000 100%)",
+                            "linear-gradient(45deg, transparent -100%, #000 0%)",
+                          ],
+                    }}
+                    transition={{
+                      duration: 0.28,
+                      ease: "linear",
+                      times: [0, 0.5, 1],
+                      delay: visionReady ? 0.35 : 0,
+                    }}
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      display: "block",
+                      color: "#059669",
+                      pointerEvents: "none",
+                    }}
+                  >
+                    {renderTokenOverlay(MODERN_TELEOP_SUBTITLE_TOKENS)}
+                  </motion.span>
+                </motion.p>
+              </div>
+            </div>
+          </div>
+          )}
+
+          {/* "The skilled labor base is eroding" — appears on the
+              RIGHT side after the clock has morphed into the earth
+              and slid all the way to the left. Same 3-stage colour
+              wipe (green → purple/pink → white) gated on
+              `erodingReady`. Mirrors the modern-teleop block's
+              layout but anchored to the right edge. */}
+          {hydrated && (
+          <div
+            className="pointer-events-none absolute inset-0 z-[7] hidden items-center md:flex"
+            aria-hidden={!erodingReady}
+          >
+            <div
+              className="pointer-events-none w-full"
+              style={{
+                paddingLeft: "55vw",
+                paddingRight: "8vw",
+              }}
+            >
+              <div
+                style={{
+                  overflow: "hidden",
+                  paddingBottom: "0.2em",
+                }}
+              >
+                <motion.h2
+                  className="text-balance"
+                  initial={skipIntroAnim ? TEXT_FINAL : TEXT_INITIAL}
+                  animate={{
+                    y: erodingReady ? "0%" : "120%",
+                    opacity: erodingReady ? 1 : 0,
+                  }}
+                  transition={{
+                    duration: 0.7,
+                    ease: [0.22, 1, 0.36, 1],
+                    delay: 0,
+                  }}
+                  style={{
+                    position: "relative",
+                    fontFamily:
+                      "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
+                    fontWeight: 600,
+                    fontSize: "clamp(1.7rem, 3.4vw, 3.2rem)",
+                    lineHeight: 1.1,
+                    letterSpacing: "-0.025em",
+                    margin: 0,
+                    color: "#ffffff",
+                    textAlign: "left",
+                  }}
+                >
+                  {(() => {
+                    const wins = staggerWindows(
+                      ERODING_TITLE_TOKENS.length,
+                      0.92,
+                      0.96,
+                      0.025,
+                    );
+                    return ERODING_TITLE_TOKENS.map((tok, i) => (
+                      <Fragment key={i}>
+                        <HeroWord
+                          scrollProgress={scrollYProgress}
+                          start={wins[i].start}
+                          end={wins[i].end}
+                        >
+                          {tok}
+                        </HeroWord>
+                        {i < ERODING_TITLE_TOKENS.length - 1 ? " " : ""}
+                      </Fragment>
+                    ));
+                  })()}
+                  {/* Purple/pink overlay — wipes off second. */}
+                  <motion.span
+                    aria-hidden
+                    className="text-balance"
+                    initial={skipIntroAnim ? MASK_WIPED : MASK_OPAQUE}
+                    animate={{
+                      maskImage: erodingReady
+                        ? [
+                            "linear-gradient(45deg, transparent -100%, #000 0%)",
+                            "linear-gradient(45deg, transparent 0%, #000 100%)",
+                            "linear-gradient(45deg, transparent 100%, #000 200%)",
+                          ]
+                        : "linear-gradient(45deg, transparent -100%, #000 0%)",
+                      WebkitMaskImage: erodingReady
+                        ? [
+                            "linear-gradient(45deg, transparent -100%, #000 0%)",
+                            "linear-gradient(45deg, transparent 0%, #000 100%)",
+                            "linear-gradient(45deg, transparent 100%, #000 200%)",
+                          ]
+                        : "linear-gradient(45deg, transparent -100%, #000 0%)",
+                    }}
+                    transition={{
+                      duration: 0.42,
+                      ease: "linear",
+                      times: [0, 0.5, 1],
+                      delay: erodingReady ? 0.28 : 0,
+                    }}
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      display: "block",
+                      color: "#883a8d",
+                      pointerEvents: "none",
+                    }}
+                  >
+                    {renderTokenOverlay(ERODING_TITLE_TOKENS)}
+                  </motion.span>
+                  {/* Green overlay — wipes off first. */}
+                  <motion.span
+                    aria-hidden
+                    className="text-balance"
+                    initial={skipIntroAnim ? MASK_WIPED : MASK_OPAQUE}
+                    animate={{
+                      maskImage: erodingReady
+                        ? [
+                            "linear-gradient(45deg, transparent -100%, #000 0%)",
+                            "linear-gradient(45deg, transparent 0%, #000 100%)",
+                            "linear-gradient(45deg, transparent 100%, #000 200%)",
+                          ]
+                        : "linear-gradient(45deg, transparent -100%, #000 0%)",
+                      WebkitMaskImage: erodingReady
+                        ? [
+                            "linear-gradient(45deg, transparent -100%, #000 0%)",
+                            "linear-gradient(45deg, transparent 0%, #000 100%)",
+                            "linear-gradient(45deg, transparent 100%, #000 200%)",
+                          ]
+                        : "linear-gradient(45deg, transparent -100%, #000 0%)",
+                    }}
+                    transition={{
+                      duration: 0.32,
+                      ease: "linear",
+                      times: [0, 0.5, 1],
+                      delay: 0,
+                    }}
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      display: "block",
+                      color: "#059669",
+                      pointerEvents: "none",
+                    }}
+                  >
+                    {renderTokenOverlay(ERODING_TITLE_TOKENS)}
+                  </motion.span>
+                </motion.h2>
+              </div>
+              {/* Subtitle — same 3-stage wipe, slightly delayed
+                  so it lands after the heading. Mirrors the
+                  modern-teleop subtitle but anchored right. */}
+              <div
+                style={{
+                  overflow: "hidden",
+                  marginTop: "1em",
+                  paddingBottom: "0.25em",
+                  maxWidth: "32em",
+                }}
+              >
+                <motion.p
+                  initial={skipIntroAnim ? TEXT_FINAL : TEXT_INITIAL}
+                  animate={{
+                    y: erodingReady ? "0%" : "120%",
+                    opacity: erodingReady ? 1 : 0,
+                  }}
+                  transition={{
+                    duration: 0.6,
+                    ease: [0.22, 1, 0.36, 1],
+                    delay: erodingReady ? 0.35 : 0,
+                  }}
+                  style={{
+                    position: "relative",
+                    fontFamily:
+                      "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
+                    fontWeight: 400,
+                    fontSize: "clamp(0.95rem, 1.15vw, 1.15rem)",
+                    lineHeight: 1.55,
+                    letterSpacing: "-0.005em",
+                    margin: 0,
+                    color: "rgba(255, 255, 255, 0.78)",
+                    textAlign: "left",
+                  }}
+                >
+                  {(() => {
+                    const wins = staggerWindows(
+                      ERODING_SUBTITLE_TOKENS.length,
+                      0.92,
+                      0.96,
+                      0.02,
+                    );
+                    return ERODING_SUBTITLE_TOKENS.map((tok, i) => (
+                      <Fragment key={i}>
+                        <HeroWord
+                          scrollProgress={scrollYProgress}
+                          start={wins[i].start}
+                          end={wins[i].end}
+                        >
+                          {tok}
+                        </HeroWord>
+                        {i < ERODING_SUBTITLE_TOKENS.length - 1 ? " " : ""}
+                      </Fragment>
+                    ));
+                  })()}
+                  {/* Purple/pink overlay — wipes off second. */}
+                  <motion.span
+                    aria-hidden
+                    initial={skipIntroAnim ? MASK_WIPED : MASK_OPAQUE}
+                    animate={{
+                      maskImage: erodingReady
+                        ? [
+                            "linear-gradient(45deg, transparent -100%, #000 0%)",
+                            "linear-gradient(45deg, transparent 0%, #000 100%)",
+                            "linear-gradient(45deg, transparent 100%, #000 200%)",
+                          ]
+                        : "linear-gradient(45deg, transparent -100%, #000 0%)",
+                      WebkitMaskImage: erodingReady
+                        ? [
+                            "linear-gradient(45deg, transparent -100%, #000 0%)",
+                            "linear-gradient(45deg, transparent 0%, #000 100%)",
+                            "linear-gradient(45deg, transparent 100%, #000 200%)",
+                          ]
+                        : "linear-gradient(45deg, transparent -100%, #000 0%)",
+                    }}
+                    transition={{
+                      duration: 0.35,
+                      ease: "linear",
+                      times: [0, 0.5, 1],
+                      delay: erodingReady ? 0.65 : 0,
+                    }}
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      display: "block",
+                      color: "#883a8d",
+                      pointerEvents: "none",
+                    }}
+                  >
+                    {renderTokenOverlay(ERODING_SUBTITLE_TOKENS)}
+                  </motion.span>
+                  {/* Green overlay — wipes off first. */}
+                  <motion.span
+                    aria-hidden
+                    initial={skipIntroAnim ? MASK_WIPED : MASK_OPAQUE}
+                    animate={{
+                      maskImage: erodingReady
+                        ? [
+                            "linear-gradient(45deg, transparent -100%, #000 0%)",
+                            "linear-gradient(45deg, transparent 0%, #000 100%)",
+                            "linear-gradient(45deg, transparent 100%, #000 200%)",
+                          ]
+                        : "linear-gradient(45deg, transparent -100%, #000 0%)",
+                      WebkitMaskImage: erodingReady
+                        ? [
+                            "linear-gradient(45deg, transparent -100%, #000 0%)",
+                            "linear-gradient(45deg, transparent 0%, #000 100%)",
+                            "linear-gradient(45deg, transparent 100%, #000 200%)",
+                          ]
+                        : "linear-gradient(45deg, transparent -100%, #000 0%)",
+                    }}
+                    transition={{
+                      duration: 0.28,
+                      ease: "linear",
+                      times: [0, 0.5, 1],
+                      delay: erodingReady ? 0.35 : 0,
+                    }}
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      display: "block",
+                      color: "#059669",
+                      pointerEvents: "none",
+                    }}
+                  >
+                    {renderTokenOverlay(ERODING_SUBTITLE_TOKENS)}
+                  </motion.span>
+                </motion.p>
+              </div>
+            </div>
+          </div>
+          )}
+
+          {/* "The sim-to-real gap is still wide" — appears in the GAP
+              between the two cliffs after the earth has reformed
+              into them and the canvas re-centered. Title sits above
+              centerline; subtitle just below it. Same 3-stage
+              colour wipe (green → purple → white) gated on
+              `cliffReady`. */}
+          {hydrated && (
+          <div
+            className="pointer-events-none absolute inset-0 z-[7] hidden flex-col items-center justify-center px-6 md:flex md:px-10"
+            aria-hidden={!cliffReady}
+          >
+            <div className="pointer-events-none flex w-full max-w-[28rem] flex-col items-center">
+              <div
+                style={{
+                  overflow: "hidden",
+                  paddingBottom: "0.2em",
+                }}
+              >
+                <motion.h2
+                  className="text-balance"
+                  initial={skipIntroAnim ? TEXT_FINAL : TEXT_INITIAL}
+                  animate={{
+                    y: cliffReady ? "0%" : "120%",
+                    opacity: cliffReady ? 1 : 0,
+                  }}
+                  transition={{
+                    duration: 0.7,
+                    ease: [0.22, 1, 0.36, 1],
+                    delay: 0,
+                  }}
+                  style={{
+                    position: "relative",
+                    fontFamily:
+                      "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
+                    fontWeight: 600,
+                    fontSize: "clamp(1.7rem, 3.4vw, 3.2rem)",
+                    lineHeight: 1.1,
+                    letterSpacing: "-0.025em",
+                    margin: 0,
+                    color: "#ffffff",
+                    textAlign: "center",
+                  }}
+                >
+                  {renderTokenOverlay(GAP_TITLE_TOKENS)}
+                  {/* Purple/pink overlay — wipes off second. */}
+                  <motion.span
+                    aria-hidden
+                    className="text-balance"
+                    initial={skipIntroAnim ? MASK_WIPED : MASK_OPAQUE}
+                    animate={{
+                      maskImage: cliffReady
+                        ? [
+                            "linear-gradient(45deg, transparent -100%, #000 0%)",
+                            "linear-gradient(45deg, transparent 0%, #000 100%)",
+                            "linear-gradient(45deg, transparent 100%, #000 200%)",
+                          ]
+                        : "linear-gradient(45deg, transparent -100%, #000 0%)",
+                      WebkitMaskImage: cliffReady
+                        ? [
+                            "linear-gradient(45deg, transparent -100%, #000 0%)",
+                            "linear-gradient(45deg, transparent 0%, #000 100%)",
+                            "linear-gradient(45deg, transparent 100%, #000 200%)",
+                          ]
+                        : "linear-gradient(45deg, transparent -100%, #000 0%)",
+                    }}
+                    transition={{
+                      duration: 0.42,
+                      ease: "linear",
+                      times: [0, 0.5, 1],
+                      delay: cliffReady ? 0.28 : 0,
+                    }}
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      display: "block",
+                      color: "#883a8d",
+                      pointerEvents: "none",
+                    }}
+                  >
+                    {renderTokenOverlay(GAP_TITLE_TOKENS)}
+                  </motion.span>
+                  {/* Green overlay — wipes off first. */}
+                  <motion.span
+                    aria-hidden
+                    className="text-balance"
+                    initial={skipIntroAnim ? MASK_WIPED : MASK_OPAQUE}
+                    animate={{
+                      maskImage: cliffReady
+                        ? [
+                            "linear-gradient(45deg, transparent -100%, #000 0%)",
+                            "linear-gradient(45deg, transparent 0%, #000 100%)",
+                            "linear-gradient(45deg, transparent 100%, #000 200%)",
+                          ]
+                        : "linear-gradient(45deg, transparent -100%, #000 0%)",
+                      WebkitMaskImage: cliffReady
+                        ? [
+                            "linear-gradient(45deg, transparent -100%, #000 0%)",
+                            "linear-gradient(45deg, transparent 0%, #000 100%)",
+                            "linear-gradient(45deg, transparent 100%, #000 200%)",
+                          ]
+                        : "linear-gradient(45deg, transparent -100%, #000 0%)",
+                    }}
+                    transition={{
+                      duration: 0.32,
+                      ease: "linear",
+                      times: [0, 0.5, 1],
+                      delay: 0,
+                    }}
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      display: "block",
+                      color: "#059669",
+                      pointerEvents: "none",
+                    }}
+                  >
+                    {renderTokenOverlay(GAP_TITLE_TOKENS)}
+                  </motion.span>
+                </motion.h2>
+              </div>
+
+              {/* Subtitle — same wipe pattern, slightly delayed. */}
+              <div
+                style={{
+                  overflow: "hidden",
+                  marginTop: "1em",
+                  paddingBottom: "0.25em",
+                  maxWidth: "26em",
+                }}
+              >
+                <motion.p
+                  initial={skipIntroAnim ? TEXT_FINAL : TEXT_INITIAL}
+                  animate={{
+                    y: cliffReady ? "0%" : "120%",
+                    opacity: cliffReady ? 1 : 0,
+                  }}
+                  transition={{
+                    duration: 0.6,
+                    ease: [0.22, 1, 0.36, 1],
+                    delay: cliffReady ? 0.35 : 0,
+                  }}
+                  style={{
+                    position: "relative",
+                    fontFamily:
+                      "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
+                    fontWeight: 400,
+                    fontSize: "clamp(0.95rem, 1.15vw, 1.15rem)",
+                    lineHeight: 1.55,
+                    letterSpacing: "-0.005em",
+                    margin: 0,
+                    color: "rgba(255, 255, 255, 0.78)",
+                    textAlign: "center",
+                  }}
+                >
+                  {renderTokenOverlay(GAP_SUBTITLE_TOKENS)}
+                  {/* Purple/pink overlay — wipes off second. */}
+                  <motion.span
+                    aria-hidden
+                    initial={skipIntroAnim ? MASK_WIPED : MASK_OPAQUE}
+                    animate={{
+                      maskImage: cliffReady
+                        ? [
+                            "linear-gradient(45deg, transparent -100%, #000 0%)",
+                            "linear-gradient(45deg, transparent 0%, #000 100%)",
+                            "linear-gradient(45deg, transparent 100%, #000 200%)",
+                          ]
+                        : "linear-gradient(45deg, transparent -100%, #000 0%)",
+                      WebkitMaskImage: cliffReady
+                        ? [
+                            "linear-gradient(45deg, transparent -100%, #000 0%)",
+                            "linear-gradient(45deg, transparent 0%, #000 100%)",
+                            "linear-gradient(45deg, transparent 100%, #000 200%)",
+                          ]
+                        : "linear-gradient(45deg, transparent -100%, #000 0%)",
+                    }}
+                    transition={{
+                      duration: 0.35,
+                      ease: "linear",
+                      times: [0, 0.5, 1],
+                      delay: cliffReady ? 0.65 : 0,
+                    }}
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      display: "block",
+                      color: "#883a8d",
+                      pointerEvents: "none",
+                    }}
+                  >
+                    {renderTokenOverlay(GAP_SUBTITLE_TOKENS)}
+                  </motion.span>
+                  {/* Green overlay — wipes off first. */}
+                  <motion.span
+                    aria-hidden
+                    initial={skipIntroAnim ? MASK_WIPED : MASK_OPAQUE}
+                    animate={{
+                      maskImage: cliffReady
+                        ? [
+                            "linear-gradient(45deg, transparent -100%, #000 0%)",
+                            "linear-gradient(45deg, transparent 0%, #000 100%)",
+                            "linear-gradient(45deg, transparent 100%, #000 200%)",
+                          ]
+                        : "linear-gradient(45deg, transparent -100%, #000 0%)",
+                      WebkitMaskImage: cliffReady
+                        ? [
+                            "linear-gradient(45deg, transparent -100%, #000 0%)",
+                            "linear-gradient(45deg, transparent 0%, #000 100%)",
+                            "linear-gradient(45deg, transparent 100%, #000 200%)",
+                          ]
+                        : "linear-gradient(45deg, transparent -100%, #000 0%)",
+                    }}
+                    transition={{
+                      duration: 0.28,
+                      ease: "linear",
+                      times: [0, 0.5, 1],
+                      delay: cliffReady ? 0.35 : 0,
+                    }}
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      display: "block",
+                      color: "#059669",
+                      pointerEvents: "none",
+                    }}
+                  >
+                    {renderTokenOverlay(GAP_SUBTITLE_TOKENS)}
+                  </motion.span>
+                </motion.p>
+              </div>
+            </div>
+          </div>
+          )}
+
           {/* Main landing-page heading — big bold technical statement,
-              centered on the viewport. novonusOpacity fades it out as
-              the user scrolls toward slide 2. */}
+              centered on the viewport. The disappearance is owned
+              per-token by HeroWord (each word slides into the
+              space beside it on its own staggered scroll window).
+              Gated on `hydrated` for the same reason as the other
+              text blocks — no on-mount entrance animation on a
+              scrolled-refresh. */}
+          {hydrated && (
           <motion.div
             className="pointer-events-none absolute inset-0 z-[5] hidden items-center justify-center px-6 md:flex md:px-10"
-            style={{ opacity: novonusOpacity }}
           >
             <div className="pointer-events-none flex w-full max-w-[1100px] flex-col items-center">
               {/* Eyebrow — rises from its overflow-hidden barrier after the title */}
@@ -2213,7 +3705,7 @@ function Hero() {
               >
                 <motion.p
                   className="pointer-events-none"
-                  initial={{ y: "120%", opacity: 0 }}
+                  initial={skipIntroAnim ? TEXT_FINAL : TEXT_INITIAL}
                   animate={{
                     y: textReady ? "0%" : "120%",
                     opacity: textReady ? 1 : 0,
@@ -2237,33 +3729,102 @@ function Hero() {
                     textAlign: "center",
                   }}
                 >
-                  [<span style={{ color: "#0f0e0d" }}> somatic pipeline for robots powered by humans </span>]
+                  {(() => {
+                    const tokens = [
+                      "[",
+                      "somatic",
+                      "pipeline",
+                      "for",
+                      "robots",
+                      "powered",
+                      "by",
+                      "humans",
+                      "]",
+                    ];
+                    const wins = staggerWindows(
+                      tokens.length,
+                      HERO_DISAPPEAR_START,
+                      HERO_DISAPPEAR_END,
+                      HERO_WORD_DURATION,
+                    );
+                    return tokens.map((tok, i) => {
+                      const isBracket = tok === "[" || tok === "]";
+                      return (
+                        <Fragment key={i}>
+                          <HeroWord
+                            scrollProgress={scrollYProgress}
+                            start={wins[i].start}
+                            end={wins[i].end}
+                            color={isBracket ? undefined : "#0f0e0d"}
+                          >
+                            {tok}
+                          </HeroWord>
+                          {i < tokens.length - 1 ? " " : ""}
+                        </Fragment>
+                      );
+                    });
+                  })()}
+                  {/* Purple/pink overlay — wipes off in the second
+                      half of the appearance, revealing the normal
+                      base treatment (purple brackets, dark inner). */}
                   <motion.span
                     aria-hidden
-                    initial={{
-                      maskImage:
-                        "linear-gradient(45deg, transparent -18%, #000 0%)",
-                      WebkitMaskImage:
-                        "linear-gradient(45deg, transparent -18%, #000 0%)",
-                    }}
+                    initial={skipIntroAnim ? MASK_WIPED : MASK_OPAQUE}
                     animate={{
                       maskImage: textReady
                         ? [
-                            "linear-gradient(45deg, transparent -18%, #000 0%)",
-                            "linear-gradient(45deg, transparent 41%, #000 59%)",
-                            "linear-gradient(45deg, transparent 100%, #000 118%)",
+                            "linear-gradient(45deg, transparent -100%, #000 0%)",
+                            "linear-gradient(45deg, transparent 0%, #000 100%)",
+                            "linear-gradient(45deg, transparent 100%, #000 200%)",
                           ]
-                        : "linear-gradient(45deg, transparent -18%, #000 0%)",
+                        : "linear-gradient(45deg, transparent -100%, #000 0%)",
                       WebkitMaskImage: textReady
                         ? [
-                            "linear-gradient(45deg, transparent -18%, #000 0%)",
-                            "linear-gradient(45deg, transparent 41%, #000 59%)",
-                            "linear-gradient(45deg, transparent 100%, #000 118%)",
+                            "linear-gradient(45deg, transparent -100%, #000 0%)",
+                            "linear-gradient(45deg, transparent 0%, #000 100%)",
+                            "linear-gradient(45deg, transparent 100%, #000 200%)",
                           ]
-                        : "linear-gradient(45deg, transparent -18%, #000 0%)",
+                        : "linear-gradient(45deg, transparent -100%, #000 0%)",
                     }}
                     transition={{
-                      duration: 0.6,
+                      duration: 0.35,
+                      ease: "linear",
+                      times: [0, 0.5, 1],
+                      delay: textReady ? 0.6 : 0,
+                    }}
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      display: "block",
+                      color: "#883a8d",
+                      pointerEvents: "none",
+                    }}
+                  >
+                    [ somatic pipeline for robots powered by humans ]
+                  </motion.span>
+                  {/* Green overlay — sits on top of the purple, wipes
+                      off first so green → purple → normal. */}
+                  <motion.span
+                    aria-hidden
+                    initial={skipIntroAnim ? MASK_WIPED : MASK_OPAQUE}
+                    animate={{
+                      maskImage: textReady
+                        ? [
+                            "linear-gradient(45deg, transparent -100%, #000 0%)",
+                            "linear-gradient(45deg, transparent 0%, #000 100%)",
+                            "linear-gradient(45deg, transparent 100%, #000 200%)",
+                          ]
+                        : "linear-gradient(45deg, transparent -100%, #000 0%)",
+                      WebkitMaskImage: textReady
+                        ? [
+                            "linear-gradient(45deg, transparent -100%, #000 0%)",
+                            "linear-gradient(45deg, transparent 0%, #000 100%)",
+                            "linear-gradient(45deg, transparent 100%, #000 200%)",
+                          ]
+                        : "linear-gradient(45deg, transparent -100%, #000 0%)",
+                    }}
+                    transition={{
+                      duration: 0.28,
                       ease: "linear",
                       times: [0, 0.5, 1],
                       delay: textReady ? 0.35 : 0,
@@ -2272,12 +3833,7 @@ function Hero() {
                       position: "absolute",
                       inset: 0,
                       display: "block",
-                      backgroundImage:
-                        "linear-gradient(90deg, #cdbef3 0%, #b9c2ef 40%, #c5e8d1 75%, #9bd8b3 100%)",
-                      backgroundClip: "text",
-                      WebkitBackgroundClip: "text",
-                      color: "transparent",
-                      WebkitTextFillColor: "transparent",
+                      color: "#059669",
                       pointerEvents: "none",
                     }}
                   >
@@ -2293,13 +3849,17 @@ function Hero() {
               >
                 <motion.h1
                   className="pointer-events-none text-balance"
-                  initial={{ y: "120%", opacity: 0 }}
+                  initial={
+                    skipIntroAnim
+                      ? { y: "0%", opacity: 1 }
+                      : { y: "120%", opacity: 0 }
+                  }
                   animate={{
                     y: textReady ? "0%" : "120%",
                     opacity: textReady ? 1 : 0,
                   }}
                   transition={{
-                    duration: 0.7,
+                    duration: skipIntroAnim ? 0 : 0.7,
                     ease: [0.22, 1, 0.36, 1],
                     delay: 0,
                   }}
@@ -2317,34 +3877,123 @@ function Hero() {
                     textAlign: "center",
                   }}
                 >
-                  Training Robots using Brain-Muscle signals
+                  {(() => {
+                    const tokens = [
+                      "Training",
+                      "Robots",
+                      "using",
+                      "Brain-Muscle",
+                      "signals",
+                    ];
+                    const wins = staggerWindows(
+                      tokens.length,
+                      HERO_DISAPPEAR_START,
+                      HERO_DISAPPEAR_END,
+                      HERO_WORD_DURATION,
+                    );
+                    return tokens.map((tok, i) => (
+                      <Fragment key={i}>
+                        <HeroWord
+                          scrollProgress={scrollYProgress}
+                          start={wins[i].start}
+                          end={wins[i].end}
+                        >
+                          {tok}
+                        </HeroWord>
+                        {i < tokens.length - 1 ? " " : ""}
+                      </Fragment>
+                    ));
+                  })()}
+                  {/* Purple/pink overlay — wipes off in the second
+                      half of the appearance, revealing dark base. */}
                   <motion.span
                     aria-hidden
                     className="text-balance"
-                    initial={{
-                      maskImage:
-                        "linear-gradient(45deg, transparent -18%, #000 0%)",
-                      WebkitMaskImage:
-                        "linear-gradient(45deg, transparent -18%, #000 0%)",
-                    }}
+                    initial={
+                      skipIntroAnim
+                        ? {
+                            maskImage:
+                              "linear-gradient(45deg, transparent 100%, #000 200%)",
+                            WebkitMaskImage:
+                              "linear-gradient(45deg, transparent 100%, #000 200%)",
+                          }
+                        : {
+                            maskImage:
+                              "linear-gradient(45deg, transparent -100%, #000 0%)",
+                            WebkitMaskImage:
+                              "linear-gradient(45deg, transparent -100%, #000 0%)",
+                          }
+                    }
                     animate={{
                       maskImage: textReady
                         ? [
-                            "linear-gradient(45deg, transparent -18%, #000 0%)",
-                            "linear-gradient(45deg, transparent 41%, #000 59%)",
-                            "linear-gradient(45deg, transparent 100%, #000 118%)",
+                            "linear-gradient(45deg, transparent -100%, #000 0%)",
+                            "linear-gradient(45deg, transparent 0%, #000 100%)",
+                            "linear-gradient(45deg, transparent 100%, #000 200%)",
                           ]
-                        : "linear-gradient(45deg, transparent -18%, #000 0%)",
+                        : "linear-gradient(45deg, transparent -100%, #000 0%)",
                       WebkitMaskImage: textReady
                         ? [
-                            "linear-gradient(45deg, transparent -18%, #000 0%)",
-                            "linear-gradient(45deg, transparent 41%, #000 59%)",
-                            "linear-gradient(45deg, transparent 100%, #000 118%)",
+                            "linear-gradient(45deg, transparent -100%, #000 0%)",
+                            "linear-gradient(45deg, transparent 0%, #000 100%)",
+                            "linear-gradient(45deg, transparent 100%, #000 200%)",
                           ]
-                        : "linear-gradient(45deg, transparent -18%, #000 0%)",
+                        : "linear-gradient(45deg, transparent -100%, #000 0%)",
                     }}
                     transition={{
-                      duration: 0.7,
+                      duration: skipIntroAnim ? 0 : 0.42,
+                      ease: "linear",
+                      times: [0, 0.5, 1],
+                      delay: skipIntroAnim ? 0 : textReady ? 0.28 : 0,
+                    }}
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      display: "block",
+                      color: "#883a8d",
+                      pointerEvents: "none",
+                    }}
+                  >
+                    {renderTokenOverlay(HERO_TITLE_TOKENS)}
+                  </motion.span>
+                  {/* Green overlay — sits on top of the purple, wipes
+                      off first so green → purple → dark. */}
+                  <motion.span
+                    aria-hidden
+                    className="text-balance"
+                    initial={
+                      skipIntroAnim
+                        ? {
+                            maskImage:
+                              "linear-gradient(45deg, transparent 100%, #000 200%)",
+                            WebkitMaskImage:
+                              "linear-gradient(45deg, transparent 100%, #000 200%)",
+                          }
+                        : {
+                            maskImage:
+                              "linear-gradient(45deg, transparent -100%, #000 0%)",
+                            WebkitMaskImage:
+                              "linear-gradient(45deg, transparent -100%, #000 0%)",
+                          }
+                    }
+                    animate={{
+                      maskImage: textReady
+                        ? [
+                            "linear-gradient(45deg, transparent -100%, #000 0%)",
+                            "linear-gradient(45deg, transparent 0%, #000 100%)",
+                            "linear-gradient(45deg, transparent 100%, #000 200%)",
+                          ]
+                        : "linear-gradient(45deg, transparent -100%, #000 0%)",
+                      WebkitMaskImage: textReady
+                        ? [
+                            "linear-gradient(45deg, transparent -100%, #000 0%)",
+                            "linear-gradient(45deg, transparent 0%, #000 100%)",
+                            "linear-gradient(45deg, transparent 100%, #000 200%)",
+                          ]
+                        : "linear-gradient(45deg, transparent -100%, #000 0%)",
+                    }}
+                    transition={{
+                      duration: skipIntroAnim ? 0 : 0.32,
                       ease: "linear",
                       times: [0, 0.5, 1],
                       delay: 0,
@@ -2353,16 +4002,11 @@ function Hero() {
                       position: "absolute",
                       inset: 0,
                       display: "block",
-                      backgroundImage:
-                        "linear-gradient(90deg, #cdbef3 0%, #b9c2ef 40%, #c5e8d1 75%, #9bd8b3 100%)",
-                      backgroundClip: "text",
-                      WebkitBackgroundClip: "text",
-                      color: "transparent",
-                      WebkitTextFillColor: "transparent",
+                      color: "#059669",
                       pointerEvents: "none",
                     }}
                   >
-                    Training Robots using Brain-Muscle signals
+                    {renderTokenOverlay(HERO_TITLE_TOKENS)}
                   </motion.span>
                 </motion.h1>
               </div>
@@ -2379,7 +4023,7 @@ function Hero() {
               >
                 <motion.p
                   className="pointer-events-none"
-                  initial={{ y: "120%", opacity: 0 }}
+                  initial={skipIntroAnim ? TEXT_FINAL : TEXT_INITIAL}
                   animate={{
                     y: textReady ? "0%" : "120%",
                     opacity: textReady ? 1 : 0,
@@ -2403,44 +4047,125 @@ function Hero() {
                     textAlign: "center",
                   }}
                 >
-                  We capture the biological signal that decides whether
-                  contact-rich assembly succeeds or fails, and we just
-                  solved the sim-to-real problem industrial automation
-                  couldn&apos;t.{" "}
-                  <span
-                    style={{
-                      color: "var(--cyan)",
-                      fontWeight: 500,
-                    }}
-                  >
-                    Robots can finally feel.
-                  </span>
+                  {(() => {
+                    const darkTokens = [
+                      "We",
+                      "capture",
+                      "the",
+                      "biological",
+                      "signal",
+                      "that",
+                      "decides",
+                      "whether",
+                      "contact-rich",
+                      "assembly",
+                      "succeeds",
+                      "or",
+                      "fails,",
+                      "and",
+                      "we",
+                      "just",
+                      "solved",
+                      "the",
+                      "sim-to-real",
+                      "problem",
+                      "industrial",
+                      "automation",
+                      "couldn't.",
+                    ];
+                    const accentTokens = ["Robots", "can", "finally", "feel."];
+                    const tokens = [
+                      ...darkTokens.map((t) => ({ t, accent: false })),
+                      ...accentTokens.map((t) => ({ t, accent: true })),
+                    ];
+                    const wins = staggerWindows(
+                      tokens.length,
+                      HERO_DISAPPEAR_START,
+                      HERO_DISAPPEAR_END,
+                      HERO_WORD_DURATION,
+                    );
+                    return tokens.map(({ t, accent }, i) => (
+                      <Fragment key={i}>
+                        <HeroWord
+                          scrollProgress={scrollYProgress}
+                          start={wins[i].start}
+                          end={wins[i].end}
+                          color={accent ? "var(--cyan)" : undefined}
+                        >
+                          {accent ? (
+                            <span style={{ fontWeight: 500 }}>{t}</span>
+                          ) : (
+                            t
+                          )}
+                        </HeroWord>
+                        {i < tokens.length - 1 ? " " : ""}
+                      </Fragment>
+                    ));
+                  })()}
+                  {/* Purple/pink overlay — wipes off in the second
+                      half of the appearance, revealing the normal
+                      treatment (dark body + purple highlight span). */}
                   <motion.span
                     aria-hidden
-                    initial={{
-                      maskImage:
-                        "linear-gradient(45deg, transparent -18%, #000 0%)",
-                      WebkitMaskImage:
-                        "linear-gradient(45deg, transparent -18%, #000 0%)",
-                    }}
+                    initial={skipIntroAnim ? MASK_WIPED : MASK_OPAQUE}
                     animate={{
                       maskImage: textReady
                         ? [
-                            "linear-gradient(45deg, transparent -18%, #000 0%)",
-                            "linear-gradient(45deg, transparent 41%, #000 59%)",
-                            "linear-gradient(45deg, transparent 100%, #000 118%)",
+                            "linear-gradient(45deg, transparent -100%, #000 0%)",
+                            "linear-gradient(45deg, transparent 0%, #000 100%)",
+                            "linear-gradient(45deg, transparent 100%, #000 200%)",
                           ]
-                        : "linear-gradient(45deg, transparent -18%, #000 0%)",
+                        : "linear-gradient(45deg, transparent -100%, #000 0%)",
                       WebkitMaskImage: textReady
                         ? [
-                            "linear-gradient(45deg, transparent -18%, #000 0%)",
-                            "linear-gradient(45deg, transparent 41%, #000 59%)",
-                            "linear-gradient(45deg, transparent 100%, #000 118%)",
+                            "linear-gradient(45deg, transparent -100%, #000 0%)",
+                            "linear-gradient(45deg, transparent 0%, #000 100%)",
+                            "linear-gradient(45deg, transparent 100%, #000 200%)",
                           ]
-                        : "linear-gradient(45deg, transparent -18%, #000 0%)",
+                        : "linear-gradient(45deg, transparent -100%, #000 0%)",
                     }}
                     transition={{
-                      duration: 0.6,
+                      duration: 0.35,
+                      ease: "linear",
+                      times: [0, 0.5, 1],
+                      delay: textReady ? 0.75 : 0,
+                    }}
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      display: "block",
+                      color: "#883a8d",
+                      pointerEvents: "none",
+                    }}
+                  >
+                    {renderTokenOverlay(HERO_SUBTITLE_TOKENS, {
+                      accent: (i) =>
+                        i >= HERO_SUBTITLE_TOKENS.length - 4,
+                    })}
+                  </motion.span>
+                  {/* Green overlay — sits on top of purple, wipes off
+                      first so green → purple → normal. */}
+                  <motion.span
+                    aria-hidden
+                    initial={skipIntroAnim ? MASK_WIPED : MASK_OPAQUE}
+                    animate={{
+                      maskImage: textReady
+                        ? [
+                            "linear-gradient(45deg, transparent -100%, #000 0%)",
+                            "linear-gradient(45deg, transparent 0%, #000 100%)",
+                            "linear-gradient(45deg, transparent 100%, #000 200%)",
+                          ]
+                        : "linear-gradient(45deg, transparent -100%, #000 0%)",
+                      WebkitMaskImage: textReady
+                        ? [
+                            "linear-gradient(45deg, transparent -100%, #000 0%)",
+                            "linear-gradient(45deg, transparent 0%, #000 100%)",
+                            "linear-gradient(45deg, transparent 100%, #000 200%)",
+                          ]
+                        : "linear-gradient(45deg, transparent -100%, #000 0%)",
+                    }}
+                    transition={{
+                      duration: 0.28,
                       ease: "linear",
                       times: [0, 0.5, 1],
                       delay: textReady ? 0.5 : 0,
@@ -2449,24 +4174,20 @@ function Hero() {
                       position: "absolute",
                       inset: 0,
                       display: "block",
-                      backgroundImage:
-                        "linear-gradient(90deg, #cdbef3 0%, #b9c2ef 40%, #c5e8d1 75%, #9bd8b3 100%)",
-                      backgroundClip: "text",
-                      WebkitBackgroundClip: "text",
-                      color: "transparent",
-                      WebkitTextFillColor: "transparent",
+                      color: "#059669",
                       pointerEvents: "none",
                     }}
                   >
-                    We capture the biological signal that decides whether
-                    contact-rich assembly succeeds or fails, and we just
-                    solved the sim-to-real problem industrial automation
-                    couldn&apos;t. Robots can finally feel.
+                    {renderTokenOverlay(HERO_SUBTITLE_TOKENS, {
+                      accent: (i) =>
+                        i >= HERO_SUBTITLE_TOKENS.length - 4,
+                    })}
                   </motion.span>
                 </motion.p>
               </div>
             </div>
           </motion.div>
+          )}
 
         </div>
       </section>
@@ -2477,9 +4198,9 @@ function Hero() {
 
 
 /* ============================================================================
-   SECTION TAG — shared header used by every standalone section. Matches
-   the "[ the problem ]" treatment in ProblemTriptych: cyan brackets,
-   cream-coloured inner label, mono small-caps tracking.
+   SECTION TAG — shared header used by every standalone section. Bracketed
+   eyebrow with purple brackets and dark inner label, mono small-caps
+   tracking.
    ========================================================================== */
 function SectionTag({ label }: { label: string }) {
   return (
@@ -3230,7 +4951,6 @@ export default function Home() {
     <IntroProvider sidebar={<Sidebar />}>
       <main>
         <Hero />
-        <ProblemTriptych />
         <Manifesto />
         <FluidSection />
         <WhatWeBuild />
