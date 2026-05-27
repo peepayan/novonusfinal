@@ -2607,11 +2607,13 @@ const HERO_TITLE_TOKENS = [
 ] as const;
 
 const HERO_SUBTITLE_TOKENS = [
-  "We", "capture", "the", "biological", "signal", "that",
-  "decides", "whether", "contact-rich", "assembly", "succeeds",
-  "or", "fails,", "and", "we", "just", "solved", "the",
-  "sim-to-real", "problem", "industrial", "automation",
-  "couldn't.", "Robots", "can", "finally", "feel.",
+  "We", "capture", "muscle", "signals", "from", "human",
+  "operators", "during", "demonstration,", "close", "the",
+  "sim-to-real", "gap", "on", "contact", "dynamics,", "and",
+  "produce", "industrial", "robots", "that", "inherit",
+  "human", "force", "intuition", "for", "contact-rich",
+  "assembly", "tasks", "vision-only", "and",
+  "teleoperation-based", "systems", "cannot", "solve.",
 ] as const;
 
 const MODERN_TELEOP_TITLE_TOKENS = [
@@ -2657,9 +2659,9 @@ const MASK_WIPED = {
 
    Optional `accent` predicate marks tokens that should render at
    fontWeight 500 — used by the hero subtitle whose base text bolds
-   the trailing "Robots can finally feel." phrase. Without matching
-   weights, those tokens render slightly narrower in the overlay
-   and break onto different lines than the base. */
+   the trailing "teleoperation-based systems cannot solve." phrase.
+   Without matching weights, those tokens render slightly narrower
+   in the overlay and break onto different lines than the base. */
 function renderTokenOverlay(
   tokens: readonly string[],
   options?: { accent?: (i: number) => boolean },
@@ -2687,13 +2689,146 @@ function Hero() {
      the logo finishes docking, then the text smoothly fades in. */
   const textReady = phase === "done";
   const sectionRef = useRef<HTMLElement | null>(null);
+  /* `pinRef` spans the first 880svh of the (now 950svh) section as an
+     invisible measurement marker. The existing scrollYProgress is bound
+     to pinRef so all original animation thresholds (HeroWord windows,
+     morph progresses, etc.) keep firing over the same absolute scroll
+     range they always did — the extra 70svh tacked onto the section
+     is reserved for the exit transition only. */
+  const pinRef = useRef<HTMLDivElement | null>(null);
 
   /* Scroll-pin: section is 200svh tall with a sticky 100svh viewport inside.
      Progress goes 0 → 1 over the 100svh of pinned scrolling. */
   const { scrollYProgress } = useScroll({
+    target: pinRef,
+    offset: ["start start", "end end"],
+  });
+  /* Separate progress driving the post-cliff exit transition: the cliff
+     scene becomes a rounded card, scales down to 50%, then translates
+     off the left edge — revealing the dictionary entry sitting behind
+     in the same viewport. Mapped over the full 950svh section so the
+     transition happens AFTER the existing scrollYProgress has hit 1. */
+  const { scrollYProgress: exitProgress } = useScroll({
     target: sectionRef,
     offset: ["start start", "end end"],
   });
+  /* `deepDive` gates the long cliff-scene timeline (Current Teleop →
+     Skilled labor → Sim-to-real gap, with all the morphs). Defaults
+     to false: the section is short and after the SLIDE2 sentence,
+     the three headlines fade in together over the brain dots, then
+     the frame exits to the dictionary. Flipping true (via the Learn
+     More button) expands the section, smooth-scrolls into Current
+     Teleop, and lets the existing 950svh sequence play. Declared
+     here, before the morph thresholds, because their gating closures
+     close over the current `deepDive` value at each render. */
+  const [deepDive, setDeepDive] = useState(false);
+  /* Frame-exit transforms (shrink + rounded corners + slide-off) ONLY
+     play in the short path. The "Learn more" deep-dive ends at the
+     sim-to-real gap — the cliff frame stays at scale 1, no rounded
+     corners, no slide-off, so the dictionary entry behind never
+     reveals. The remaining trailing scroll of the section just holds
+     the cliff scene visible, then Manifesto follows. */
+  const exitBorderRadiusRaw = useTransform(exitProgress, [0.80, 0.86], [0, 36]);
+  const exitScaleRaw = useTransform(exitProgress, [0.80, 0.92], [1, 0.5]);
+  const exitYRaw = useTransform(exitProgress, [0.92, 1.0], ["0vh", "-120vh"]);
+  const exitShadowRaw = useTransform(
+    exitProgress,
+    [0.80, 0.86],
+    [
+      "0 0 0 0 rgba(0,0,0,0)",
+      "0 40px 80px -20px rgba(15, 14, 13, 0.45), 0 20px 40px -10px rgba(15, 14, 13, 0.3)",
+    ],
+  );
+  const exitBorderRadius = useTransform(exitBorderRadiusRaw, (v) =>
+    deepDive ? 0 : v,
+  );
+  const exitScale = useTransform(exitScaleRaw, (v) => (deepDive ? 1 : v));
+  const exitY = useTransform(exitYRaw, (v) => (deepDive ? "0vh" : v));
+  const exitShadow = useTransform(exitShadowRaw, (v) =>
+    deepDive ? "0 0 0 0 rgba(0,0,0,0)" : v,
+  );
+
+  /* Abrupt cut to Current Teleop when Learn More is clicked. NOT a
+     smooth scroll — the user should feel like the page snaps to a
+     different room. scrollYProgress 0.51 (≈4.0 viewports into the
+     section) lands just after visionReady triggers, so the Current
+     Teleop title is on screen the instant the new mode commits. */
+  const handleLearnMore = () => {
+    setDeepDive(true);
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const sec = sectionRef.current;
+        if (!sec) return;
+        const rect = sec.getBoundingClientRect();
+        const sectionTop = rect.top + window.scrollY;
+        const targetY = sectionTop + window.innerHeight * 4.0;
+        window.scrollTo({ top: targetY, behavior: "instant" as ScrollBehavior });
+      });
+    });
+  };
+
+  /* Exit handler for the "Back to main page" button. Always lands the
+     user on the short-path "three problems together" view — the
+     moment in short mode where the brain holds and Current Teleop /
+     Skilled labor / Sim-to-real titles are all on screen at once.
+     That maps to ~scrollYProgress 0.70 of the 370svh short-mode
+     pinRef → ≈189svh past sectionTop → 1.9 viewports. */
+  const handleBackToMain = () => {
+    setDeepDive(false);
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const sec = sectionRef.current;
+        if (!sec) return;
+        const rect = sec.getBoundingClientRect();
+        const sectionTop = rect.top + window.scrollY;
+        const targetY = sectionTop + window.innerHeight * 1.9;
+        window.scrollTo({ top: targetY, behavior: "instant" as ScrollBehavior });
+      });
+    });
+  };
+
+  /* Scroll trap for deep-dive mode. Once committed, the user is locked
+     between the start of Current Teleop (scrollYProgress 0.50 of the
+     880svh pinRef ≈ 3.9 viewports past sectionTop) and the end of the
+     cliff sequence at Sim-to-real Gap (scrollYProgress 1.0 ≈ 7.8
+     viewports past sectionTop). Cannot scroll up past Current Teleop
+     (no return to the modern-robotics text). Cannot scroll down past
+     Sim-to-real Gap (no entry to Novonus / Manifesto). The learn-more
+     room is self-contained. */
+  useEffect(() => {
+    if (!deepDive) return;
+    const sec = sectionRef.current;
+    if (!sec) return;
+
+    let startY = 0;
+    let endY = 0;
+    const updateBounds = () => {
+      const sectionTop = sec.getBoundingClientRect().top + window.scrollY;
+      startY = sectionTop + window.innerHeight * 3.9;
+      endY = sectionTop + window.innerHeight * 7.8;
+    };
+    updateBounds();
+
+    const clamp = () => {
+      const y = window.scrollY;
+      if (y < startY - 1) {
+        window.scrollTo({ top: startY, behavior: "instant" as ScrollBehavior });
+      } else if (y > endY + 1) {
+        window.scrollTo({ top: endY, behavior: "instant" as ScrollBehavior });
+      }
+    };
+    const onResize = () => {
+      updateBounds();
+      clamp();
+    };
+
+    window.addEventListener("scroll", clamp, { passive: true });
+    window.addEventListener("resize", onResize);
+    return () => {
+      window.removeEventListener("scroll", clamp);
+      window.removeEventListener("resize", onResize);
+    };
+  }, [deepDive]);
 
   /* Scroll-driven phases on the pinned section, sequenced cleanly:
          v=0.03 → 0.10  hero heading words cascade-disappear into
@@ -2741,22 +2876,32 @@ function Hero() {
       0,
     ],
   );
-  const eyeMorphProgress = useTransform(scrollYProgress, [0.37, 0.50], [0, 1]);
-  const eyeOffsetProgress = useTransform(scrollYProgress, [0.37, 0.50], [0, 1]);
+  /* All deep-dive morphs (brain → clock → earth → cliffs) are gated
+     on `deepDive`. In default (short) mode each raw transform is
+     wrapped through a gate that forces 0, so the dots stay locked
+     in the brain layout while the three headlines appear together. */
+  const eyeMorphRaw = useTransform(scrollYProgress, [0.37, 0.50], [0, 1]);
+  const eyeOffsetRaw = useTransform(scrollYProgress, [0.37, 0.50], [0, 1]);
+  const eyeMorphProgress = useTransform(eyeMorphRaw, (v) => (deepDive ? v : 0));
+  const eyeOffsetProgress = useTransform(eyeOffsetRaw, (v) => (deepDive ? v : 0));
   /* Earth morph + earth offset run concurrently. The offset eases
      the canvas from +right (clock pose) all the way to −left so
      the earth ends up on the OPPOSITE side from the clock. The
      long sweep automatically pulls velocity trails out of every
      dot via the existing partial-fade clear. */
-  const earthMorphProgress = useTransform(scrollYProgress, [0.67, 0.82], [0, 1]);
-  const earthOffsetProgress = useTransform(scrollYProgress, [0.67, 0.82], [0, 1]);
+  const earthMorphRaw = useTransform(scrollYProgress, [0.67, 0.82], [0, 1]);
+  const earthOffsetRaw = useTransform(scrollYProgress, [0.67, 0.82], [0, 1]);
+  const earthMorphProgress = useTransform(earthMorphRaw, (v) => (deepDive ? v : 0));
+  const earthOffsetProgress = useTransform(earthOffsetRaw, (v) => (deepDive ? v : 0));
   /* Cliffs morph + phase. cliffMorph drives the dot positions from
      the earth → two-cliff-with-a-gap layout. cliffPhase ALSO drives
      the canvas back to centered+full-scale (lerps the eyeOffset/
      earthOffset translate and scale back to neutral) so the cliffs
      read at full size with the gap centered on the viewport. */
-  const cliffMorphProgress = useTransform(scrollYProgress, [0.91, 0.97], [0, 1]);
-  const cliffPhaseProgress = useTransform(scrollYProgress, [0.91, 0.97], [0, 1]);
+  const cliffMorphRaw = useTransform(scrollYProgress, [0.91, 0.97], [0, 1]);
+  const cliffPhaseRaw = useTransform(scrollYProgress, [0.91, 0.97], [0, 1]);
+  const cliffMorphProgress = useTransform(cliffMorphRaw, (v) => (deepDive ? v : 0));
+  const cliffPhaseProgress = useTransform(cliffPhaseRaw, (v) => (deepDive ? v : 0));
 
   const [stage, setStage] = useState(0);
   const [visionReady, setVisionReady] = useState(false);
@@ -2772,33 +2917,157 @@ function Hero() {
   const [hydrated, setHydrated] = useState(false);
   useMotionValueEvent(scrollYProgress, "change", (v) => {
     setStage(v > 0.30 && v < 0.39 ? 3 : 0);
-    /* visionReady / erodingReady trigger the entrance only — once
-       true they stay true. The sideways exit is owned per-word by
-       HeroWord components that slide each token rightward on
-       scroll past their exit-window thresholds. */
-    setVisionReady(v > 0.50);
-    setErodingReady(v > 0.82);
-    setCliffReady(v > 0.96);
+    /* visionReady / erodingReady / cliffReady trigger the entrance
+       of the per-stage cliff overlays (Current Teleop / Skilled
+       labor / Sim-to-real gap). They are gated on `deepDive` so the
+       short path never reveals them — instead the `HeadlinesTogether`
+       overlay shows all three titles simultaneously over the brain. */
+    setVisionReady(deepDive && v > 0.50);
+    setErodingReady(deepDive && v > 0.82);
+    setCliffReady(deepDive && v > 0.96);
   });
   useLayoutEffect(() => {
     /* Initial scroll-based sync runs once, BEFORE first paint, so
        motion components mount with the correct ready-flag state
        (and `initial` matches `animate` → no entrance animation). */
     const v = scrollYProgress.get();
-    if (v > 0.50) setVisionReady(true);
-    if (v > 0.82) setErodingReady(true);
-    if (v > 0.96) setCliffReady(true);
+    if (deepDive && v > 0.50) setVisionReady(true);
+    if (deepDive && v > 0.82) setErodingReady(true);
+    if (deepDive && v > 0.96) setCliffReady(true);
     setHydrated(true);
-  }, [scrollYProgress]);
+  }, [scrollYProgress, deepDive]);
+
+  /* Opacity of the Learn More button — fades in just after SLIDE2
+     text has fully revealed (~0.30 of pinRef progress) and fades
+     out as the short-path "headlines together" view takes over.
+     Forced to 0 in deep-dive mode (the user has already chosen). */
+  const learnMoreOpacityRaw = useTransform(
+    scrollYProgress,
+    [0.28, 0.32, 0.42, 0.47],
+    [0, 1, 1, 0],
+  );
+  const learnMoreOpacity = useTransform(learnMoreOpacityRaw, (v) =>
+    deepDive ? 0 : v,
+  );
+  const learnMorePointer = useTransform(learnMoreOpacityRaw, (v) =>
+    !deepDive && v > 0.5 ? "auto" : "none",
+  );
+
+  /* Opacity driving the "three headlines together" overlay that
+     replaces the deep-dive cliff sequence in the short path. Brain
+     stays as the dot art; the three titles + subtitles fade in
+     simultaneously, sit briefly, then begin fading as the frame
+     exit kicks in. Forced to 0 in deep-dive mode. */
+  const headlinesTogetherRaw = useTransform(
+    scrollYProgress,
+    [0.45, 0.62, 0.95, 1.0],
+    [0, 1, 1, 0.6],
+  );
+  const headlinesTogetherOpacity = useTransform(
+    headlinesTogetherRaw,
+    (v) => (deepDive ? 0 : v),
+  );
 
   return (
     <>
+      {/* BACK TO MAIN PAGE — only rendered in deep-dive mode. Fixed
+          to the top-right of the viewport so it stays visible while
+          the user is locked in the cliff sequence; clicking it flips
+          deepDive off, un-traps scroll, and snaps the user to
+          Manifesto so they continue browsing the main page. */}
+      {deepDive && (
+        <button
+          type="button"
+          onClick={handleBackToMain}
+          aria-label="Back to main page"
+          style={{
+            position: "fixed",
+            bottom: "clamp(1.25rem, 3vh, 2.25rem)",
+            right: "clamp(1.25rem, 3vw, 2.25rem)",
+            zIndex: 50,
+            fontFamily:
+              "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
+            fontSize: "clamp(0.85rem, 1vw, 1rem)",
+            fontWeight: 500,
+            padding: "0.7rem 1.3rem",
+            border: "1px solid rgba(245, 239, 229, 0.34)",
+            borderRadius: "999px",
+            backgroundColor: "rgba(15, 14, 13, 0.55)",
+            color: "rgba(245, 239, 229, 0.96)",
+            letterSpacing: "0.02em",
+            cursor: "pointer",
+            backdropFilter: "blur(10px) saturate(140%)",
+            WebkitBackdropFilter: "blur(10px) saturate(140%)",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "0.55rem",
+          }}
+        >
+          <span aria-hidden>←</span>
+          Back to main page
+        </button>
+      )}
       <section
         ref={sectionRef}
         className="relative"
-        style={{ height: "880svh" }}
+        style={{
+          height: deepDive ? "950svh" : "440svh",
+          /* Cream backing matches WhatWeBuild's PaperBackground and
+             Pipeline's, so when the sticky element scrolls out in
+             the section's last 100svh, no body-black gap shows
+             between the reveal and Pipeline. Sticky div sits on
+             top of this so the cliff scene's dark backdrop is
+             unaffected during the pinned phase. */
+          backgroundColor: "#f5efe5",
+        }}
       >
+        {/* Invisible scroll-measurement marker. In deep-dive mode it
+            spans 880svh so all existing animation thresholds fire
+            over their original absolute scroll range. In short mode
+            it shrinks to 370svh so the same threshold ratios (hero
+            fade, brain morph, SLIDE2 reveal, then HeadlinesTogether
+            in the 0.45–0.95 window) play out over a much shorter
+            absolute scroll, and the trailing 70svh of the section
+            drives the frame exit. */}
+        <div
+          ref={pinRef}
+          aria-hidden
+          className="pointer-events-none absolute left-0 right-0 top-0"
+          style={{ height: deepDive ? "880svh" : "370svh" }}
+        />
         <div className="sticky top-0 h-[100svh] overflow-hidden">
+          {/* WhatWeBuild reveal layer — sits behind the cliff frame so
+              the moment the frame shrinks and slides off, the "what
+              we build" pitch is already there in the same viewport.
+              No scroll required to find it; it lives directly on the
+              underside of the screen. z:0 keeps it under the cliff. */}
+          <div
+            className="absolute inset-0 overflow-auto"
+            style={{
+              zIndex: 0,
+              /* Lower the WhatWeBuild content so its eyebrow + title
+                 land further down the viewport, leaving the upper
+                 third of the reveal as a quiet cream band. */
+              paddingTop: "clamp(1rem, 4vh, 3rem)",
+            }}
+          >
+            <WhatWeBuild />
+          </div>
+          {/* Cliff scene frame — all original content sits inside this
+              wrapper so the exit transforms (border-radius, scale, x)
+              apply to the entire scene as a single card. */}
+          <motion.div
+            className="absolute inset-0 overflow-hidden"
+            style={{
+              zIndex: 1,
+              borderRadius: exitBorderRadius,
+              scale: exitScale,
+              y: exitY,
+              boxShadow: exitShadow,
+              transformOrigin: "50% 50%",
+              willChange: "transform, border-radius",
+            }}
+          >
           {/* Scroll-driven cream → dark backdrop. Replaces the static
               PaperBackground for the hero so it can invert with the
               dot color crossfade. */}
@@ -2855,6 +3124,113 @@ function Hero() {
               </h2>
             </div>
           </div>
+
+          {/* LEARN MORE button — appears just after the SLIDE2 sentence
+              completes (scrollYProgress ≈ 0.30) and fades out by 0.47.
+              Click flips deepDive=true and smooth-scrolls into Current
+              Teleoperation; scroll past without clicking takes the
+              short path (HeadlinesTogether → frame exit → dictionary).
+              Forced invisible + non-interactive once deepDive is true. */}
+          <motion.div
+            className="pointer-events-none absolute inset-x-0 z-[8] flex justify-center px-6"
+            style={{
+              bottom: "clamp(3.5rem, 10vh, 7rem)",
+              opacity: learnMoreOpacity,
+            }}
+          >
+            <motion.button
+              type="button"
+              onClick={handleLearnMore}
+              style={{
+                pointerEvents: learnMorePointer,
+                fontFamily:
+                  "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
+                fontSize: "clamp(0.95rem, 1.1vw, 1.1rem)",
+                fontWeight: 500,
+                padding: "0.85rem 1.7rem",
+                border: "1px solid rgba(245, 239, 229, 0.34)",
+                borderRadius: "999px",
+                backgroundColor: "rgba(245, 239, 229, 0.07)",
+                color: "rgba(245, 239, 229, 0.96)",
+                letterSpacing: "0.02em",
+                cursor: "pointer",
+                backdropFilter: "blur(8px) saturate(140%)",
+                WebkitBackdropFilter: "blur(8px) saturate(140%)",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.7rem",
+              }}
+            >
+              Learn more
+              <span aria-hidden style={{ display: "inline-block" }}>
+                →
+              </span>
+            </motion.button>
+          </motion.div>
+
+          {/* HEADLINES TOGETHER — short-path payoff: the three deep-dive
+              titles fade in simultaneously over the brain dot art,
+              hold while the user reads, then begin to fade as the
+              frame exit kicks in. Hidden in deep-dive mode (those
+              titles play out sequentially with their own morphs). */}
+          {hydrated && (
+            <motion.div
+              className="pointer-events-none absolute inset-x-0 z-[7] hidden md:block"
+              style={{
+                bottom: "clamp(3.5rem, 10vh, 7rem)",
+                opacity: headlinesTogetherOpacity,
+              }}
+              aria-hidden={deepDive}
+            >
+              <div className="mx-auto grid max-w-[1320px] grid-cols-3 gap-8 px-10 lg:gap-12 lg:px-14">
+                {[
+                  {
+                    tokens: MODERN_TELEOP_TITLE_TOKENS,
+                    note: "vision-only stacks plateau on contact-rich tasks.",
+                  },
+                  {
+                    tokens: ERODING_TITLE_TOKENS,
+                    note: "50M manufacturing roles projected unfilled by 2030.",
+                  },
+                  {
+                    tokens: GAP_TITLE_TOKENS,
+                    note: "no simulator yet models friction, deformation, multi-point contact.",
+                  },
+                ].map((col, idx) => (
+                  <div key={idx} className="flex flex-col">
+                    <h3
+                      style={{
+                        fontFamily:
+                          "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
+                        fontWeight: 600,
+                        fontSize: "clamp(1.05rem, 1.55vw, 1.55rem)",
+                        lineHeight: 1.15,
+                        letterSpacing: "-0.015em",
+                        margin: 0,
+                        color: "rgba(245, 239, 229, 0.96)",
+                      }}
+                    >
+                      {col.tokens.join(" ")}
+                    </h3>
+                    <p
+                      style={{
+                        marginTop: "0.55rem",
+                        fontFamily:
+                          "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
+                        fontWeight: 400,
+                        fontSize: "clamp(0.82rem, 0.95vw, 1rem)",
+                        lineHeight: 1.45,
+                        letterSpacing: "0.005em",
+                        color: "rgba(245, 239, 229, 0.55)",
+                      }}
+                    >
+                      {col.note}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
 
           {/* "Current Teleoperation systems are outdated" — appears on the LEFT side of
               the viewport once the brain has reformed into the eyes
@@ -3732,7 +4108,7 @@ function Hero() {
                   {(() => {
                     const tokens = [
                       "[",
-                      "somatic",
+                      "training",
                       "pipeline",
                       "for",
                       "robots",
@@ -3800,7 +4176,7 @@ function Hero() {
                       pointerEvents: "none",
                     }}
                   >
-                    [ somatic pipeline for robots powered by humans ]
+                    [ training pipeline for robots powered by humans ]
                   </motion.span>
                   {/* Green overlay — sits on top of the purple, wipes
                       off first so green → purple → normal. */}
@@ -3837,7 +4213,7 @@ function Hero() {
                       pointerEvents: "none",
                     }}
                   >
-                    [ somatic pipeline for robots powered by humans ]
+                    [ training pipeline for robots powered by humans ]
                   </motion.span>
                 </motion.p>
               </div>
@@ -4051,29 +4427,42 @@ function Hero() {
                     const darkTokens = [
                       "We",
                       "capture",
-                      "the",
-                      "biological",
-                      "signal",
-                      "that",
-                      "decides",
-                      "whether",
-                      "contact-rich",
-                      "assembly",
-                      "succeeds",
-                      "or",
-                      "fails,",
-                      "and",
-                      "we",
-                      "just",
-                      "solved",
+                      "muscle",
+                      "signals",
+                      "from",
+                      "human",
+                      "operators",
+                      "during",
+                      "demonstration,",
+                      "close",
                       "the",
                       "sim-to-real",
-                      "problem",
+                      "gap",
+                      "on",
+                      "contact",
+                      "dynamics,",
+                      "and",
+                      "produce",
                       "industrial",
-                      "automation",
-                      "couldn't.",
+                      "robots",
+                      "that",
+                      "inherit",
+                      "human",
+                      "force",
+                      "intuition",
+                      "for",
+                      "contact-rich",
+                      "assembly",
+                      "tasks",
+                      "vision-only",
+                      "and",
                     ];
-                    const accentTokens = ["Robots", "can", "finally", "feel."];
+                    const accentTokens = [
+                      "teleoperation-based",
+                      "systems",
+                      "cannot",
+                      "solve.",
+                    ];
                     const tokens = [
                       ...darkTokens.map((t) => ({ t, accent: false })),
                       ...accentTokens.map((t) => ({ t, accent: true })),
@@ -4189,6 +4578,7 @@ function Hero() {
           </motion.div>
           )}
 
+          </motion.div>
         </div>
       </section>
 
@@ -4934,11 +5324,354 @@ function SiteFooter() {
           className="flex flex-col items-start justify-between gap-2 text-[12px] md:flex-row md:items-center md:text-[13px]"
           style={{ color: "rgba(15, 14, 13, 0.55)" }}
         >
-          <p>Novonus / The somatic layer for industrial robotics</p>
+          <p>Novonus / The training layer for industrial robotics</p>
           <p>© 2026</p>
         </div>
       </div>
     </footer>
+  );
+}
+
+
+
+/* ============================================================================
+   ETYMOLOGY ENTRY — dictionary-style dissection of NOVONUS rendered as the
+   cream reveal layer behind the cliff frame's exit transition. Sits inside
+   the Hero's sticky div at z:0; the cliff frame at z:1 covers it until it
+   begins to shrink and slide off, at which point this entry is revealed
+   directly underneath in the same viewport — no scroll required.
+
+   Lexicon conventions: small-caps "Introducing" lead, bold headword
+   `novo·nus` with a single middle-dot dividing the two roots, IPA-flavored
+   pronunciation in backslashes, italic part-of-speech, bracketed etymology.
+   The two roots appear FIRST as their own sub-entries (verb / noun) so the
+   compound definition lands last as the punchline; a cheeky italic line
+   closes the entry. Cream `#f5efe5` matches every other paper section on
+   the site exactly — no grain overlay so the swatch reads identically.
+   ========================================================================== */
+function EtymologyEntry() {
+  const garamond =
+    "var(--font-eb-garamond), 'EB Garamond', Garamond, 'Times New Roman', Times, serif";
+  const ink = "#1a1714";
+  const muted = "rgba(26, 23, 20, 0.55)";
+  const accent = "rgba(26, 23, 20, 0.78)";
+  const hairline = "rgba(26, 23, 20, 0.22)";
+
+  return (
+    <div
+      className="absolute inset-0 flex items-center justify-center px-6 md:px-14"
+      style={{
+        backgroundColor: "#f5efe5",
+        fontFamily: garamond,
+        color: ink,
+        fontFeatureSettings: '"liga", "kern", "onum", "calt"',
+      }}
+    >
+      {/* FRAMED CARD — the dictionary entry (Introducing kicker
+          included) sits inside a rounded card with a slightly
+          darker cream than the surrounding page so it reads as an
+          inset panel. Hairline border, large radius, generous
+          interior padding. Stays centered in the viewport via the
+          parent's flex centering. */}
+      <div
+        className="relative mx-auto w-full max-w-[1180px]"
+        style={{
+          backgroundColor: "#ece4d2",
+          border: "1px solid rgba(26, 23, 20, 0.14)",
+          borderRadius: "26px",
+          padding: "clamp(2.6rem, 5.4vw, 4.4rem) clamp(2rem, 5vw, 4rem)",
+          boxShadow: "0 1px 0 rgba(255, 255, 255, 0.45) inset",
+        }}
+      >
+        {/* INTRODUCING — kicker sits at the top of the framed card,
+            centered, with generous letter-spacing so it reads as
+            a running head over the entry below. */}
+        <p
+          className="text-center"
+          style={{
+            margin: "0 0 2.2rem",
+            fontFamily:
+              "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
+            fontSize: "clamp(1rem, 1.35vw, 1.3rem)",
+            letterSpacing: "0.55em",
+            textTransform: "uppercase",
+            color: ink,
+            fontWeight: 600,
+          }}
+        >
+          Introducing
+        </p>
+
+        {/* PRIMARY HEADWORD — `novo·nus` with a single middle-dot
+            between the two roots. */}
+        <header style={{ marginBottom: "1.8rem" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "baseline",
+              flexWrap: "wrap",
+              gap: "0.8rem 1rem",
+            }}
+          >
+            <h2
+              style={{
+                margin: 0,
+                fontWeight: 600,
+                fontSize: "clamp(2.6rem, 5.4vw, 4.8rem)",
+                letterSpacing: "-0.005em",
+                lineHeight: 1,
+              }}
+            >
+              novo
+              <span
+                style={{
+                  color: muted,
+                  fontWeight: 400,
+                  padding: "0 0.06em",
+                }}
+              >
+                ·
+              </span>
+              nus
+            </h2>
+            <span
+              style={{
+                fontSize: "clamp(1rem, 1.6vw, 1.4rem)",
+                color: muted,
+                fontWeight: 400,
+                letterSpacing: "0.01em",
+              }}
+            >
+              <span style={{ marginRight: "0.5em" }}>|</span>
+              {"\\ "}
+              <span style={{ fontStyle: "italic" }}>ˈnoʊ-voʊ-nəs</span>
+              {" \\"}
+            </span>
+          </div>
+          <p
+            style={{
+              margin: "0.55rem 0 0",
+              fontSize: "clamp(0.95rem, 1.15vw, 1.1rem)",
+              color: accent,
+              fontWeight: 400,
+              letterSpacing: "0.005em",
+            }}
+          >
+            <em>noun</em>
+            <span style={{ color: muted, margin: "0 0.55rem" }}>·</span>
+            <span>
+              [Latin <em>novāre</em> + Ancient Greek <em>νοῦς</em>]
+            </span>
+          </p>
+        </header>
+
+        {/* ROOTS — the two individual meanings come FIRST so the
+            compound definition lands as the punchline below. */}
+        <div className="grid grid-cols-1 gap-7 md:grid-cols-2 md:gap-12">
+          {/* NOVO */}
+          <article>
+            <header style={{ marginBottom: "0.55rem" }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "baseline",
+                  flexWrap: "wrap",
+                  gap: "0.55rem 0.75rem",
+                }}
+              >
+                <h3
+                  style={{
+                    margin: 0,
+                    fontWeight: 600,
+                    fontSize: "clamp(1.55rem, 2.4vw, 2rem)",
+                    lineHeight: 1,
+                    letterSpacing: "-0.003em",
+                  }}
+                >
+                  novo
+                </h3>
+                <span
+                  style={{
+                    fontSize: "clamp(0.92rem, 1.1vw, 1.05rem)",
+                    color: muted,
+                    fontWeight: 400,
+                  }}
+                >
+                  {"\\ "}
+                  <span style={{ fontStyle: "italic" }}>ˈnoʊ-voʊ</span>
+                  {" \\"}
+                </span>
+              </div>
+              <p
+                style={{
+                  margin: "0.35rem 0 0",
+                  fontSize: "0.95rem",
+                  color: accent,
+                  fontWeight: 400,
+                }}
+              >
+                <em>verb, transitive</em>
+                <span style={{ color: muted, margin: "0 0.5rem" }}>·</span>
+                <span
+                  style={{
+                    fontVariant: "small-caps",
+                    letterSpacing: "0.08em",
+                    fontSize: "0.92em",
+                  }}
+                >
+                  Latin
+                </span>
+              </p>
+            </header>
+
+            <p
+              style={{
+                margin: 0,
+                fontSize: "1.05rem",
+                lineHeight: 1.55,
+                paddingLeft: "1.3rem",
+                textIndent: "-1.3rem",
+                color: ink,
+              }}
+            >
+              <span style={{ fontWeight: 600, marginRight: "0.5rem" }}>1</span>
+              <span style={{ color: muted, marginRight: "0.4rem" }}>:</span>
+              to make new; to renew; to refresh.
+            </p>
+          </article>
+
+          {/* NOUS */}
+          <article>
+            <header style={{ marginBottom: "0.55rem" }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "baseline",
+                  flexWrap: "wrap",
+                  gap: "0.55rem 0.75rem",
+                }}
+              >
+                <h3
+                  style={{
+                    margin: 0,
+                    fontWeight: 600,
+                    fontSize: "clamp(1.55rem, 2.4vw, 2rem)",
+                    lineHeight: 1,
+                    letterSpacing: "-0.003em",
+                  }}
+                >
+                  nous
+                </h3>
+                <span
+                  style={{
+                    fontSize: "clamp(0.92rem, 1.1vw, 1.05rem)",
+                    color: muted,
+                    fontWeight: 400,
+                  }}
+                >
+                  {"\\ "}
+                  <span style={{ fontStyle: "italic" }}>ˈnuːs</span>
+                  {" \\"}
+                </span>
+                <span
+                  lang="grc"
+                  style={{
+                    fontStyle: "italic",
+                    fontSize: "clamp(1.35rem, 2vw, 1.7rem)",
+                    color: ink,
+                    fontWeight: 500,
+                    letterSpacing: "0.005em",
+                    marginLeft: "0.15rem",
+                  }}
+                >
+                  νοῦς
+                </span>
+              </div>
+              <p
+                style={{
+                  margin: "0.35rem 0 0",
+                  fontSize: "0.95rem",
+                  color: accent,
+                  fontWeight: 400,
+                }}
+              >
+                <em>noun, masculine</em>
+                <span style={{ color: muted, margin: "0 0.5rem" }}>·</span>
+                <span
+                  style={{
+                    fontVariant: "small-caps",
+                    letterSpacing: "0.08em",
+                    fontSize: "0.92em",
+                  }}
+                >
+                  Ancient Greek
+                </span>
+              </p>
+            </header>
+
+            <p
+              style={{
+                margin: 0,
+                fontSize: "1.05rem",
+                lineHeight: 1.55,
+                paddingLeft: "1.3rem",
+                textIndent: "-1.3rem",
+                color: ink,
+              }}
+            >
+              <span style={{ fontWeight: 600, marginRight: "0.5rem" }}>1</span>
+              <span style={{ color: muted, marginRight: "0.4rem" }}>:</span>
+              the mind; the intellect; the faculty by which one apprehends.
+            </p>
+          </article>
+        </div>
+
+        <hr
+          style={{
+            border: 0,
+            borderTop: `1px solid ${hairline}`,
+            margin: "2rem 0 1.7rem",
+          }}
+        />
+
+        {/* COMPOUND DEFINITION — the punchline, set larger than the
+            individual roots so the eye lands here last. */}
+        <p
+          style={{
+            margin: 0,
+            fontSize: "clamp(1.35rem, 2.1vw, 1.95rem)",
+            lineHeight: 1.35,
+            color: ink,
+            fontWeight: 400,
+            paddingLeft: "1.6rem",
+            textIndent: "-1.6rem",
+          }}
+        >
+          <span style={{ fontWeight: 600, marginRight: "0.55rem" }}>1</span>
+          <span style={{ color: muted, marginRight: "0.45rem" }}>:</span>
+          the making of a new mind.
+        </p>
+
+        {/* CHEEKY TAILPIECE — sits below the compound definition,
+            horizontally centered with a bit more breathing room.
+            Inter Tight to match the site's body text, plain roman,
+            no em-dash so it reads as its own clean line. */}
+        <p
+          className="text-center"
+          style={{
+            margin: "4.5rem 0 0",
+            fontFamily:
+              "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
+            fontSize: "clamp(1.05rem, 1.4vw, 1.3rem)",
+            color: ink,
+            fontWeight: 500,
+            letterSpacing: "0.005em",
+          }}
+        >
+          because that&rsquo;s what we help robots do.
+        </p>
+      </div>
+    </div>
   );
 }
 
@@ -4951,12 +5684,12 @@ export default function Home() {
     <IntroProvider sidebar={<Sidebar />}>
       <main>
         <Hero />
-        <Manifesto />
-        <FluidSection />
-        <WhatWeBuild />
         <Pipeline />
-        <Technicals />
+        <FluidSection />
         <Evidence />
+        <section className="relative" style={{ minHeight: "100svh" }}>
+          <EtymologyEntry />
+        </section>
         <SiteFooter />
       </main>
     </IntroProvider>

@@ -10,6 +10,7 @@ import {
   Stack_Sans_Notch,
   DM_Sans,
   Kode_Mono,
+  EB_Garamond,
 } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
@@ -50,7 +51,7 @@ const ttNormsPro = localFont({
 });
 
 /* TT Norms Pro Expanded — distinct subfamily with wider proportions.
-   Drives the main Somatic Layer heading. */
+   Drives the main Training Layer heading. */
 const ttNormsProExpanded = localFont({
   src: "./fonts/TTNormsProExpanded-Bold.woff2",
   variable: "--font-tt-norms-pro-expanded",
@@ -100,7 +101,7 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 /* Robotic, geometric display face — iconic sci-fi / aerospace feel.
-   Drives the main Somatic Layer heading. */
+   Drives the main Training Layer heading. */
 const orbitron = Orbitron({
   variable: "--font-orbitron",
   subsets: ["latin"],
@@ -136,8 +137,19 @@ const kodeMono = Kode_Mono({
   display: "swap",
 });
 
+/* EB Garamond — classical Garamond revival with true italic, small caps,
+   and Greek glyph coverage. Drives the etymology section's newspaper
+   aesthetic and renders νοῦς in the same typeface as the Latin. */
+const ebGaramond = EB_Garamond({
+  variable: "--font-eb-garamond",
+  subsets: ["latin", "latin-ext", "greek", "greek-ext"],
+  weight: ["400", "500", "600", "700", "800"],
+  style: ["normal", "italic"],
+  display: "swap",
+});
+
 export const metadata: Metadata = {
-  title: "Novonus — The somatic layer for industrial robotics",
+  title: "Novonus — The training layer for industrial robotics",
   description:
     "Novonus captures biological signals from human operators to train industrial robots on contact-rich assembly tasks vision-only systems plateau on. The layer foundation models cannot see.",
 };
@@ -150,7 +162,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${interTight.variable} ${geistMono.variable} ${inclusiveSans.variable} ${cinzel.variable} ${spaceGrotesk.variable} ${orbitron.variable} ${ttNormsPro.variable} ${ttNormsProExpanded.variable} ${stackSansNotch.variable} ${dmSans.variable} ${kodeMono.variable} h-full antialiased`}
+      className={`${inter.variable} ${interTight.variable} ${geistMono.variable} ${inclusiveSans.variable} ${cinzel.variable} ${spaceGrotesk.variable} ${orbitron.variable} ${ttNormsPro.variable} ${ttNormsProExpanded.variable} ${stackSansNotch.variable} ${dmSans.variable} ${kodeMono.variable} ${ebGaramond.variable} h-full antialiased`}
     >
       <body className="min-h-full bg-ink text-paper" suppressHydrationWarning>{children}</body>
     </html>
