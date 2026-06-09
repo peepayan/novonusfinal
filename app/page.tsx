@@ -426,7 +426,7 @@ function BrandLockup() {
       {docked && (
         <motion.div
           aria-hidden
-          className="pointer-events-none fixed inset-x-0 top-0 z-[119] h-[74px]"
+          className="pointer-events-none fixed inset-x-0 top-0 z-[119] h-[48px]"
           initial={
             skipIntroAnim ? { opacity: 1, y: 0 } : { opacity: 0, y: -10 }
           }
@@ -436,7 +436,7 @@ function BrandLockup() {
             ease: EASE_FADE,
             delay: skipIntroAnim ? 0 : 0.3,
           }}
-          style={{ backgroundColor: "#0f0e0d" }}
+          style={{ backgroundColor: "rgba(15, 14, 13, 0.75)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" }}
         />
       )}
 
@@ -451,7 +451,7 @@ function BrandLockup() {
         initial={
           skipIntroAnim
             ? {
-                top: "37px",
+                top: "24px",
                 x: "-50%",
                 y: "-50%",
                 scale: 1,
@@ -467,7 +467,7 @@ function BrandLockup() {
               }
         }
         animate={{
-          top: docked ? "37px" : "50%",
+          top: docked ? "24px" : "50%",
           x: "-50%",
           y: "-50%",
           height: centered ? 144 : 38,
@@ -1025,7 +1025,7 @@ function TopographicalDots({
       const usingMask = !!brainMask;
       const BRAIN_SCALE = Math.min(width, height) * 0.58;
       const cx = width * 0.5;
-      let cy = height * 0.5;
+      let cy = height * 0.42;
 
       /* Pixel extent of the brain in canvas space. With the mask we
          preserve the actual image-derived aspect ratio; without it
@@ -2118,43 +2118,83 @@ function Manifesto() {
 
 
 /* ============================================================================
-   FLUID SECTION — warm cream panel after the hero, styled in the
-   redbud.vc aesthetic: solid #191218 background and Inter Tight body
-   text on dark ink (#0f0e0d). No grid; the surface stays calm and
-   typographic, the way redbud presents itself.
+   FLUID SECTION — declarative statement section. Asymmetric two-column:
+   massive left-aligned headline, body text as a quiet column on the right.
    ========================================================================== */
 function FluidSection() {
   return (
-    <section
-      className="relative w-full overflow-hidden"
-      style={{
-        fontFamily: "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
-        color: "#0f0e0d",
-      }}
-    >
+    <section className="relative overflow-hidden" style={{ color: "#0f0e0d" }}>
       <PaperBackground />
-      <div className="relative mx-auto flex max-w-[1400px] flex-col items-center justify-center px-6 py-16 text-center md:px-10 md:py-24">
-        <h2
-          className="max-w-5xl text-balance text-[44px] leading-[0.98] tracking-[-0.025em] md:text-[88px]"
+      <div className="relative mx-auto max-w-[1400px] px-6 py-24 md:px-10 md:py-36">
+        {/* Section header bar */}
+        <div
           style={{
-            fontFamily: "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
-            fontWeight: 600,
-            color: "#0f0e0d",
+            borderTop: "1px solid rgba(15,14,13,0.10)",
+            paddingTop: "2rem",
+            marginBottom: "4.5rem",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
           }}
         >
-          We built the layer everyone missed.
-        </h2>
-        <p
-          className="mt-10 max-w-3xl text-balance text-lg leading-[1.55] md:text-2xl md:leading-[1.45]"
-          style={{
-            fontFamily: "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
-            fontWeight: 400,
-            color: "rgba(15, 14, 13, 0.72)",
-            letterSpacing: "-0.005em",
-          }}
-        >
-          We are a deep-tech company building the data infrastructure that lets robots learn contact-rich manipulation from human operators. Building toward the first deployable robot cells that can be retrained by your own factory workers, on whatever robot brand you already trust.
-        </p>
+          <span
+            className="font-mono text-[10px] uppercase tracking-[0.28em]"
+            style={{ color: "rgba(15,14,13,0.38)" }}
+          >
+            the layer
+          </span>
+          <span
+            className="font-mono text-[10px] uppercase tracking-[0.28em]"
+            style={{ color: "rgba(15,14,13,0.20)" }}
+          >
+            §&nbsp;02
+          </span>
+        </div>
+
+        {/* Two-column layout: headline + body */}
+        <div className="grid grid-cols-1 items-start gap-14 md:grid-cols-[1fr_0.6fr] md:gap-20">
+          <motion.h2
+            initial={{ opacity: 0, y: 36 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+            style={{
+              fontWeight: 600,
+              fontSize: "clamp(3.2rem, 7vw, 7rem)",
+              lineHeight: 0.91,
+              letterSpacing: "-0.035em",
+              color: "#0f0e0d",
+            }}
+          >
+            We built<br />
+            <span style={{ color: "rgba(15,14,13,0.20)" }}>the layer</span><br />
+            everyone<br />
+            missed.
+          </motion.h2>
+
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.85, delay: 0.18, ease: [0.22, 1, 0.36, 1] }}
+            style={{ paddingTop: "clamp(0rem, 1.5vw, 2rem)" }}
+          >
+            <p
+              style={{
+                fontSize: "clamp(0.975rem, 1.3vw, 1.2rem)",
+                lineHeight: 1.65,
+                color: "rgba(15,14,13,0.60)",
+                fontWeight: 400,
+              }}
+            >
+              We are a deep-tech company building the data infrastructure
+              that lets robots learn contact-rich manipulation from human
+              operators. Building toward the first deployable robot cells
+              that can be retrained by your own factory workers, on
+              whatever robot brand you already trust.
+            </p>
+          </motion.div>
+        </div>
       </div>
     </section>
   );
@@ -2260,205 +2300,167 @@ function PipelineArrow({ index }: { index: number }) {
 
 function Pipeline() {
   return (
-    <section
-      className="relative overflow-hidden py-20 md:py-28"
-      style={{
-        fontFamily: "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
-        color: "#0f0e0d",
-      }}
-    >
+    <section className="relative overflow-hidden" style={{ color: "#0f0e0d" }}>
       <PaperBackground />
+      <div className="relative mx-auto max-w-[1400px] px-6 py-24 md:px-10 md:py-36">
 
-      <div className="relative mx-auto max-w-[1400px] px-6 md:px-10">
-        {/* ============ HEADER RAIL ============ */}
+        {/* Section header bar */}
         <div
-          className="mb-6 flex items-center justify-between gap-4 pb-4 text-[10px] uppercase tracking-[0.28em] md:text-[11px]"
-          style={{ borderBottom: "1px solid rgba(15, 14, 13, 0.12)", color: "rgba(15, 14, 13, 0.55)" }}
+          style={{
+            borderTop: "1px solid rgba(15,14,13,0.10)",
+            paddingTop: "2rem",
+            marginBottom: "4.5rem",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
         >
-          <span className="flex items-center gap-2 text-cyan">
-            <span className="block h-1.5 w-1.5 rounded-full bg-cyan" />
-            <span className="font-medium">Δ&nbsp;&nbsp;//&nbsp;&nbsp;the pipeline</span>
+          <span
+            className="font-mono text-[10px] uppercase tracking-[0.28em]"
+            style={{ color: "rgba(15,14,13,0.38)" }}
+          >
+            the pipeline
           </span>
-          <span className="hidden md:inline">section&nbsp;/&nbsp;02</span>
-          <span>01&nbsp;—&nbsp;05</span>
+          <span
+            className="font-mono text-[10px] uppercase tracking-[0.28em]"
+            style={{ color: "rgba(15,14,13,0.20)" }}
+          >
+            01&nbsp;—&nbsp;05
+          </span>
         </div>
 
-        {/* ============ HEADLINE + INTRO — centered ============ */}
-        <div className="mb-12 flex flex-col items-center text-center md:mb-16">
-          <h2
-            className="max-w-4xl text-balance text-[40px] leading-[0.98] tracking-[-0.015em] md:text-[72px]"
-            style={{ fontWeight: 600, color: "#0f0e0d" }}
-          >
-            Five steps from human demonstration{" "}
-            <span style={{ color: "rgba(15, 14, 13, 0.40)" }}>to deployed robot.</span>
-          </h2>
-          <p
-            className="mt-8 max-w-2xl text-balance text-[14px] leading-[1.65] md:text-[15px]"
-            style={{ color: "rgba(15, 14, 13, 0.72)" }}
-          >
-            A single integrated system that captures biological signals from
-            a human operator and transforms them into a production-ready
-            robot policy. Each step builds on the previous one. Together
-            they form the only pipeline in the industry that captures{" "}
-            <span style={{ color: "#0f0e0d", fontWeight: 500 }}>
-              what the body knew before contact ever happened
-            </span>
-            .
-          </p>
-        </div>
-
-        {/* ============ SCHEMATIC RAIL (desktop only) — overview with
-             chevron arrows between each step. */}
-        <div
-          className="mx-auto mb-10 hidden max-w-[1100px] items-center gap-3 text-[10px] uppercase tracking-[0.24em] md:flex"
-          style={{ color: "rgba(15, 14, 13, 0.55)" }}
+        {/* Headline */}
+        <motion.h2
+          initial={{ opacity: 0, y: 28 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
+          style={{
+            fontWeight: 600,
+            fontSize: "clamp(2.2rem, 4.8vw, 4.5rem)",
+            lineHeight: 1.0,
+            letterSpacing: "-0.028em",
+            color: "#0f0e0d",
+            maxWidth: "20ch",
+            marginBottom: "5rem",
+          }}
         >
-          {PIPELINE_STEPS.flatMap((s, i) => {
-            const node = (
+          Five steps from human demonstration to deployed robot.
+        </motion.h2>
+
+        {/* Steps — open numbered ledger */}
+        <div>
+          {PIPELINE_STEPS.map((s, i) => (
+            <motion.div
+              key={s.n}
+              initial={{ opacity: 0, y: 18 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-40px" }}
+              transition={{
+                duration: 0.65,
+                delay: i * 0.07,
+                ease: [0.22, 1, 0.36, 1],
+              }}
+              style={{
+                display: "grid",
+                gridTemplateColumns: "clamp(3rem, 5.5vw, 5.5rem) 1fr",
+                gap: "clamp(1rem, 2.5vw, 3rem)",
+                padding: "2.5rem 0",
+                borderTop: "1px solid rgba(15,14,13,0.08)",
+                alignItems: "start",
+              }}
+            >
+              {/* Ghost step number */}
               <span
-                key={`stage-${s.n}`}
-                className="flex items-center gap-2 whitespace-nowrap"
-              >
-                <span
-                  className="grid h-6 w-6 place-items-center rounded-full text-[10px] leading-none text-cyan"
-                  style={{ border: "1px solid rgba(15, 14, 13, 0.25)", background: "rgba(15, 14, 13, 0.05)" }}
-                >
-                  ●
-                </span>
-                <span style={{ color: "rgba(15, 14, 13, 0.75)" }}>
-                  {s.n}&nbsp;·&nbsp;{s.title}
-                </span>
-              </span>
-            );
-            if (i === PIPELINE_STEPS.length - 1) return [node];
-            return [
-              node,
-              <span
-                key={`chev-${i}`}
                 aria-hidden
-                className="flex flex-1 items-center justify-center"
-              >
-                <svg
-                  viewBox="0 0 64 12"
-                  className="h-3 w-full"
-                  preserveAspectRatio="none"
-                >
-                  <line x1="0" y1="6" x2="56" y2="6" stroke="rgba(15, 14, 13, 0.18)" strokeWidth="1" />
-                  <path d="M 52 1 L 58 6 L 52 11" stroke="rgba(15, 14, 13, 0.50)" strokeWidth="1.4" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </span>,
-            ];
-          })}
-        </div>
-
-        {/* ============ CELLS + ARROW CONNECTORS — centered ============ */}
-        <div className="mx-auto flex max-w-[1100px] flex-col gap-6 md:flex-row md:items-stretch md:justify-center md:gap-2">
-          {PIPELINE_STEPS.flatMap((s, i) => {
-            const cell = (
-              <motion.article
-                key={`cell-${s.n}`}
-                initial={{ opacity: 0, y: 28 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-80px" }}
-                transition={{
-                  duration: 0.7,
-                  delay: i * 0.08,
-                  ease: [0.22, 1, 0.36, 1],
-                }}
-                className="group relative isolate flex flex-1 flex-col rounded-2xl p-8 transition-colors md:p-9"
                 style={{
-                  background: "rgba(15, 14, 13, 0.04)",
-                  border: "1px solid rgba(15, 14, 13, 0.10)",
+                  fontWeight: 700,
+                  fontSize: "clamp(2.2rem, 4vw, 4rem)",
+                  lineHeight: 1,
+                  color: "rgba(15,14,13,0.09)",
+                  letterSpacing: "-0.04em",
+                  fontVariantNumeric: "tabular-nums",
+                  paddingTop: "0.15rem",
+                  userSelect: "none",
                 }}
               >
-                {/* corner brackets — technical-drawing feel */}
-                <span
-                  aria-hidden
-                  className="pointer-events-none absolute left-3 top-3 h-3 w-3 border-l border-t border-cyan/55"
-                />
-                <span
-                  aria-hidden
-                  className="pointer-events-none absolute right-3 top-3 h-3 w-3 border-r border-t border-cyan/55"
-                />
-                <span
-                  aria-hidden
-                  className="pointer-events-none absolute bottom-3 left-3 h-3 w-3 border-b border-l border-cyan/55"
-                />
-                <span
-                  aria-hidden
-                  className="pointer-events-none absolute bottom-3 right-3 h-3 w-3 border-b border-r border-cyan/55"
-                />
+                {s.n}
+              </span>
 
-                {/* status row: sub-label + pulsing active dot */}
+              {/* Content */}
+              <div>
                 <div
-                  className="mb-8 flex items-center justify-between text-[10px] uppercase tracking-[0.24em]"
-                  style={{ color: "rgba(15, 14, 13, 0.50)" }}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.75rem",
+                    marginBottom: "0.6rem",
+                  }}
                 >
-                  <span className="lowercase tracking-[0.18em]">// {s.sub}</span>
-                  <span className="flex items-center gap-1.5 text-cyan/80">
-                    <span className="block h-1 w-1 animate-pulse rounded-full bg-cyan" />
-                    active
-                  </span>
-                </div>
-
-                {/* big gradient numeral */}
-                <div className="relative mb-6">
-                  <span className="block text-[88px] font-bold leading-none tracking-tight md:text-[104px]" style={{ color: "rgba(15,14,13,0.18)" }}>
-                    {s.n}
+                  <span
+                    className="font-mono text-[9px] uppercase tracking-[0.26em]"
+                    style={{ color: "rgba(15,14,13,0.33)" }}
+                  >
+                    {s.sub}
                   </span>
                   <span
                     aria-hidden
-                    className="absolute -bottom-2 left-0 block h-px w-12 bg-[rgba(15,14,13,0.22)]"
+                    style={{
+                      display: "inline-block",
+                      width: "3px",
+                      height: "3px",
+                      borderRadius: "50%",
+                      background: "rgba(15,14,13,0.22)",
+                    }}
                   />
+                  <span
+                    className="font-mono text-[9px] uppercase tracking-[0.26em]"
+                    style={{ color: "rgba(15,14,13,0.20)" }}
+                  >
+                    active
+                  </span>
                 </div>
-
-                {/* title + body */}
                 <h3
-                  className="mb-3 text-[17px] font-medium uppercase tracking-[0.2em] md:text-[19px]"
-                  style={{ color: "#0f0e0d" }}
+                  style={{
+                    fontWeight: 600,
+                    fontSize: "clamp(0.875rem, 1.2vw, 1.1rem)",
+                    letterSpacing: "0.08em",
+                    textTransform: "uppercase",
+                    color: "#0f0e0d",
+                    marginBottom: "0.5rem",
+                  }}
                 >
                   {s.title}
                 </h3>
                 <p
-                  className="mb-10 text-[13px] leading-[1.6] md:text-[14px]"
-                  style={{ color: "rgba(15, 14, 13, 0.70)" }}
+                  style={{
+                    fontSize: "0.875rem",
+                    lineHeight: 1.7,
+                    color: "rgba(15,14,13,0.55)",
+                  }}
                 >
                   {s.body}
                 </p>
+              </div>
+            </motion.div>
+          ))}
 
-                {/* stage progression ticks — five dashes where the current
-                    step is solid cyan and others are dimmed. */}
-                <div
-                  aria-hidden
-                  className="mt-auto flex items-center gap-1.5 pt-6"
-                >
-                  {PIPELINE_STEPS.map((_, j) => (
-                    <span
-                      key={j}
-                      className="block h-px w-6 transition-colors"
-                      style={{
-                        background:
-                          j === i
-                            ? "#0f0e0d"
-                            : j < i
-                              ? "rgba(15, 14, 13, 0.35)"
-                              : "rgba(15, 14, 13, 0.14)",
-                      }}
-                    />
-                  ))}
-                </div>
-              </motion.article>
-            );
-            if (i === PIPELINE_STEPS.length - 1) return [cell];
-            return [cell, <PipelineArrow key={`arrow-${i}`} index={i} />];
-          })}
+          {/* Close rule after last step */}
+          <div style={{ borderTop: "1px solid rgba(15,14,13,0.08)" }} />
         </div>
 
-        {/* ============ PAYOFF PARAGRAPH — centered ============ */}
-        <p
-          className="mx-auto mt-12 max-w-4xl text-balance text-center text-base leading-[1.6] md:mt-14 md:text-lg md:leading-[1.55]"
+        {/* Payoff paragraph */}
+        <motion.p
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true, margin: "-40px" }}
+          transition={{ duration: 0.9, delay: 0.15, ease: "easeOut" }}
           style={{
-            color: "rgba(15, 14, 13, 0.78)",
+            marginTop: "4rem",
+            maxWidth: "58ch",
+            fontSize: "clamp(0.9375rem, 1.2vw, 1.1rem)",
+            lineHeight: 1.7,
+            color: "rgba(15,14,13,0.58)",
             fontWeight: 400,
           }}
         >
@@ -2466,40 +2468,45 @@ function Pipeline() {
           turns data into training samples. The augmentation step
           multiplies samples through physics simulation. The training
           step turns samples into policy. The deployment step runs
-          policy in production while feeding new data back to the
-          start. Robots inherit human force intuition. Simulators
-          finally transfer to reality. Contact-rich tasks that
-          traditional automation has failed at for thirty years get
-          solved.{" "}
-          <span style={{ color: "var(--cyan)", fontWeight: 500 }}>
-            By us.
+          policy in production while feeding new data back to the start.{" "}
+          <span style={{ color: "#0f0e0d", fontWeight: 600 }}>
+            Robots inherit human force intuition. By us.
           </span>
-        </p>
+        </motion.p>
 
-        {/* ============ FOOTER STATUS BAR ============ */}
+        {/* Footer metadata */}
         <div
-          className="mt-6 flex flex-col gap-3 pt-5 text-[10px] uppercase tracking-[0.24em] md:mt-8 md:flex-row md:items-center md:justify-between md:text-[11px]"
-          style={{ borderTop: "1px solid rgba(15, 14, 13, 0.12)", color: "rgba(15, 14, 13, 0.55)" }}
+          style={{
+            marginTop: "4rem",
+            paddingTop: "2rem",
+            borderTop: "1px solid rgba(15,14,13,0.08)",
+            display: "flex",
+            flexWrap: "wrap",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: "0.75rem 1.5rem",
+          }}
         >
           <span
-            className="lowercase tracking-[0.18em]"
-            style={{ color: "rgba(15, 14, 13, 0.65)" }}
+            className="font-mono text-[9px] uppercase tracking-[0.22em]"
+            style={{ color: "rgba(15,14,13,0.30)" }}
           >
             //&nbsp;the body knew before contact ever happened
           </span>
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-            <span>
-              <span style={{ color: "rgba(15, 14, 13, 0.32)" }}>system:</span>
-              &nbsp;novonus™
-            </span>
-            <span>
-              <span style={{ color: "rgba(15, 14, 13, 0.32)" }}>stages:</span>
-              &nbsp;05
-            </span>
-            <span>
-              <span style={{ color: "rgba(15, 14, 13, 0.32)" }}>status:</span>{" "}
-              <span className="text-cyan">operational</span>
-            </span>
+          <div
+            className="flex flex-wrap items-center gap-x-6 gap-y-1"
+            style={{ color: "rgba(15,14,13,0.30)" }}
+          >
+            {[
+              ["system", "novonus™"],
+              ["stages", "05"],
+              ["status", "operational"],
+            ].map(([k, v]) => (
+              <span key={k} className="font-mono text-[9px] uppercase tracking-[0.22em]">
+                <span style={{ color: "rgba(15,14,13,0.22)" }}>{k}:</span>
+                &nbsp;{v}
+              </span>
+            ))}
           </div>
         </div>
       </div>
@@ -4594,18 +4601,27 @@ function Hero() {
 
 
 /* ============================================================================
-   SECTION TAG — shared header used by every standalone section. Bracketed
-   eyebrow with purple brackets and dark inner label, mono small-caps
-   tracking.
+   SECTION TAG — shared header used by every standalone section.
    ========================================================================== */
 function SectionTag({ label }: { label: string }) {
   return (
-    <p
-      className="mb-6 font-mono text-[11px] uppercase tracking-[0.22em] md:mb-7"
-      style={{ color: "var(--cyan)" }}
+    <div
+      className="mb-8 flex items-center gap-3 md:mb-10"
+      style={{ color: "rgba(15, 14, 13, 0.38)" }}
     >
-      [<span style={{ color: "#0f0e0d" }}> {label} </span>]
-    </p>
+      <span
+        aria-hidden
+        style={{
+          display: "block",
+          width: "2rem",
+          height: "1px",
+          background: "rgba(15, 14, 13, 0.22)",
+        }}
+      />
+      <span className="font-mono text-[10px] uppercase tracking-[0.28em]">
+        {label}
+      </span>
+    </div>
   );
 }
 
@@ -4641,130 +4657,215 @@ const WHAT_WE_BUILD_ROWS = [
 ] as const;
 
 function WhatWeBuild() {
-  const cellBorder = "1px solid rgba(15, 14, 13, 0.10)";
-  const tableBorder = "1px solid rgba(15, 14, 13, 0.14)";
   return (
-    <section
-      className="relative overflow-hidden"
-      style={{
-        fontFamily:
-          "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
-        color: "#0f0e0d",
-      }}
-    >
+    <section className="relative overflow-hidden" style={{ color: "#0f0e0d" }}>
       <PaperBackground />
-      <div className="relative mx-auto max-w-[1400px] px-6 py-16 md:px-10 md:py-20">
-        <SectionTag label="what we build" />
-        <h2
-          className="max-w-4xl text-balance text-[36px] leading-[1.05] tracking-[-0.02em] md:text-[64px]"
-          style={{ fontWeight: 600 }}
+      <div className="relative mx-auto max-w-[1400px] px-6 py-24 md:px-10 md:py-36">
+
+        {/* Section header bar */}
+        <div
+          style={{
+            borderTop: "1px solid rgba(15,14,13,0.10)",
+            paddingTop: "2rem",
+            marginBottom: "4.5rem",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
         >
-          Robot cells your factory workers can teach.
-        </h2>
-        <p
-          className="mt-8 max-w-3xl text-base leading-[1.6] md:text-lg md:leading-[1.55]"
-          style={{ color: "rgba(15, 14, 13, 0.72)", fontWeight: 400 }}
+          <span
+            className="font-mono text-[10px] uppercase tracking-[0.28em]"
+            style={{ color: "rgba(15,14,13,0.38)" }}
+          >
+            what we build
+          </span>
+          <span
+            className="font-mono text-[10px] uppercase tracking-[0.28em]"
+            style={{ color: "rgba(15,14,13,0.20)" }}
+          >
+            §&nbsp;01
+          </span>
+        </div>
+
+        {/* Headline — large with tonal hierarchy */}
+        <motion.h2
+          initial={{ opacity: 0, y: 36 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+          style={{
+            fontWeight: 600,
+            fontSize: "clamp(2.8rem, 5.8vw, 5.8rem)",
+            lineHeight: 0.93,
+            letterSpacing: "-0.032em",
+            color: "#0f0e0d",
+            marginBottom: "2.5rem",
+          }}
+        >
+          Robot cells your{" "}
+          <span style={{ color: "rgba(15,14,13,0.22)" }}>factory workers</span>{" "}
+          can teach.
+        </motion.h2>
+
+        {/* Body text */}
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.75, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
+          style={{
+            maxWidth: "54ch",
+            fontSize: "clamp(0.9375rem, 1.2vw, 1.1rem)",
+            lineHeight: 1.65,
+            color: "rgba(15,14,13,0.58)",
+            fontWeight: 400,
+            marginBottom: "5rem",
+          }}
         >
           We deploy autonomous manipulation systems onto our customers&apos;
           existing robot infrastructure. We bring the biological-signal
           capture rig, the training pipeline, the deployed policy, the safety
           supervisor, and the integration software. Customers bring the
-          robots they already trust. The result is the same as buying a
-          complete new cell from a traditional integrator, except faster to
-          deploy, dramatically cheaper, and built on top of hardware they
-          already own.
-        </p>
+          robots they already trust.
+        </motion.p>
 
-        {/* Comparison table — 4-col grid on desktop, stacked card per row
-            on mobile with inline column labels. */}
-        <div
-          className="mt-12 overflow-hidden rounded-2xl"
-          style={{ border: tableBorder }}
-        >
-          {/* Desktop header row */}
+        {/* Editorial comparison — no box, just hairline rules */}
+        <div>
+          {/* Desktop column headers */}
           <div
-            className="hidden font-mono text-[10px] uppercase tracking-[0.22em] md:grid md:grid-cols-[1.2fr_1fr_1fr_1fr]"
+            className="hidden md:grid"
             style={{
-              background: "rgba(15, 14, 13, 0.04)",
-              color: "rgba(15, 14, 13, 0.55)",
+              gridTemplateColumns: "1.5fr 1fr 1.1fr 0.65fr",
+              gap: "0 2rem",
+              paddingBottom: "1.25rem",
+              borderBottom: "1px solid rgba(15,14,13,0.14)",
             }}
           >
-            <div className="p-5" />
-            <div className="p-5" style={{ borderLeft: cellBorder }}>
+            <div />
+            <span
+              className="font-mono text-[9px] uppercase tracking-[0.26em]"
+              style={{ color: "rgba(15,14,13,0.35)" }}
+            >
               Traditional integrator
-            </div>
-            <div
-              className="p-5 text-cyan"
-              style={{ borderLeft: cellBorder }}
+            </span>
+            <span
+              className="font-mono text-[9px] uppercase tracking-[0.26em]"
+              style={{
+                color: "#0f0e0d",
+                borderLeft: "2px solid #0f0e0d",
+                paddingLeft: "1.25rem",
+              }}
             >
               Novonus
-            </div>
-            <div className="p-5" style={{ borderLeft: cellBorder }}>
+            </span>
+            <span
+              className="font-mono text-[9px] uppercase tracking-[0.26em]"
+              style={{ color: "rgba(15,14,13,0.35)" }}
+            >
               Advantage
-            </div>
+            </span>
           </div>
 
+          {/* Data rows */}
           {WHAT_WE_BUILD_ROWS.map((r, i) => (
-            <div
+            <motion.div
               key={r.label}
-              className="grid grid-cols-1 md:grid-cols-[1.2fr_1fr_1fr_1fr]"
-              style={{ borderTop: cellBorder }}
+              initial={{ opacity: 0, y: 14 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-30px" }}
+              transition={{
+                duration: 0.6,
+                delay: i * 0.07,
+                ease: [0.22, 1, 0.36, 1],
+              }}
+              className="grid grid-cols-1 md:grid-cols-[1.5fr_1fr_1.1fr_0.65fr]"
+              style={{
+                gap: "0.5rem 2rem",
+                padding: "2rem 0",
+                borderBottom: "1px solid rgba(15,14,13,0.08)",
+                alignItems: "center",
+              }}
             >
-              <div className="flex flex-col gap-1 p-5">
+              {/* Row label */}
+              <div>
                 <span
-                  className="font-mono text-[10px] uppercase tracking-[0.20em]"
-                  style={{ color: "rgba(15, 14, 13, 0.40)" }}
+                  className="font-mono text-[9px] uppercase tracking-[0.22em]"
+                  style={{ color: "rgba(15,14,13,0.28)" }}
                 >
                   // {String(i + 1).padStart(2, "0")}
                 </span>
-                <span
-                  className="text-base md:text-[15px]"
-                  style={{ color: "#0f0e0d", fontWeight: 500 }}
+                <p
+                  style={{
+                    marginTop: "0.3rem",
+                    fontSize: "0.9375rem",
+                    fontWeight: 500,
+                    color: "#0f0e0d",
+                  }}
                 >
                   {r.label}
-                </span>
+                </p>
               </div>
-              <div
-                className="flex flex-col gap-1 p-5 text-[14px] leading-[1.45] md:text-[14px]"
-                style={{ borderTop: cellBorder, color: "rgba(15, 14, 13, 0.62)" }}
-              >
+
+              {/* Traditional */}
+              <div>
                 <span
-                  className="font-mono text-[10px] uppercase tracking-[0.20em] md:hidden"
-                  style={{ color: "rgba(15, 14, 13, 0.40)" }}
+                  className="font-mono text-[9px] uppercase tracking-[0.22em] md:hidden"
+                  style={{ color: "rgba(15,14,13,0.35)", display: "block", marginBottom: "0.2rem" }}
                 >
                   Traditional
                 </span>
-                {r.trad}
+                <p
+                  style={{
+                    fontSize: "0.875rem",
+                    lineHeight: 1.5,
+                    color: "rgba(15,14,13,0.48)",
+                  }}
+                >
+                  {r.trad}
+                </p>
               </div>
+
+              {/* Novonus — accent column */}
               <div
-                className="flex flex-col gap-1 p-5 text-[14px] leading-[1.45]"
                 style={{
-                  borderTop: cellBorder,
-                  color: "#0f0e0d",
-                  fontWeight: 500,
+                  borderLeft: "2px solid #0f0e0d",
+                  paddingLeft: "1.25rem",
                 }}
               >
                 <span
-                  className="font-mono text-[10px] uppercase tracking-[0.20em] md:hidden"
-                  style={{ color: "var(--cyan)" }}
+                  className="font-mono text-[9px] uppercase tracking-[0.22em] md:hidden"
+                  style={{ color: "#0f0e0d", display: "block", marginBottom: "0.2rem" }}
                 >
                   Novonus
                 </span>
-                {r.novonus}
+                <p
+                  style={{
+                    fontSize: "0.875rem",
+                    lineHeight: 1.5,
+                    fontWeight: 600,
+                    color: "#0f0e0d",
+                  }}
+                >
+                  {r.novonus}
+                </p>
               </div>
-              <div
-                className="flex flex-col gap-1 p-5 text-[14px] leading-[1.45]"
-                style={{ borderTop: cellBorder, color: "var(--cyan)" }}
-              >
+
+              {/* Advantage */}
+              <div>
                 <span
-                  className="font-mono text-[10px] uppercase tracking-[0.20em] md:hidden"
-                  style={{ color: "rgba(15, 14, 13, 0.40)" }}
+                  className="font-mono text-[9px] uppercase tracking-[0.22em] md:hidden"
+                  style={{ color: "rgba(15,14,13,0.35)", display: "block", marginBottom: "0.2rem" }}
                 >
                   Advantage
                 </span>
-                {r.adv}
+                <p
+                  className="font-mono text-[10px] uppercase tracking-[0.18em]"
+                  style={{ color: "#0f0e0d", fontWeight: 600 }}
+                >
+                  {r.adv}
+                </p>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>
@@ -4885,71 +4986,135 @@ const EVIDENCE_STATS = [
 
 function Evidence() {
   return (
-    <section
-      className="relative overflow-hidden"
-      style={{
-        fontFamily:
-          "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
-        color: "#0f0e0d",
-      }}
-    >
+    <section className="relative overflow-hidden" style={{ color: "#0f0e0d" }}>
       <PaperBackground />
-      <div className="relative mx-auto max-w-[1400px] px-6 py-16 md:px-10 md:py-20">
-        <SectionTag label="the evidence" />
-        <h2
-          className="text-balance text-[36px] leading-[1.05] tracking-[-0.02em] md:text-[64px]"
-          style={{ fontWeight: 600 }}
-        >
-          Peer-reviewed. Quantified. Settled.
-        </h2>
-        <p
-          className="mt-8 max-w-3xl text-base leading-[1.6] md:text-lg md:leading-[1.55]"
-          style={{ color: "rgba(15, 14, 13, 0.72)", fontWeight: 400 }}
-        >
-          Every claim we make about contact-rich manipulation is backed by
-          published research. The science is settled. The remaining question
-          is who builds the deployed product.
-        </p>
+      <div className="relative mx-auto max-w-[1400px] px-6 py-24 md:px-10 md:py-36">
 
-        <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {EVIDENCE_STATS.map((s) => (
-            <motion.article
+        {/* Section header bar */}
+        <div
+          style={{
+            borderTop: "1px solid rgba(15,14,13,0.10)",
+            paddingTop: "2rem",
+            marginBottom: "4.5rem",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <span
+            className="font-mono text-[10px] uppercase tracking-[0.28em]"
+            style={{ color: "rgba(15,14,13,0.38)" }}
+          >
+            the evidence
+          </span>
+          <span
+            className="font-mono text-[10px] uppercase tracking-[0.28em]"
+            style={{ color: "rgba(15,14,13,0.20)" }}
+          >
+            §&nbsp;03
+          </span>
+        </div>
+
+        {/* Headline + intro */}
+        <div className="mb-16">
+          <motion.h2
+            initial={{ opacity: 0, y: 28 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-60px" }}
+            transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
+            style={{
+              fontWeight: 600,
+              fontSize: "clamp(2.2rem, 4.8vw, 4.5rem)",
+              lineHeight: 1.0,
+              letterSpacing: "-0.028em",
+              color: "#0f0e0d",
+              maxWidth: "22ch",
+              marginBottom: "1.5rem",
+            }}
+          >
+            Peer-reviewed. Quantified. Settled.
+          </motion.h2>
+          <motion.p
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true, margin: "-60px" }}
+            transition={{ duration: 0.75, delay: 0.15 }}
+            style={{
+              maxWidth: "48ch",
+              fontSize: "0.9375rem",
+              lineHeight: 1.65,
+              color: "rgba(15,14,13,0.52)",
+            }}
+          >
+            Every claim we make about contact-rich manipulation is backed
+            by published research. The science is settled. The remaining
+            question is who builds the deployed product.
+          </motion.p>
+        </div>
+
+        {/* Open stat grid — no cards, only hairline rules */}
+        <div
+          className="grid grid-cols-2 overflow-hidden md:grid-cols-3"
+          style={{ borderTop: "1px solid rgba(15,14,13,0.10)" }}
+        >
+          {EVIDENCE_STATS.map((s, i) => (
+            <motion.div
               key={s.label}
-              initial={{ opacity: 0, y: 18 }}
+              initial={{ opacity: 0, y: 14 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-60px" }}
-              transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-              className="flex flex-col gap-3 rounded-2xl p-6 md:p-7"
+              viewport={{ once: true, margin: "-30px" }}
+              transition={{
+                duration: 0.6,
+                delay: (i % 3) * 0.06,
+                ease: [0.22, 1, 0.36, 1],
+              }}
               style={{
-                border: "1px solid rgba(15, 14, 13, 0.14)",
-                background: "rgba(15, 14, 13, 0.03)",
+                padding: "2.5rem 2rem",
+                borderBottom: "1px solid rgba(15,14,13,0.08)",
+                borderRight: "1px solid rgba(15,14,13,0.08)",
               }}
             >
+              {/* Dominant number */}
               <div
-                className="text-[44px] leading-none tracking-[-0.025em] text-cyan md:text-[56px]"
-                style={{ fontWeight: 700 }}
+                style={{
+                  fontSize: "clamp(2.8rem, 4.2vw, 4.2rem)",
+                  fontWeight: 700,
+                  letterSpacing: "-0.04em",
+                  lineHeight: 1,
+                  color: "#0f0e0d",
+                  marginBottom: "0.75rem",
+                }}
               >
                 <StatCounter target={s.num} suffix={s.suffix} />
               </div>
+
+              {/* Label */}
               <p
-                className="font-mono text-[11px] uppercase tracking-[0.20em]"
-                style={{ color: "rgba(15, 14, 13, 0.85)" }}
+                className="font-mono text-[10px] uppercase tracking-[0.22em]"
+                style={{ color: "rgba(15,14,13,0.70)", marginBottom: "0.55rem" }}
               >
                 {s.label}
               </p>
+
+              {/* Caption */}
               <p
-                className="text-[13px] leading-[1.55]"
-                style={{ color: "rgba(15, 14, 13, 0.62)" }}
+                style={{
+                  fontSize: "0.8125rem",
+                  lineHeight: 1.6,
+                  color: "rgba(15,14,13,0.48)",
+                }}
               >
                 {s.caption}
               </p>
+
+              {/* Source citation */}
               <p
-                className="mt-auto pt-3 font-mono text-[10px] uppercase tracking-[0.18em]"
-                style={{ color: "rgba(15, 14, 13, 0.38)" }}
+                className="font-mono text-[8.5px] uppercase tracking-[0.18em]"
+                style={{ color: "rgba(15,14,13,0.26)", marginTop: "1.25rem" }}
               >
                 {s.source}
               </p>
-            </motion.article>
+            </motion.div>
           ))}
         </div>
       </div>
@@ -5164,8 +5329,8 @@ function Technicals() {
       <div className="relative mx-auto max-w-[1200px] px-6 py-16 md:px-10 md:py-20">
         <SectionTag label="technicals" />
         <h2
-          className="max-w-4xl text-balance text-[36px] leading-[1.05] tracking-[-0.02em] md:text-[64px]"
-          style={{ fontWeight: 600 }}
+          className="max-w-4xl text-balance leading-[1.05] tracking-[-0.02em]"
+          style={{ fontWeight: 600, fontSize: "clamp(2.1rem, 4.4vw, 4rem)" }}
         >
           The pipeline in motion.
         </h2>
