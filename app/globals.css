@@ -43,6 +43,8 @@ html {
   --font-dm-sans: var(--font-kode-mono);
   --font-tt-norms-pro: var(--font-kode-mono);
   --font-tt-norms-pro-expanded: var(--font-kode-mono);
+  --font-inter-tight: var(--font-kode-mono);
+  --font-eb-garamond: var(--font-kode-mono);
 }
 
 html {

@@ -2118,65 +2118,185 @@ function Manifesto() {
 
 
 /* ============================================================================
+   SHARED EDITORIAL PRIMITIVES — animated hairline rules, masked line
+   reveals, and the EMG signal-trace motif used across the cream sections.
+   All ink-on-paper; motion is draw-in only (transform/opacity, GPU-safe).
+   ========================================================================== */
+
+/* Hairline rule that draws itself from the left on scroll-enter. */
+function RuleX({
+  opacity = 0.1,
+  delay = 0,
+}: {
+  opacity?: number;
+  delay?: number;
+}) {
+  return (
+    <motion.div
+      aria-hidden
+      initial={{ scaleX: 0 }}
+      whileInView={{ scaleX: 1 }}
+      viewport={{ once: true, margin: "-40px" }}
+      transition={{ duration: 1.1, delay, ease: [0.22, 1, 0.36, 1] }}
+      style={{
+        height: "1px",
+        width: "100%",
+        background: `rgba(15,14,13,${opacity})`,
+        transformOrigin: "left",
+      }}
+    />
+  );
+}
+
+/* Standard cream-section header: drawn rule, left label, right index. */
+function SectionRail({ label, index }: { label: string; index: string }) {
+  return (
+    <div style={{ marginBottom: "4.5rem" }}>
+      <RuleX />
+      <div
+        style={{
+          paddingTop: "2rem",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <motion.span
+          className="font-mono text-[10px] uppercase tracking-[0.28em]"
+          initial={{ opacity: 0, y: 8 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-40px" }}
+          transition={{ duration: 0.6, delay: 0.25 }}
+          style={{ color: "rgba(15,14,13,0.38)" }}
+        >
+          {label}
+        </motion.span>
+        <motion.span
+          className="font-mono text-[10px] uppercase tracking-[0.28em]"
+          initial={{ opacity: 0, y: 8 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-40px" }}
+          transition={{ duration: 0.6, delay: 0.35 }}
+          style={{ color: "rgba(15,14,13,0.20)" }}
+        >
+          {index}
+        </motion.span>
+      </div>
+    </div>
+  );
+}
+
+/* One masked headline line: clipped wrapper, text rises from below. */
+function RevealLine({
+  children,
+  delay = 0,
+}: {
+  children: React.ReactNode;
+  delay?: number;
+}) {
+  return (
+    <span style={{ display: "block", overflow: "hidden" }}>
+      <motion.span
+        initial={{ y: "110%" }}
+        whileInView={{ y: "0%" }}
+        viewport={{ once: true, margin: "-60px" }}
+        transition={{ duration: 0.85, delay, ease: [0.22, 1, 0.36, 1] }}
+        style={{ display: "block" }}
+      >
+        {children}
+      </motion.span>
+    </span>
+  );
+}
+
+/* EMG signal trace — quiet baseline, a contact burst, quiet again.
+   Draws itself across the section on scroll-enter. The motif of the
+   whole site: the body knew before contact ever happened. */
+const EMG_PATH =
+  "M0 30 H96 L102 26 L108 33 L114 28 H168 L174 22 L180 38 L186 12 " +
+  "L192 48 L198 6 L204 54 L210 14 L216 44 L222 20 L228 38 L234 26 " +
+  "L240 33 L248 29 H360 L366 25 L372 34 L378 30 H440 L446 27 L452 32 H600";
+
+function SignalTrace({ caption }: { caption?: string }) {
+  return (
+    <div aria-hidden>
+      <svg
+        viewBox="0 0 600 60"
+        preserveAspectRatio="none"
+        style={{ display: "block", width: "100%", height: "60px" }}
+      >
+        {/* static ghost of the full trace */}
+        <path
+          d={EMG_PATH}
+          fill="none"
+          stroke="rgba(15,14,13,0.07)"
+          strokeWidth="1"
+        />
+        {/* drawn-in live trace */}
+        <motion.path
+          d={EMG_PATH}
+          fill="none"
+          stroke="rgba(15,14,13,0.55)"
+          strokeWidth="1.25"
+          initial={{ pathLength: 0 }}
+          whileInView={{ pathLength: 1 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 2.2, ease: [0.4, 0, 0.2, 1] }}
+        />
+      </svg>
+      {caption ? (
+        <motion.p
+          className="font-mono text-[9px] uppercase tracking-[0.22em]"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.7, delay: 1.6 }}
+          style={{ color: "rgba(15,14,13,0.30)", marginTop: "0.85rem" }}
+        >
+          {caption}
+        </motion.p>
+      ) : null}
+    </div>
+  );
+}
+
+/* ============================================================================
    FLUID SECTION — declarative statement section. Asymmetric two-column:
-   massive left-aligned headline, body text as a quiet column on the right.
+   massive left-aligned headline rising line-by-line through clip masks,
+   body text as a quiet column on the right, closed by a scroll-drawn
+   EMG trace running the full measure.
    ========================================================================== */
 function FluidSection() {
   return (
     <section className="relative overflow-hidden" style={{ color: "#0f0e0d" }}>
       <PaperBackground />
       <div className="relative mx-auto max-w-[1400px] px-6 py-24 md:px-10 md:py-36">
-        {/* Section header bar */}
-        <div
-          style={{
-            borderTop: "1px solid rgba(15,14,13,0.10)",
-            paddingTop: "2rem",
-            marginBottom: "4.5rem",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <span
-            className="font-mono text-[10px] uppercase tracking-[0.28em]"
-            style={{ color: "rgba(15,14,13,0.38)" }}
-          >
-            the layer
-          </span>
-          <span
-            className="font-mono text-[10px] uppercase tracking-[0.28em]"
-            style={{ color: "rgba(15,14,13,0.20)" }}
-          >
-            §&nbsp;02
-          </span>
-        </div>
+        <SectionRail label="the layer" index="§ 02" />
 
         {/* Two-column layout: headline + body */}
         <div className="grid grid-cols-1 items-start gap-14 md:grid-cols-[1fr_0.6fr] md:gap-20">
-          <motion.h2
-            initial={{ opacity: 0, y: 36 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+          <h2
             style={{
               fontWeight: 600,
               fontSize: "clamp(3.2rem, 7vw, 7rem)",
-              lineHeight: 0.91,
+              lineHeight: 0.97,
               letterSpacing: "-0.035em",
               color: "#0f0e0d",
             }}
           >
-            We built<br />
-            <span style={{ color: "rgba(15,14,13,0.20)" }}>the layer</span><br />
-            everyone<br />
-            missed.
-          </motion.h2>
+            <RevealLine>We built</RevealLine>
+            <RevealLine delay={0.09}>
+              <span style={{ color: "rgba(15,14,13,0.20)" }}>the layer</span>
+            </RevealLine>
+            <RevealLine delay={0.18}>everyone</RevealLine>
+            <RevealLine delay={0.27}>missed.</RevealLine>
+          </h2>
 
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.85, delay: 0.18, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.85, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
             style={{ paddingTop: "clamp(0rem, 1.5vw, 2rem)" }}
           >
             <p
@@ -2194,6 +2314,11 @@ function FluidSection() {
               whatever robot brand you already trust.
             </p>
           </motion.div>
+        </div>
+
+        {/* Closing instrument trace */}
+        <div style={{ marginTop: "clamp(4rem, 8vw, 7rem)" }}>
+          <SignalTrace caption="fig. 02 — operator emg, single contact event, 4-channel sum" />
         </div>
       </div>
     </section>
@@ -2215,32 +2340,61 @@ const PIPELINE_STEPS = [
     title: "CAPTURE",
     sub: "Signal acquisition",
     body: "Operator wears rig. Sensors record everything.",
+    glyph: "M2 12 H7 L9 7 L12 17 L15 4 L17 20 L19 12 H22",
   },
   {
     n: "02",
     title: "PROCESS",
     sub: "Data refinement",
     body: "Raw signals become clean, labeled training data.",
+    glyph: "M3 7 H21 M3 12 H15 M3 17 H18",
   },
   {
     n: "03",
     title: "AUGMENT",
     sub: "Synthetic expansion",
     body: "Real demos become 100× synthetic variations.",
+    glyph: "M4 12 H10 M10 12 L15 5 M10 12 L15 12 M10 12 L15 19 M17 5 H21 M17 12 H21 M17 19 H21",
   },
   {
     n: "04",
     title: "TRAIN",
     sub: "Force-aware learning",
     body: "Multimodal AI learns force-aware control.",
+    glyph: "M3 19 L9 9 L14 14 L21 4 M17 4 H21 V8",
   },
   {
     n: "05",
     title: "DEPLOY",
     sub: "Edge inference",
     body: "Edge inference with continuous retraining.",
+    glyph: "M3 12 H17 M12 6 L18 12 L12 18",
   },
 ] as const;
+
+/* Minimal 24×24 line glyph that draws itself in on scroll-enter. */
+function StepGlyph({ d, delay = 0 }: { d: string; delay?: number }) {
+  return (
+    <svg
+      aria-hidden
+      viewBox="0 0 24 24"
+      style={{ width: "22px", height: "22px", display: "block" }}
+    >
+      <motion.path
+        d={d}
+        fill="none"
+        stroke="#0f0e0d"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        initial={{ pathLength: 0, opacity: 0 }}
+        whileInView={{ pathLength: 1, opacity: 1 }}
+        viewport={{ once: true, margin: "-40px" }}
+        transition={{ duration: 0.9, delay, ease: [0.4, 0, 0.2, 1] }}
+      />
+    </svg>
+  );
+}
 
 function PipelineArrow({ index }: { index: number }) {
   // One dot travels across all 4 arrows in sequence, 1→2→3→4→5, then repeats.
@@ -2304,149 +2458,132 @@ function Pipeline() {
       <PaperBackground />
       <div className="relative mx-auto max-w-[1400px] px-6 py-24 md:px-10 md:py-36">
 
-        {/* Section header bar */}
-        <div
-          style={{
-            borderTop: "1px solid rgba(15,14,13,0.10)",
-            paddingTop: "2rem",
-            marginBottom: "4.5rem",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <span
-            className="font-mono text-[10px] uppercase tracking-[0.28em]"
-            style={{ color: "rgba(15,14,13,0.38)" }}
-          >
-            the pipeline
-          </span>
-          <span
-            className="font-mono text-[10px] uppercase tracking-[0.28em]"
-            style={{ color: "rgba(15,14,13,0.20)" }}
-          >
-            01&nbsp;—&nbsp;05
-          </span>
-        </div>
+        <SectionRail label="the pipeline" index="01 — 05" />
 
         {/* Headline */}
-        <motion.h2
-          initial={{ opacity: 0, y: 28 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-60px" }}
-          transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
+        <h2
           style={{
             fontWeight: 600,
             fontSize: "clamp(2.2rem, 4.8vw, 4.5rem)",
-            lineHeight: 1.0,
+            lineHeight: 1.05,
             letterSpacing: "-0.028em",
             color: "#0f0e0d",
             maxWidth: "20ch",
             marginBottom: "5rem",
           }}
         >
-          Five steps from human demonstration to deployed robot.
-        </motion.h2>
+          <RevealLine>Five steps from human</RevealLine>
+          <RevealLine delay={0.09}>demonstration to</RevealLine>
+          <RevealLine delay={0.18}>deployed robot.</RevealLine>
+        </h2>
 
         {/* Steps — open numbered ledger */}
         <div>
           {PIPELINE_STEPS.map((s, i) => (
-            <motion.div
-              key={s.n}
-              initial={{ opacity: 0, y: 18 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-40px" }}
-              transition={{
-                duration: 0.65,
-                delay: i * 0.07,
-                ease: [0.22, 1, 0.36, 1],
-              }}
-              style={{
-                display: "grid",
-                gridTemplateColumns: "clamp(3rem, 5.5vw, 5.5rem) 1fr",
-                gap: "clamp(1rem, 2.5vw, 3rem)",
-                padding: "2.5rem 0",
-                borderTop: "1px solid rgba(15,14,13,0.08)",
-                alignItems: "start",
-              }}
-            >
-              {/* Ghost step number */}
-              <span
-                aria-hidden
+            <div key={s.n}>
+              <RuleX opacity={0.08} delay={i * 0.05} />
+              <motion.div
+                initial={{ opacity: 0, y: 18 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                whileHover={{ x: 8 }}
+                viewport={{ once: true, margin: "-40px" }}
+                transition={{
+                  duration: 0.65,
+                  delay: i * 0.07,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
                 style={{
-                  fontWeight: 700,
-                  fontSize: "clamp(2.2rem, 4vw, 4rem)",
-                  lineHeight: 1,
-                  color: "rgba(15,14,13,0.09)",
-                  letterSpacing: "-0.04em",
-                  fontVariantNumeric: "tabular-nums",
-                  paddingTop: "0.15rem",
-                  userSelect: "none",
+                  display: "grid",
+                  gridTemplateColumns:
+                    "clamp(3rem, 5.5vw, 5.5rem) 1fr clamp(2rem, 4vw, 4rem)",
+                  gap: "clamp(1rem, 2.5vw, 3rem)",
+                  padding: "2.5rem 0",
+                  alignItems: "start",
                 }}
               >
-                {s.n}
-              </span>
+                {/* Ghost step number */}
+                <span
+                  aria-hidden
+                  style={{
+                    fontWeight: 700,
+                    fontSize: "clamp(2.2rem, 4vw, 4rem)",
+                    lineHeight: 1,
+                    color: "rgba(15,14,13,0.09)",
+                    letterSpacing: "-0.04em",
+                    fontVariantNumeric: "tabular-nums",
+                    paddingTop: "0.15rem",
+                    userSelect: "none",
+                  }}
+                >
+                  {s.n}
+                </span>
 
-              {/* Content */}
-              <div>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.75rem",
-                    marginBottom: "0.6rem",
-                  }}
-                >
-                  <span
-                    className="font-mono text-[9px] uppercase tracking-[0.26em]"
-                    style={{ color: "rgba(15,14,13,0.33)" }}
-                  >
-                    {s.sub}
-                  </span>
-                  <span
-                    aria-hidden
+                {/* Content */}
+                <div>
+                  <div
                     style={{
-                      display: "inline-block",
-                      width: "3px",
-                      height: "3px",
-                      borderRadius: "50%",
-                      background: "rgba(15,14,13,0.22)",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.75rem",
+                      marginBottom: "0.6rem",
                     }}
-                  />
-                  <span
-                    className="font-mono text-[9px] uppercase tracking-[0.26em]"
-                    style={{ color: "rgba(15,14,13,0.20)" }}
                   >
-                    active
-                  </span>
+                    <span
+                      className="font-mono text-[9px] uppercase tracking-[0.26em]"
+                      style={{ color: "rgba(15,14,13,0.33)" }}
+                    >
+                      {s.sub}
+                    </span>
+                    <span
+                      aria-hidden
+                      style={{
+                        display: "inline-block",
+                        width: "3px",
+                        height: "3px",
+                        borderRadius: "50%",
+                        background: "rgba(15,14,13,0.22)",
+                      }}
+                    />
+                    <span
+                      className="font-mono text-[9px] uppercase tracking-[0.26em]"
+                      style={{ color: "rgba(15,14,13,0.20)" }}
+                    >
+                      active
+                    </span>
+                  </div>
+                  <h3
+                    style={{
+                      fontWeight: 600,
+                      fontSize: "clamp(0.875rem, 1.2vw, 1.1rem)",
+                      letterSpacing: "0.08em",
+                      textTransform: "uppercase",
+                      color: "#0f0e0d",
+                      marginBottom: "0.5rem",
+                    }}
+                  >
+                    {s.title}
+                  </h3>
+                  <p
+                    style={{
+                      fontSize: "0.875rem",
+                      lineHeight: 1.7,
+                      color: "rgba(15,14,13,0.55)",
+                    }}
+                  >
+                    {s.body}
+                  </p>
                 </div>
-                <h3
-                  style={{
-                    fontWeight: 600,
-                    fontSize: "clamp(0.875rem, 1.2vw, 1.1rem)",
-                    letterSpacing: "0.08em",
-                    textTransform: "uppercase",
-                    color: "#0f0e0d",
-                    marginBottom: "0.5rem",
-                  }}
-                >
-                  {s.title}
-                </h3>
-                <p
-                  style={{
-                    fontSize: "0.875rem",
-                    lineHeight: 1.7,
-                    color: "rgba(15,14,13,0.55)",
-                  }}
-                >
-                  {s.body}
-                </p>
-              </div>
-            </motion.div>
+
+                {/* Drawn line glyph */}
+                <div style={{ paddingTop: "0.4rem", justifySelf: "end" }}>
+                  <StepGlyph d={s.glyph} delay={0.25 + i * 0.07} />
+                </div>
+              </motion.div>
+            </div>
           ))}
 
           {/* Close rule after last step */}
-          <div style={{ borderTop: "1px solid rgba(15,14,13,0.08)" }} />
+          <RuleX opacity={0.08} delay={0.25} />
         </div>
 
         {/* Payoff paragraph */}
@@ -4662,50 +4799,27 @@ function WhatWeBuild() {
       <PaperBackground />
       <div className="relative mx-auto max-w-[1400px] px-6 py-24 md:px-10 md:py-36">
 
-        {/* Section header bar */}
-        <div
-          style={{
-            borderTop: "1px solid rgba(15,14,13,0.10)",
-            paddingTop: "2rem",
-            marginBottom: "4.5rem",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <span
-            className="font-mono text-[10px] uppercase tracking-[0.28em]"
-            style={{ color: "rgba(15,14,13,0.38)" }}
-          >
-            what we build
-          </span>
-          <span
-            className="font-mono text-[10px] uppercase tracking-[0.28em]"
-            style={{ color: "rgba(15,14,13,0.20)" }}
-          >
-            §&nbsp;01
-          </span>
-        </div>
+        <SectionRail label="what we build" index="§ 01" />
 
-        {/* Headline — large with tonal hierarchy */}
-        <motion.h2
-          initial={{ opacity: 0, y: 36 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+        {/* Headline — large with tonal hierarchy, masked line reveal */}
+        <h2
           style={{
             fontWeight: 600,
             fontSize: "clamp(2.8rem, 5.8vw, 5.8rem)",
-            lineHeight: 0.93,
+            lineHeight: 1.0,
             letterSpacing: "-0.032em",
             color: "#0f0e0d",
             marginBottom: "2.5rem",
           }}
         >
-          Robot cells your{" "}
-          <span style={{ color: "rgba(15,14,13,0.22)" }}>factory workers</span>{" "}
-          can teach.
-        </motion.h2>
+          <RevealLine>Robot cells your</RevealLine>
+          <RevealLine delay={0.09}>
+            <span style={{ color: "rgba(15,14,13,0.22)" }}>
+              factory workers
+            </span>
+          </RevealLine>
+          <RevealLine delay={0.18}>can teach.</RevealLine>
+        </h2>
 
         {/* Body text */}
         <motion.p
@@ -4772,6 +4886,7 @@ function WhatWeBuild() {
               key={r.label}
               initial={{ opacity: 0, y: 14 }}
               whileInView={{ opacity: 1, y: 0 }}
+              whileHover={{ backgroundColor: "rgba(15,14,13,0.025)" }}
               viewport={{ once: true, margin: "-30px" }}
               transition={{
                 duration: 0.6,
@@ -4781,7 +4896,8 @@ function WhatWeBuild() {
               className="grid grid-cols-1 md:grid-cols-[1.5fr_1fr_1.1fr_0.65fr]"
               style={{
                 gap: "0.5rem 2rem",
-                padding: "2rem 0",
+                padding: "2rem 0.5rem",
+                margin: "0 -0.5rem",
                 borderBottom: "1px solid rgba(15,14,13,0.08)",
                 alignItems: "center",
               }}
@@ -4825,13 +4941,28 @@ function WhatWeBuild() {
                 </p>
               </div>
 
-              {/* Novonus — accent column */}
-              <div
-                style={{
-                  borderLeft: "2px solid #0f0e0d",
-                  paddingLeft: "1.25rem",
-                }}
-              >
+              {/* Novonus — accent column, rule draws downward */}
+              <div style={{ position: "relative", paddingLeft: "1.25rem" }}>
+                <motion.span
+                  aria-hidden
+                  initial={{ scaleY: 0 }}
+                  whileInView={{ scaleY: 1 }}
+                  viewport={{ once: true, margin: "-30px" }}
+                  transition={{
+                    duration: 0.55,
+                    delay: 0.2 + i * 0.07,
+                    ease: [0.22, 1, 0.36, 1],
+                  }}
+                  style={{
+                    position: "absolute",
+                    left: 0,
+                    top: 0,
+                    bottom: 0,
+                    width: "2px",
+                    background: "#0f0e0d",
+                    transformOrigin: "top",
+                  }}
+                />
                 <span
                   className="font-mono text-[9px] uppercase tracking-[0.22em] md:hidden"
                   style={{ color: "#0f0e0d", display: "block", marginBottom: "0.2rem" }}
@@ -4990,50 +5121,27 @@ function Evidence() {
       <PaperBackground />
       <div className="relative mx-auto max-w-[1400px] px-6 py-24 md:px-10 md:py-36">
 
-        {/* Section header bar */}
-        <div
-          style={{
-            borderTop: "1px solid rgba(15,14,13,0.10)",
-            paddingTop: "2rem",
-            marginBottom: "4.5rem",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <span
-            className="font-mono text-[10px] uppercase tracking-[0.28em]"
-            style={{ color: "rgba(15,14,13,0.38)" }}
-          >
-            the evidence
-          </span>
-          <span
-            className="font-mono text-[10px] uppercase tracking-[0.28em]"
-            style={{ color: "rgba(15,14,13,0.20)" }}
-          >
-            §&nbsp;03
-          </span>
-        </div>
+        <SectionRail label="the evidence" index="§ 03" />
 
         {/* Headline + intro */}
         <div className="mb-16">
-          <motion.h2
-            initial={{ opacity: 0, y: 28 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-60px" }}
-            transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
+          <h2
             style={{
               fontWeight: 600,
               fontSize: "clamp(2.2rem, 4.8vw, 4.5rem)",
-              lineHeight: 1.0,
+              lineHeight: 1.05,
               letterSpacing: "-0.028em",
               color: "#0f0e0d",
               maxWidth: "22ch",
               marginBottom: "1.5rem",
             }}
           >
-            Peer-reviewed. Quantified. Settled.
-          </motion.h2>
+            <RevealLine>Peer-reviewed.</RevealLine>
+            <RevealLine delay={0.09}>
+              Quantified.{" "}
+              <span style={{ color: "rgba(15,14,13,0.22)" }}>Settled.</span>
+            </RevealLine>
+          </h2>
           <motion.p
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
@@ -5062,6 +5170,7 @@ function Evidence() {
               key={s.label}
               initial={{ opacity: 0, y: 14 }}
               whileInView={{ opacity: 1, y: 0 }}
+              whileHover={{ backgroundColor: "rgba(15,14,13,0.025)" }}
               viewport={{ once: true, margin: "-30px" }}
               transition={{
                 duration: 0.6,
@@ -5082,11 +5191,32 @@ function Evidence() {
                   letterSpacing: "-0.04em",
                   lineHeight: 1,
                   color: "#0f0e0d",
-                  marginBottom: "0.75rem",
+                  marginBottom: "0.85rem",
                 }}
               >
                 <StatCounter target={s.num} suffix={s.suffix} />
               </div>
+
+              {/* Drawn underline — instrument tick */}
+              <motion.span
+                aria-hidden
+                initial={{ scaleX: 0 }}
+                whileInView={{ scaleX: 1 }}
+                viewport={{ once: true, margin: "-30px" }}
+                transition={{
+                  duration: 0.7,
+                  delay: 0.3 + (i % 3) * 0.08,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
+                style={{
+                  display: "block",
+                  width: "2.25rem",
+                  height: "2px",
+                  background: "#0f0e0d",
+                  transformOrigin: "left",
+                  marginBottom: "1.1rem",
+                }}
+              />
 
               {/* Label */}
               <p
