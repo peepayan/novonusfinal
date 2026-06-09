@@ -2202,28 +2202,36 @@ const PIPELINE_STEPS = [
   },
 ] as const;
 
-function PipelineArrow() {
+function PipelineArrow({ index }: { index: number }) {
+  // One dot travels across all 4 arrows in sequence, 1→2→3→4→5, then repeats.
+  const N = 4;
+  const SLOT = 1.1;              // seconds per arrow slot
+  const TRAVEL = 0.65;           // actual travel time
+  const FADE = 0.12;             // fade-out time at end
+  const TOTAL = N * SLOT;        // 4.4s full cycle
+
   return (
     <div className="flex shrink-0 items-center justify-center py-1 md:py-0">
       <svg
         viewBox="0 0 64 24"
         className="h-7 w-16 rotate-90 md:h-8 md:w-20 md:rotate-0"
       >
-        {/* Flowing dot — translates along the line, looped, gives the
-            connector a sense of data moving downstream. */}
         <motion.circle
           r="2.6"
           cy="12"
-          fill="rgba(109, 40, 217, 0.95)"
-          style={{ filter: "drop-shadow(0 0 4px rgba(109, 40, 217, 0.9))" }}
-          initial={{ cx: 4 }}
-          animate={{ cx: [4, 48, 48] }}
+          fill="#0f0e0d"
+          initial={{ cx: 4, opacity: 0 }}
+          animate={{
+            cx:      [4,   48,  48, 4],
+            opacity: [1,    1,   0, 0],
+          }}
           transition={{
-            duration: 1.8,
-            times: [0, 0.85, 1],
+            duration: TRAVEL + FADE,
+            times: [0, TRAVEL / (TRAVEL + FADE), 0.97, 1],
+            delay: index * SLOT,
             repeat: Infinity,
+            repeatDelay: TOTAL - TRAVEL - FADE,
             ease: "easeInOut",
-            repeatDelay: 0.2,
           }}
         />
         {/* Dashed track */}
@@ -2239,7 +2247,7 @@ function PipelineArrow() {
         {/* Arrow head */}
         <path
           d="M 48 6 L 56 12 L 48 18"
-          stroke="rgba(109, 40, 217, 0.85)"
+          stroke="rgba(15, 14, 13, 0.60)"
           strokeWidth="2"
           fill="none"
           strokeLinecap="round"
@@ -2268,7 +2276,7 @@ function Pipeline() {
           style={{ borderBottom: "1px solid rgba(15, 14, 13, 0.12)", color: "rgba(15, 14, 13, 0.55)" }}
         >
           <span className="flex items-center gap-2 text-cyan">
-            <span className="block h-1.5 w-1.5 rounded-full bg-cyan shadow-[0_0_10px_rgba(109,40,217,0.9)]" />
+            <span className="block h-1.5 w-1.5 rounded-full bg-cyan" />
             <span className="font-medium">Δ&nbsp;&nbsp;//&nbsp;&nbsp;the pipeline</span>
           </span>
           <span className="hidden md:inline">section&nbsp;/&nbsp;02</span>
@@ -2313,7 +2321,7 @@ function Pipeline() {
               >
                 <span
                   className="grid h-6 w-6 place-items-center rounded-full text-[10px] leading-none text-cyan"
-                  style={{ border: "1px solid rgba(109, 40, 217, 0.55)", background: "rgba(109, 40, 217, 0.08)" }}
+                  style={{ border: "1px solid rgba(15, 14, 13, 0.25)", background: "rgba(15, 14, 13, 0.05)" }}
                 >
                   ●
                 </span>
@@ -2336,7 +2344,7 @@ function Pipeline() {
                   preserveAspectRatio="none"
                 >
                   <line x1="0" y1="6" x2="56" y2="6" stroke="rgba(15, 14, 13, 0.18)" strokeWidth="1" />
-                  <path d="M 52 1 L 58 6 L 52 11" stroke="rgba(109, 40, 217, 0.7)" strokeWidth="1.4" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M 52 1 L 58 6 L 52 11" stroke="rgba(15, 14, 13, 0.50)" strokeWidth="1.4" fill="none" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </span>,
             ];
@@ -2388,19 +2396,19 @@ function Pipeline() {
                 >
                   <span className="lowercase tracking-[0.18em]">// {s.sub}</span>
                   <span className="flex items-center gap-1.5 text-cyan/80">
-                    <span className="block h-1 w-1 animate-pulse rounded-full bg-cyan shadow-[0_0_6px_rgba(109,40,217,0.9)]" />
+                    <span className="block h-1 w-1 animate-pulse rounded-full bg-cyan" />
                     active
                   </span>
                 </div>
 
                 {/* big gradient numeral */}
                 <div className="relative mb-6">
-                  <span className="text-gradient block text-[88px] font-bold leading-none tracking-tight md:text-[104px]">
+                  <span className="block text-[88px] font-bold leading-none tracking-tight md:text-[104px]" style={{ color: "rgba(15,14,13,0.18)" }}>
                     {s.n}
                   </span>
                   <span
                     aria-hidden
-                    className="absolute -bottom-2 left-0 block h-px w-12 bg-cyan/60 shadow-[0_0_8px_rgba(109,40,217,0.6)]"
+                    className="absolute -bottom-2 left-0 block h-px w-12 bg-[rgba(15,14,13,0.22)]"
                   />
                 </div>
 
@@ -2431,12 +2439,10 @@ function Pipeline() {
                       style={{
                         background:
                           j === i
-                            ? "rgba(109, 40, 217, 0.95)"
+                            ? "#0f0e0d"
                             : j < i
                               ? "rgba(15, 14, 13, 0.35)"
                               : "rgba(15, 14, 13, 0.14)",
-                        boxShadow:
-                          j === i ? "0 0 6px rgba(109, 40, 217, 0.9)" : "none",
                       }}
                     />
                   ))}
@@ -2444,7 +2450,7 @@ function Pipeline() {
               </motion.article>
             );
             if (i === PIPELINE_STEPS.length - 1) return [cell];
-            return [cell, <PipelineArrow key={`arrow-${i}`} />];
+            return [cell, <PipelineArrow key={`arrow-${i}`} index={i} />];
           })}
         </div>
 
