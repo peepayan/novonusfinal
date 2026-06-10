@@ -410,6 +410,26 @@ function HeroLoadingBar() {
 
 function BrandLockup() {
   const { phase, skipIntroAnim } = useIntro();
+  const { scrollY } = useScroll();
+  const [hidden, setHidden] = useState(false);
+
+  useMotionValueEvent(scrollY, "change", (latest) => {
+    const previous = scrollY.getPrevious() || 0;
+    // Keep it visible if we are near the top of the page
+    if (latest <= 100) {
+      setHidden(false);
+      return;
+    }
+    // If scrolling down, hide the bar
+    if (latest > previous && latest > 150) {
+      setHidden(true);
+    } 
+    // If scrolling up, show the bar
+    else if (latest < previous) {
+      setHidden(false);
+    }
+  });
+
   const visible =
     phase === "logoPop" ||
     phase === "dock" ||
@@ -419,14 +439,16 @@ function BrandLockup() {
     phase === "dock" || phase === "done";
 
   return (
-    <>
-      {/* Full-width top bar — only fades in once docked, persists for
-          the rest of the site. When the intro is skipped (refresh
-          mid-scroll), it mounts in its already-settled state. */}
+    <motion.div
+      className="pointer-events-none fixed inset-0 z-[120]"
+      animate={{ y: hidden && docked ? "-120px" : "0px" }}
+      transition={{ duration: 0.35, ease: "easeInOut" }}
+    >
+      {/* Floating top bar — detached from edges with curved corners */}
       {docked && (
         <motion.div
           aria-hidden
-          className="pointer-events-none fixed inset-x-0 top-0 z-[119] h-[48px]"
+          className="pointer-events-none absolute left-4 right-4 top-4 z-[119] h-[56px] rounded-2xl md:left-8 md:right-8 lg:left-12 lg:right-12"
           initial={
             skipIntroAnim ? { opacity: 1, y: 0 } : { opacity: 0, y: -10 }
           }
@@ -447,11 +469,11 @@ function BrandLockup() {
           initial values (mounted state from before is discarded). */}
       <motion.div
         key={skipIntroAnim ? "lockup-skip" : "lockup-normal"}
-        className="pointer-events-none fixed left-1/2 z-[120] flex items-center"
+        className="pointer-events-none absolute left-1/2 z-[120] flex items-center"
         initial={
           skipIntroAnim
             ? {
-                top: "24px",
+                top: "44px",
                 x: "-50%",
                 y: "-50%",
                 scale: 1,
@@ -467,7 +489,7 @@ function BrandLockup() {
               }
         }
         animate={{
-          top: docked ? "24px" : "50%",
+          top: docked ? "44px" : "50%",
           x: "-50%",
           y: "-50%",
           height: centered ? 144 : 38,
@@ -510,28 +532,35 @@ function BrandLockup() {
           <LogoMark glass={centered} />
         </motion.div>
 
-        {/* Novonus wordmark — width-wipe from behind the logo, holds
-            until the dock phase fires. No standalone fade-out; the
-            dock transition itself collapses the wordmark (width +
-            opacity → 0) at the same time the logo flies up to the
-            top bar. Heavy-impact Inter 800. */}
+        {/* Novonus wordmark — appears large during the logoPop intro,
+            then stays visible at a smaller size when docked in the top bar. 
+            Two layers crossfade: the large intro text fades out while the
+            small docked text fades in, avoiding ugly font-size interpolation. */}
         <motion.div
-          style={{ overflow: "hidden", flexShrink: 0, zIndex: 1 }}
-          initial={{ width: 0, opacity: 0 }}
+          style={{ overflow: "hidden", flexShrink: 0, zIndex: 1, position: "relative" }}
+          initial={
+            skipIntroAnim
+              ? { width: 120, opacity: 1 }
+              : { width: 0, opacity: 0 }
+          }
           animate={{
-            width: centered ? 240 : 0,
-            opacity: centered ? 1 : 0,
+            width: centered ? 240 : (phase === "done") ? 120 : 0,
+            opacity: centered || (phase === "done") ? 1 : 0,
           }}
           transition={{
-            duration: centered ? 0.6 : 0.4,
+            duration: centered ? 0.6 : (phase === "done") ? 0.5 : 0.2,
             ease: centered ? EASE_MORPH : EASE_FADE,
-            delay: centered ? 0.55 : 0,
+            delay: centered ? 0.55 : (phase === "done") ? 0.1 : 0,
           }}
         >
-          <span
+          {/* Large intro wordmark — visible only during logoPop */}
+          <motion.span
             className="block select-none"
+            initial={{ opacity: skipIntroAnim ? 0 : 0 }}
+            animate={{ opacity: centered ? 1 : 0 }}
+            transition={{ duration: centered ? 0.35 : 0.15, ease: EASE_FADE }}
             style={{
-              fontFamily: "var(--font-inter), ui-sans-serif, system-ui",
+              fontFamily: "var(--font-inter-tight), Inter, ui-sans-serif, system-ui",
               fontWeight: 800,
               fontSize: "48px",
               letterSpacing: "-0.04em",
@@ -542,10 +571,37 @@ function BrandLockup() {
             }}
           >
             Novonus
-          </span>
+          </motion.span>
+          {/* Small docked wordmark — visible once docked in the top bar */}
+          <motion.span
+            className="block select-none"
+            initial={{ opacity: skipIntroAnim ? 1 : 0 }}
+            animate={{ opacity: phase === "done" ? 1 : 0 }}
+            transition={{
+              duration: skipIntroAnim ? 0 : 0.4,
+              ease: EASE_FADE,
+              delay: skipIntroAnim ? 0 : (phase === "done" ? 0.1 : 0),
+            }}
+            style={{
+              position: "absolute",
+              top: "50%",
+              left: 0,
+              transform: "translateY(-50%)",
+              fontFamily: "var(--font-inter-tight), Inter, ui-sans-serif, system-ui",
+              fontWeight: 600,
+              fontSize: "16px",
+              letterSpacing: "-0.02em",
+              lineHeight: 1,
+              color: "rgba(245, 250, 255, 0.92)",
+              whiteSpace: "nowrap",
+              paddingLeft: 10,
+            }}
+          >
+            Novonus
+          </motion.span>
         </motion.div>
       </motion.div>
-    </>
+    </motion.div>
   );
 }
 
@@ -1817,6 +1873,19 @@ function TopographicalDots({
          in place. */
       canvas.style.transform = `perspective(1200px) translateX(${eyeTranslateX.toFixed(1)}px) scale(${eyeScale.toFixed(3)}) rotateX(${effTiltX.toFixed(2)}deg) rotateY(${effTiltY.toFixed(2)}deg)`;
 
+      const textAlpha = 1 - invert;
+      const drawBox = textAlpha > 0;
+      // Make the box large enough to encase the eyebrow, title, and subtitle
+      const boxW = Math.min(width * 0.92, 1060);
+      const boxH = Math.min(height * 0.85, 580);
+      // The text is centered in the viewport, not at the brain's offset center
+      const canvasCenterX = width * 0.5;
+      const canvasCenterY = height * 0.5;
+      const boxMinX = canvasCenterX - boxW / 2;
+      const boxMaxX = canvasCenterX + boxW / 2;
+      const boxMinY = canvasCenterY - boxH / 2;
+      const boxMaxY = canvasCenterY + boxH / 2;
+
       for (let i = 0; i < cells.length; i++) {
         const cell = cells[i];
         /* Four-stage morph: grid → brain → clock → earth → cliffs.
@@ -1831,6 +1900,14 @@ function TopographicalDots({
         const s3Y = s2Y + (cell.fy - s2Y) * earthMorph;
         const baseX = s3X + (cell.cx - s3X) * cliffMorph;
         const baseY = s3Y + (cell.cy - s3Y) * cliffMorph;
+
+        if (drawBox) {
+          const padW = boxW / 2 + 16;
+          const padH = boxH / 2 + 16;
+          if (Math.abs(baseX - canvasCenterX) < padW && Math.abs(baseY - canvasCenterY) < padH) {
+            continue;
+          }
+        }
 
         let elev = 0;
         if (peakActive) {
@@ -1883,6 +1960,62 @@ function TopographicalDots({
         ctx.beginPath();
         ctx.arc(baseX, baseY - lift, size, 0, Math.PI * 2);
         ctx.fill();
+      }
+
+      // Draw the glowing text bounding box outline using small line segments so the
+      // color blending matches the hover logic, but intentionally omits the waves
+      // so the line stays perfectly still.
+      if (drawBox) {
+        ctx.lineWidth = 1;
+        const drawSeg = (x: number, y: number) => {
+          let elev = 0;
+          if (peakActive) {
+            const dx = x - px;
+            const dy = y - py;
+            elev += peakAmp * Math.exp(-(dx * dx + dy * dy) / TWO_SIGMA_SQ);
+          }
+          // Exclude waves calculation so the border does not move with the wave!
+          elev *= cursorAttenuation;
+          
+          const elevClamped = Math.min(elev, 1.2);
+          const m = width > 0 ? x / width : 0.5;
+          const gr = PURPLE.r * (1 - m) + GREEN.r * m;
+          const gg = PURPLE.g * (1 - m) + GREEN.g * m;
+          const gb = PURPLE.b * (1 - m) + GREEN.b * m;
+          const blend = Math.min(1, elevClamped * 1.4);
+          const cr = baseR * (1 - blend) + gr * blend;
+          const cg = baseG * (1 - blend) + gg * blend;
+          const cb = baseB * (1 - blend) + gb * blend;
+          const alpha = (baseAlpha + Math.min(elevClamped, 1) * 0.55 * cursorAttenuation) * textAlpha;
+          return `rgba(${cr | 0}, ${cg | 0}, ${cb | 0}, ${alpha})`;
+        };
+
+        const STEP = 10;
+        const strokeLine = (x1: number, y1: number, x2: number, y2: number) => {
+          const dx = x2 - x1;
+          const dy = y2 - y1;
+          const len = Math.sqrt(dx * dx + dy * dy);
+          const steps = Math.ceil(len / STEP);
+          for (let i = 0; i < steps; i++) {
+            const t1 = i / steps;
+            const t2 = (i + 1) / steps;
+            const sx = x1 + dx * t1;
+            const sy = y1 + dy * t1;
+            const ex = x1 + dx * t2;
+            const ey = y1 + dy * t2;
+            
+            ctx.strokeStyle = drawSeg((sx + ex) / 2, (sy + ey) / 2);
+            ctx.beginPath();
+            ctx.moveTo(sx, sy);
+            ctx.lineTo(ex, ey);
+            ctx.stroke();
+          }
+        };
+        
+        strokeLine(boxMinX, boxMinY, boxMaxX, boxMinY);
+        strokeLine(boxMaxX, boxMinY, boxMaxX, boxMaxY);
+        strokeLine(boxMaxX, boxMaxY, boxMinX, boxMaxY);
+        strokeLine(boxMinX, boxMaxY, boxMinX, boxMinY);
       }
 
       raf = requestAnimationFrame(render);
@@ -2118,185 +2251,65 @@ function Manifesto() {
 
 
 /* ============================================================================
-   SHARED EDITORIAL PRIMITIVES — animated hairline rules, masked line
-   reveals, and the EMG signal-trace motif used across the cream sections.
-   All ink-on-paper; motion is draw-in only (transform/opacity, GPU-safe).
-   ========================================================================== */
-
-/* Hairline rule that draws itself from the left on scroll-enter. */
-function RuleX({
-  opacity = 0.1,
-  delay = 0,
-}: {
-  opacity?: number;
-  delay?: number;
-}) {
-  return (
-    <motion.div
-      aria-hidden
-      initial={{ scaleX: 0 }}
-      whileInView={{ scaleX: 1 }}
-      viewport={{ once: true, margin: "-40px" }}
-      transition={{ duration: 1.1, delay, ease: [0.22, 1, 0.36, 1] }}
-      style={{
-        height: "1px",
-        width: "100%",
-        background: `rgba(15,14,13,${opacity})`,
-        transformOrigin: "left",
-      }}
-    />
-  );
-}
-
-/* Standard cream-section header: drawn rule, left label, right index. */
-function SectionRail({ label, index }: { label: string; index: string }) {
-  return (
-    <div style={{ marginBottom: "4.5rem" }}>
-      <RuleX />
-      <div
-        style={{
-          paddingTop: "2rem",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
-      >
-        <motion.span
-          className="font-mono text-[10px] uppercase tracking-[0.28em]"
-          initial={{ opacity: 0, y: 8 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-40px" }}
-          transition={{ duration: 0.6, delay: 0.25 }}
-          style={{ color: "rgba(15,14,13,0.38)" }}
-        >
-          {label}
-        </motion.span>
-        <motion.span
-          className="font-mono text-[10px] uppercase tracking-[0.28em]"
-          initial={{ opacity: 0, y: 8 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-40px" }}
-          transition={{ duration: 0.6, delay: 0.35 }}
-          style={{ color: "rgba(15,14,13,0.20)" }}
-        >
-          {index}
-        </motion.span>
-      </div>
-    </div>
-  );
-}
-
-/* One masked headline line: clipped wrapper, text rises from below. */
-function RevealLine({
-  children,
-  delay = 0,
-}: {
-  children: React.ReactNode;
-  delay?: number;
-}) {
-  return (
-    <span style={{ display: "block", overflow: "hidden" }}>
-      <motion.span
-        initial={{ y: "110%" }}
-        whileInView={{ y: "0%" }}
-        viewport={{ once: true, margin: "-60px" }}
-        transition={{ duration: 0.85, delay, ease: [0.22, 1, 0.36, 1] }}
-        style={{ display: "block" }}
-      >
-        {children}
-      </motion.span>
-    </span>
-  );
-}
-
-/* EMG signal trace — quiet baseline, a contact burst, quiet again.
-   Draws itself across the section on scroll-enter. The motif of the
-   whole site: the body knew before contact ever happened. */
-const EMG_PATH =
-  "M0 30 H96 L102 26 L108 33 L114 28 H168 L174 22 L180 38 L186 12 " +
-  "L192 48 L198 6 L204 54 L210 14 L216 44 L222 20 L228 38 L234 26 " +
-  "L240 33 L248 29 H360 L366 25 L372 34 L378 30 H440 L446 27 L452 32 H600";
-
-function SignalTrace({ caption }: { caption?: string }) {
-  return (
-    <div aria-hidden>
-      <svg
-        viewBox="0 0 600 60"
-        preserveAspectRatio="none"
-        style={{ display: "block", width: "100%", height: "60px" }}
-      >
-        {/* static ghost of the full trace */}
-        <path
-          d={EMG_PATH}
-          fill="none"
-          stroke="rgba(15,14,13,0.07)"
-          strokeWidth="1"
-        />
-        {/* drawn-in live trace */}
-        <motion.path
-          d={EMG_PATH}
-          fill="none"
-          stroke="rgba(15,14,13,0.55)"
-          strokeWidth="1.25"
-          initial={{ pathLength: 0 }}
-          whileInView={{ pathLength: 1 }}
-          viewport={{ once: true, margin: "-60px" }}
-          transition={{ duration: 2.2, ease: [0.4, 0, 0.2, 1] }}
-        />
-      </svg>
-      {caption ? (
-        <motion.p
-          className="font-mono text-[9px] uppercase tracking-[0.22em]"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true, margin: "-60px" }}
-          transition={{ duration: 0.7, delay: 1.6 }}
-          style={{ color: "rgba(15,14,13,0.30)", marginTop: "0.85rem" }}
-        >
-          {caption}
-        </motion.p>
-      ) : null}
-    </div>
-  );
-}
-
-/* ============================================================================
    FLUID SECTION — declarative statement section. Asymmetric two-column:
-   massive left-aligned headline rising line-by-line through clip masks,
-   body text as a quiet column on the right, closed by a scroll-drawn
-   EMG trace running the full measure.
+   massive left-aligned headline, body text as a quiet column on the right.
    ========================================================================== */
 function FluidSection() {
   return (
     <section className="relative overflow-hidden" style={{ color: "#0f0e0d" }}>
       <PaperBackground />
       <div className="relative mx-auto max-w-[1400px] px-6 py-24 md:px-10 md:py-36">
-        <SectionRail label="the layer" index="§ 02" />
+        {/* Section header bar */}
+        <div
+          style={{
+            borderTop: "1px solid rgba(15,14,13,0.10)",
+            paddingTop: "2rem",
+            marginBottom: "4.5rem",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <span
+            className="font-mono text-[10px] uppercase tracking-[0.28em]"
+            style={{ color: "rgba(15,14,13,0.38)" }}
+          >
+            the layer
+          </span>
+          <span
+            className="font-mono text-[10px] uppercase tracking-[0.28em]"
+            style={{ color: "rgba(15,14,13,0.20)" }}
+          >
+            §&nbsp;02
+          </span>
+        </div>
 
         {/* Two-column layout: headline + body */}
         <div className="grid grid-cols-1 items-start gap-14 md:grid-cols-[1fr_0.6fr] md:gap-20">
-          <h2
+          <motion.h2
+            initial={{ opacity: 0, y: 36 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
             style={{
               fontWeight: 600,
               fontSize: "clamp(3.2rem, 7vw, 7rem)",
-              lineHeight: 0.97,
+              lineHeight: 0.91,
               letterSpacing: "-0.035em",
               color: "#0f0e0d",
             }}
           >
-            <RevealLine>We built</RevealLine>
-            <RevealLine delay={0.09}>
-              <span style={{ color: "rgba(15,14,13,0.20)" }}>the layer</span>
-            </RevealLine>
-            <RevealLine delay={0.18}>everyone</RevealLine>
-            <RevealLine delay={0.27}>missed.</RevealLine>
-          </h2>
+            We built<br />
+            <span style={{ color: "rgba(15,14,13,0.20)" }}>the layer</span><br />
+            everyone<br />
+            missed.
+          </motion.h2>
 
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.85, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.85, delay: 0.18, ease: [0.22, 1, 0.36, 1] }}
             style={{ paddingTop: "clamp(0rem, 1.5vw, 2rem)" }}
           >
             <p
@@ -2314,11 +2327,6 @@ function FluidSection() {
               whatever robot brand you already trust.
             </p>
           </motion.div>
-        </div>
-
-        {/* Closing instrument trace */}
-        <div style={{ marginTop: "clamp(4rem, 8vw, 7rem)" }}>
-          <SignalTrace caption="fig. 02 — operator emg, single contact event, 4-channel sum" />
         </div>
       </div>
     </section>
@@ -2340,61 +2348,32 @@ const PIPELINE_STEPS = [
     title: "CAPTURE",
     sub: "Signal acquisition",
     body: "Operator wears rig. Sensors record everything.",
-    glyph: "M2 12 H7 L9 7 L12 17 L15 4 L17 20 L19 12 H22",
   },
   {
     n: "02",
     title: "PROCESS",
     sub: "Data refinement",
     body: "Raw signals become clean, labeled training data.",
-    glyph: "M3 7 H21 M3 12 H15 M3 17 H18",
   },
   {
     n: "03",
     title: "AUGMENT",
     sub: "Synthetic expansion",
     body: "Real demos become 100× synthetic variations.",
-    glyph: "M4 12 H10 M10 12 L15 5 M10 12 L15 12 M10 12 L15 19 M17 5 H21 M17 12 H21 M17 19 H21",
   },
   {
     n: "04",
     title: "TRAIN",
     sub: "Force-aware learning",
     body: "Multimodal AI learns force-aware control.",
-    glyph: "M3 19 L9 9 L14 14 L21 4 M17 4 H21 V8",
   },
   {
     n: "05",
     title: "DEPLOY",
     sub: "Edge inference",
     body: "Edge inference with continuous retraining.",
-    glyph: "M3 12 H17 M12 6 L18 12 L12 18",
   },
 ] as const;
-
-/* Minimal 24×24 line glyph that draws itself in on scroll-enter. */
-function StepGlyph({ d, delay = 0 }: { d: string; delay?: number }) {
-  return (
-    <svg
-      aria-hidden
-      viewBox="0 0 24 24"
-      style={{ width: "22px", height: "22px", display: "block" }}
-    >
-      <motion.path
-        d={d}
-        fill="none"
-        stroke="#0f0e0d"
-        strokeWidth="1.4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        initial={{ pathLength: 0, opacity: 0 }}
-        whileInView={{ pathLength: 1, opacity: 1 }}
-        viewport={{ once: true, margin: "-40px" }}
-        transition={{ duration: 0.9, delay, ease: [0.4, 0, 0.2, 1] }}
-      />
-    </svg>
-  );
-}
 
 function PipelineArrow({ index }: { index: number }) {
   // One dot travels across all 4 arrows in sequence, 1→2→3→4→5, then repeats.
@@ -2458,132 +2437,149 @@ function Pipeline() {
       <PaperBackground />
       <div className="relative mx-auto max-w-[1400px] px-6 py-24 md:px-10 md:py-36">
 
-        <SectionRail label="the pipeline" index="01 — 05" />
+        {/* Section header bar */}
+        <div
+          style={{
+            borderTop: "1px solid rgba(15,14,13,0.10)",
+            paddingTop: "2rem",
+            marginBottom: "4.5rem",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <span
+            className="font-mono text-[10px] uppercase tracking-[0.28em]"
+            style={{ color: "rgba(15,14,13,0.38)" }}
+          >
+            the pipeline
+          </span>
+          <span
+            className="font-mono text-[10px] uppercase tracking-[0.28em]"
+            style={{ color: "rgba(15,14,13,0.20)" }}
+          >
+            01&nbsp;—&nbsp;05
+          </span>
+        </div>
 
         {/* Headline */}
-        <h2
+        <motion.h2
+          initial={{ opacity: 0, y: 28 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
           style={{
             fontWeight: 600,
             fontSize: "clamp(2.2rem, 4.8vw, 4.5rem)",
-            lineHeight: 1.05,
+            lineHeight: 1.0,
             letterSpacing: "-0.028em",
             color: "#0f0e0d",
             maxWidth: "20ch",
             marginBottom: "5rem",
           }}
         >
-          <RevealLine>Five steps from human</RevealLine>
-          <RevealLine delay={0.09}>demonstration to</RevealLine>
-          <RevealLine delay={0.18}>deployed robot.</RevealLine>
-        </h2>
+          Five steps from human demonstration to deployed robot.
+        </motion.h2>
 
         {/* Steps — open numbered ledger */}
         <div>
           {PIPELINE_STEPS.map((s, i) => (
-            <div key={s.n}>
-              <RuleX opacity={0.08} delay={i * 0.05} />
-              <motion.div
-                initial={{ opacity: 0, y: 18 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                whileHover={{ x: 8 }}
-                viewport={{ once: true, margin: "-40px" }}
-                transition={{
-                  duration: 0.65,
-                  delay: i * 0.07,
-                  ease: [0.22, 1, 0.36, 1],
-                }}
+            <motion.div
+              key={s.n}
+              initial={{ opacity: 0, y: 18 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-40px" }}
+              transition={{
+                duration: 0.65,
+                delay: i * 0.07,
+                ease: [0.22, 1, 0.36, 1],
+              }}
+              style={{
+                display: "grid",
+                gridTemplateColumns: "clamp(3rem, 5.5vw, 5.5rem) 1fr",
+                gap: "clamp(1rem, 2.5vw, 3rem)",
+                padding: "2.5rem 0",
+                borderTop: "1px solid rgba(15,14,13,0.08)",
+                alignItems: "start",
+              }}
+            >
+              {/* Ghost step number */}
+              <span
+                aria-hidden
                 style={{
-                  display: "grid",
-                  gridTemplateColumns:
-                    "clamp(3rem, 5.5vw, 5.5rem) 1fr clamp(2rem, 4vw, 4rem)",
-                  gap: "clamp(1rem, 2.5vw, 3rem)",
-                  padding: "2.5rem 0",
-                  alignItems: "start",
+                  fontWeight: 700,
+                  fontSize: "clamp(2.2rem, 4vw, 4rem)",
+                  lineHeight: 1,
+                  color: "rgba(15,14,13,0.09)",
+                  letterSpacing: "-0.04em",
+                  fontVariantNumeric: "tabular-nums",
+                  paddingTop: "0.15rem",
+                  userSelect: "none",
                 }}
               >
-                {/* Ghost step number */}
-                <span
-                  aria-hidden
+                {s.n}
+              </span>
+
+              {/* Content */}
+              <div>
+                <div
                   style={{
-                    fontWeight: 700,
-                    fontSize: "clamp(2.2rem, 4vw, 4rem)",
-                    lineHeight: 1,
-                    color: "rgba(15,14,13,0.09)",
-                    letterSpacing: "-0.04em",
-                    fontVariantNumeric: "tabular-nums",
-                    paddingTop: "0.15rem",
-                    userSelect: "none",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.75rem",
+                    marginBottom: "0.6rem",
                   }}
                 >
-                  {s.n}
-                </span>
-
-                {/* Content */}
-                <div>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "0.75rem",
-                      marginBottom: "0.6rem",
-                    }}
+                  <span
+                    className="font-mono text-[9px] uppercase tracking-[0.26em]"
+                    style={{ color: "rgba(15,14,13,0.33)" }}
                   >
-                    <span
-                      className="font-mono text-[9px] uppercase tracking-[0.26em]"
-                      style={{ color: "rgba(15,14,13,0.33)" }}
-                    >
-                      {s.sub}
-                    </span>
-                    <span
-                      aria-hidden
-                      style={{
-                        display: "inline-block",
-                        width: "3px",
-                        height: "3px",
-                        borderRadius: "50%",
-                        background: "rgba(15,14,13,0.22)",
-                      }}
-                    />
-                    <span
-                      className="font-mono text-[9px] uppercase tracking-[0.26em]"
-                      style={{ color: "rgba(15,14,13,0.20)" }}
-                    >
-                      active
-                    </span>
-                  </div>
-                  <h3
+                    {s.sub}
+                  </span>
+                  <span
+                    aria-hidden
                     style={{
-                      fontWeight: 600,
-                      fontSize: "clamp(0.875rem, 1.2vw, 1.1rem)",
-                      letterSpacing: "0.08em",
-                      textTransform: "uppercase",
-                      color: "#0f0e0d",
-                      marginBottom: "0.5rem",
+                      display: "inline-block",
+                      width: "3px",
+                      height: "3px",
+                      borderRadius: "50%",
+                      background: "rgba(15,14,13,0.22)",
                     }}
+                  />
+                  <span
+                    className="font-mono text-[9px] uppercase tracking-[0.26em]"
+                    style={{ color: "rgba(15,14,13,0.20)" }}
                   >
-                    {s.title}
-                  </h3>
-                  <p
-                    style={{
-                      fontSize: "0.875rem",
-                      lineHeight: 1.7,
-                      color: "rgba(15,14,13,0.55)",
-                    }}
-                  >
-                    {s.body}
-                  </p>
+                    active
+                  </span>
                 </div>
-
-                {/* Drawn line glyph */}
-                <div style={{ paddingTop: "0.4rem", justifySelf: "end" }}>
-                  <StepGlyph d={s.glyph} delay={0.25 + i * 0.07} />
-                </div>
-              </motion.div>
-            </div>
+                <h3
+                  style={{
+                    fontWeight: 600,
+                    fontSize: "clamp(0.875rem, 1.2vw, 1.1rem)",
+                    letterSpacing: "0.08em",
+                    textTransform: "uppercase",
+                    color: "#0f0e0d",
+                    marginBottom: "0.5rem",
+                  }}
+                >
+                  {s.title}
+                </h3>
+                <p
+                  style={{
+                    fontSize: "0.875rem",
+                    lineHeight: 1.7,
+                    color: "rgba(15,14,13,0.55)",
+                  }}
+                >
+                  {s.body}
+                </p>
+              </div>
+            </motion.div>
           ))}
 
           {/* Close rule after last step */}
-          <RuleX opacity={0.08} delay={0.25} />
+          <div style={{ borderTop: "1px solid rgba(15,14,13,0.08)" }} />
         </div>
 
         {/* Payoff paragraph */}
@@ -2853,50 +2849,9 @@ function Hero() {
     target: pinRef,
     offset: ["start start", "end end"],
   });
-  /* Separate progress driving the post-cliff exit transition: the cliff
-     scene becomes a rounded card, scales down to 50%, then translates
-     off the left edge — revealing the dictionary entry sitting behind
-     in the same viewport. Mapped over the full 950svh section so the
-     transition happens AFTER the existing scrollYProgress has hit 1. */
-  const { scrollYProgress: exitProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start start", "end end"],
-  });
   /* `deepDive` gates the long cliff-scene timeline (Current Teleop →
-     Skilled labor → Sim-to-real gap, with all the morphs). Defaults
-     to false: the section is short and after the SLIDE2 sentence,
-     the three headlines fade in together over the brain dots, then
-     the frame exits to the dictionary. Flipping true (via the Learn
-     More button) expands the section, smooth-scrolls into Current
-     Teleop, and lets the existing 950svh sequence play. Declared
-     here, before the morph thresholds, because their gating closures
-     close over the current `deepDive` value at each render. */
+     Skilled labor → Sim-to-real gap, with all the morphs). */
   const [deepDive, setDeepDive] = useState(false);
-  /* Frame-exit transforms (shrink + rounded corners + slide-off) ONLY
-     play in the short path. The "Learn more" deep-dive ends at the
-     sim-to-real gap — the cliff frame stays at scale 1, no rounded
-     corners, no slide-off, so the dictionary entry behind never
-     reveals. The remaining trailing scroll of the section just holds
-     the cliff scene visible, then Manifesto follows. */
-  const exitBorderRadiusRaw = useTransform(exitProgress, [0.80, 0.86], [0, 36]);
-  const exitScaleRaw = useTransform(exitProgress, [0.80, 0.92], [1, 0.5]);
-  const exitYRaw = useTransform(exitProgress, [0.92, 1.0], ["0vh", "-120vh"]);
-  const exitShadowRaw = useTransform(
-    exitProgress,
-    [0.80, 0.86],
-    [
-      "0 0 0 0 rgba(0,0,0,0)",
-      "0 40px 80px -20px rgba(15, 14, 13, 0.45), 0 20px 40px -10px rgba(15, 14, 13, 0.3)",
-    ],
-  );
-  const exitBorderRadius = useTransform(exitBorderRadiusRaw, (v) =>
-    deepDive ? 0 : v,
-  );
-  const exitScale = useTransform(exitScaleRaw, (v) => (deepDive ? 1 : v));
-  const exitY = useTransform(exitYRaw, (v) => (deepDive ? "0vh" : v));
-  const exitShadow = useTransform(exitShadowRaw, (v) =>
-    deepDive ? "0 0 0 0 rgba(0,0,0,0)" : v,
-  );
 
   /* Abrupt cut to Current Teleop when Learn More is clicked. NOT a
      smooth scroll — the user should feel like the page snaps to a
@@ -3161,24 +3116,10 @@ function Hero() {
         ref={sectionRef}
         className="relative"
         style={{
-          height: deepDive ? "950svh" : "440svh",
-          /* Cream backing matches WhatWeBuild's PaperBackground and
-             Pipeline's, so when the sticky element scrolls out in
-             the section's last 100svh, no body-black gap shows
-             between the reveal and Pipeline. Sticky div sits on
-             top of this so the cliff scene's dark backdrop is
-             unaffected during the pinned phase. */
-          backgroundColor: "#f5efe5",
+          height: deepDive ? "880svh" : "370svh",
         }}
       >
-        {/* Invisible scroll-measurement marker. In deep-dive mode it
-            spans 880svh so all existing animation thresholds fire
-            over their original absolute scroll range. In short mode
-            it shrinks to 370svh so the same threshold ratios (hero
-            fade, brain morph, SLIDE2 reveal, then HeadlinesTogether
-            in the 0.45–0.95 window) play out over a much shorter
-            absolute scroll, and the trailing 70svh of the section
-            drives the frame exit. */}
+        {/* Invisible scroll-measurement marker. */}
         <div
           ref={pinRef}
           aria-hidden
@@ -3186,38 +3127,8 @@ function Hero() {
           style={{ height: deepDive ? "880svh" : "370svh" }}
         />
         <div className="sticky top-0 h-[100svh] overflow-hidden">
-          {/* WhatWeBuild reveal layer — sits behind the cliff frame so
-              the moment the frame shrinks and slides off, the "what
-              we build" pitch is already there in the same viewport.
-              No scroll required to find it; it lives directly on the
-              underside of the screen. z:0 keeps it under the cliff. */}
-          <div
-            className="absolute inset-0 overflow-auto"
-            style={{
-              zIndex: 0,
-              /* Lower the WhatWeBuild content so its eyebrow + title
-                 land further down the viewport, leaving the upper
-                 third of the reveal as a quiet cream band. */
-              paddingTop: "clamp(1rem, 4vh, 3rem)",
-            }}
-          >
-            <WhatWeBuild />
-          </div>
-          {/* Cliff scene frame — all original content sits inside this
-              wrapper so the exit transforms (border-radius, scale, x)
-              apply to the entire scene as a single card. */}
-          <motion.div
-            className="absolute inset-0 overflow-hidden"
-            style={{
-              zIndex: 1,
-              borderRadius: exitBorderRadius,
-              scale: exitScale,
-              y: exitY,
-              boxShadow: exitShadow,
-              transformOrigin: "50% 50%",
-              willChange: "transform, border-radius",
-            }}
-          >
+          {/* Hero content — fills the viewport while pinned */}
+          <div className="absolute inset-0 overflow-hidden">
           {/* Scroll-driven cream → dark backdrop. Replaces the static
               PaperBackground for the hero so it can invert with the
               dot color crossfade. */}
@@ -4728,7 +4639,7 @@ function Hero() {
           </motion.div>
           )}
 
-          </motion.div>
+          </div>
         </div>
       </section>
 
@@ -4799,27 +4710,50 @@ function WhatWeBuild() {
       <PaperBackground />
       <div className="relative mx-auto max-w-[1400px] px-6 py-24 md:px-10 md:py-36">
 
-        <SectionRail label="what we build" index="§ 01" />
+        {/* Section header bar */}
+        <div
+          style={{
+            borderTop: "1px solid rgba(15,14,13,0.10)",
+            paddingTop: "2rem",
+            marginBottom: "4.5rem",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <span
+            className="font-mono text-[10px] uppercase tracking-[0.28em]"
+            style={{ color: "rgba(15,14,13,0.38)" }}
+          >
+            what we build
+          </span>
+          <span
+            className="font-mono text-[10px] uppercase tracking-[0.28em]"
+            style={{ color: "rgba(15,14,13,0.20)" }}
+          >
+            §&nbsp;01
+          </span>
+        </div>
 
-        {/* Headline — large with tonal hierarchy, masked line reveal */}
-        <h2
+        {/* Headline — large with tonal hierarchy */}
+        <motion.h2
+          initial={{ opacity: 0, y: 36 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
           style={{
             fontWeight: 600,
             fontSize: "clamp(2.8rem, 5.8vw, 5.8rem)",
-            lineHeight: 1.0,
+            lineHeight: 0.93,
             letterSpacing: "-0.032em",
             color: "#0f0e0d",
             marginBottom: "2.5rem",
           }}
         >
-          <RevealLine>Robot cells your</RevealLine>
-          <RevealLine delay={0.09}>
-            <span style={{ color: "rgba(15,14,13,0.22)" }}>
-              factory workers
-            </span>
-          </RevealLine>
-          <RevealLine delay={0.18}>can teach.</RevealLine>
-        </h2>
+          Robot cells your{" "}
+          <span style={{ color: "rgba(15,14,13,0.22)" }}>factory workers</span>{" "}
+          can teach.
+        </motion.h2>
 
         {/* Body text */}
         <motion.p
@@ -4886,7 +4820,6 @@ function WhatWeBuild() {
               key={r.label}
               initial={{ opacity: 0, y: 14 }}
               whileInView={{ opacity: 1, y: 0 }}
-              whileHover={{ backgroundColor: "rgba(15,14,13,0.025)" }}
               viewport={{ once: true, margin: "-30px" }}
               transition={{
                 duration: 0.6,
@@ -4896,8 +4829,7 @@ function WhatWeBuild() {
               className="grid grid-cols-1 md:grid-cols-[1.5fr_1fr_1.1fr_0.65fr]"
               style={{
                 gap: "0.5rem 2rem",
-                padding: "2rem 0.5rem",
-                margin: "0 -0.5rem",
+                padding: "2rem 0",
                 borderBottom: "1px solid rgba(15,14,13,0.08)",
                 alignItems: "center",
               }}
@@ -4941,28 +4873,13 @@ function WhatWeBuild() {
                 </p>
               </div>
 
-              {/* Novonus — accent column, rule draws downward */}
-              <div style={{ position: "relative", paddingLeft: "1.25rem" }}>
-                <motion.span
-                  aria-hidden
-                  initial={{ scaleY: 0 }}
-                  whileInView={{ scaleY: 1 }}
-                  viewport={{ once: true, margin: "-30px" }}
-                  transition={{
-                    duration: 0.55,
-                    delay: 0.2 + i * 0.07,
-                    ease: [0.22, 1, 0.36, 1],
-                  }}
-                  style={{
-                    position: "absolute",
-                    left: 0,
-                    top: 0,
-                    bottom: 0,
-                    width: "2px",
-                    background: "#0f0e0d",
-                    transformOrigin: "top",
-                  }}
-                />
+              {/* Novonus — accent column */}
+              <div
+                style={{
+                  borderLeft: "2px solid #0f0e0d",
+                  paddingLeft: "1.25rem",
+                }}
+              >
                 <span
                   className="font-mono text-[9px] uppercase tracking-[0.22em] md:hidden"
                   style={{ color: "#0f0e0d", display: "block", marginBottom: "0.2rem" }}
@@ -5121,27 +5038,50 @@ function Evidence() {
       <PaperBackground />
       <div className="relative mx-auto max-w-[1400px] px-6 py-24 md:px-10 md:py-36">
 
-        <SectionRail label="the evidence" index="§ 03" />
+        {/* Section header bar */}
+        <div
+          style={{
+            borderTop: "1px solid rgba(15,14,13,0.10)",
+            paddingTop: "2rem",
+            marginBottom: "4.5rem",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <span
+            className="font-mono text-[10px] uppercase tracking-[0.28em]"
+            style={{ color: "rgba(15,14,13,0.38)" }}
+          >
+            the evidence
+          </span>
+          <span
+            className="font-mono text-[10px] uppercase tracking-[0.28em]"
+            style={{ color: "rgba(15,14,13,0.20)" }}
+          >
+            §&nbsp;03
+          </span>
+        </div>
 
         {/* Headline + intro */}
         <div className="mb-16">
-          <h2
+          <motion.h2
+            initial={{ opacity: 0, y: 28 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-60px" }}
+            transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
             style={{
               fontWeight: 600,
               fontSize: "clamp(2.2rem, 4.8vw, 4.5rem)",
-              lineHeight: 1.05,
+              lineHeight: 1.0,
               letterSpacing: "-0.028em",
               color: "#0f0e0d",
               maxWidth: "22ch",
               marginBottom: "1.5rem",
             }}
           >
-            <RevealLine>Peer-reviewed.</RevealLine>
-            <RevealLine delay={0.09}>
-              Quantified.{" "}
-              <span style={{ color: "rgba(15,14,13,0.22)" }}>Settled.</span>
-            </RevealLine>
-          </h2>
+            Peer-reviewed. Quantified. Settled.
+          </motion.h2>
           <motion.p
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
@@ -5170,7 +5110,6 @@ function Evidence() {
               key={s.label}
               initial={{ opacity: 0, y: 14 }}
               whileInView={{ opacity: 1, y: 0 }}
-              whileHover={{ backgroundColor: "rgba(15,14,13,0.025)" }}
               viewport={{ once: true, margin: "-30px" }}
               transition={{
                 duration: 0.6,
@@ -5191,32 +5130,11 @@ function Evidence() {
                   letterSpacing: "-0.04em",
                   lineHeight: 1,
                   color: "#0f0e0d",
-                  marginBottom: "0.85rem",
+                  marginBottom: "0.75rem",
                 }}
               >
                 <StatCounter target={s.num} suffix={s.suffix} />
               </div>
-
-              {/* Drawn underline — instrument tick */}
-              <motion.span
-                aria-hidden
-                initial={{ scaleX: 0 }}
-                whileInView={{ scaleX: 1 }}
-                viewport={{ once: true, margin: "-30px" }}
-                transition={{
-                  duration: 0.7,
-                  delay: 0.3 + (i % 3) * 0.08,
-                  ease: [0.22, 1, 0.36, 1],
-                }}
-                style={{
-                  display: "block",
-                  width: "2.25rem",
-                  height: "2px",
-                  background: "#0f0e0d",
-                  transformOrigin: "left",
-                  marginBottom: "1.1rem",
-                }}
-              />
 
               {/* Label */}
               <p
@@ -5985,6 +5903,7 @@ export default function Home() {
     <IntroProvider sidebar={<Sidebar />}>
       <main>
         <Hero />
+        <WhatWeBuild />
         <Pipeline />
         <FluidSection />
         <Evidence />
