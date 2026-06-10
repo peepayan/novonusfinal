@@ -5903,9 +5903,9 @@ export default function Home() {
     <IntroProvider sidebar={<Sidebar />}>
       <main>
         <Hero />
+        <FluidSection />
         <WhatWeBuild />
         <Pipeline />
-        <FluidSection />
         <Evidence />
         <section className="relative" style={{ minHeight: "100svh" }}>
           <EtymologyEntry />
