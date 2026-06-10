@@ -3,6 +3,7 @@
 import {
   Fragment,
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useLayoutEffect,
@@ -14,6 +15,7 @@ import Image from "next/image";
 import {
   AnimatePresence,
   animate,
+  cubicBezier,
   motion,
   useMotionValue,
   useMotionValueEvent,
@@ -1437,7 +1439,7 @@ function TopographicalDots({
       const rect = host.getBoundingClientRect();
       width = rect.width;
       height = rect.height;
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const dpr = window.devicePixelRatio || 1;
       canvas.width = Math.max(1, Math.floor(width * dpr));
       canvas.height = Math.max(1, Math.floor(height * dpr));
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -2256,9 +2258,9 @@ function Manifesto() {
    ========================================================================== */
 function FluidSection() {
   return (
-    <section className="relative overflow-hidden" style={{ color: "#0f0e0d" }}>
+    <section className="relative flex min-h-screen items-center overflow-hidden" style={{ color: "#0f0e0d" }}>
       <PaperBackground />
-      <div className="relative mx-auto max-w-[1400px] px-6 py-24 md:px-10 md:py-36">
+      <div className="relative mx-auto w-full max-w-[1400px] px-6 py-16 md:px-10 md:py-20">
         {/* Section header bar */}
         <div
           style={{
@@ -2435,7 +2437,7 @@ function Pipeline() {
   return (
     <section className="relative overflow-hidden" style={{ color: "#0f0e0d" }}>
       <PaperBackground />
-      <div className="relative mx-auto max-w-[1400px] px-6 py-24 md:px-10 md:py-36">
+      <div className="relative mx-auto max-w-[1400px] px-6 pt-24 pb-24 md:px-10 md:pt-28 md:pb-36">
 
         {/* Section header bar */}
         <div
@@ -4706,9 +4708,9 @@ const WHAT_WE_BUILD_ROWS = [
 
 function WhatWeBuild() {
   return (
-    <section className="relative overflow-hidden" style={{ color: "#0f0e0d" }}>
+    <section className="relative flex min-h-screen items-center overflow-hidden" style={{ color: "#0f0e0d" }}>
       <PaperBackground />
-      <div className="relative mx-auto max-w-[1400px] px-6 py-24 md:px-10 md:py-36">
+      <div className="relative mx-auto w-full max-w-[1400px] px-6 py-16 md:px-10 md:py-20">
 
         {/* Section header bar */}
         <div
@@ -5036,7 +5038,7 @@ function Evidence() {
   return (
     <section className="relative overflow-hidden" style={{ color: "#0f0e0d" }}>
       <PaperBackground />
-      <div className="relative mx-auto max-w-[1400px] px-6 py-24 md:px-10 md:py-36">
+      <div className="relative mx-auto max-w-[1400px] px-6 pt-24 pb-24 md:px-10 md:pt-28 md:pb-36">
 
         {/* Section header bar */}
         <div
@@ -5578,7 +5580,7 @@ function EtymologyEntry() {
 
   return (
     <div
-      className="absolute inset-0 flex items-center justify-center px-6 md:px-14"
+      className="relative flex min-h-[100svh] w-full items-center justify-center px-6 md:px-14"
       style={{
         backgroundColor: "#f5efe5",
         fontFamily: garamond,
@@ -5895,6 +5897,235 @@ function EtymologyEntry() {
 }
 
 /* ============================================================================
+   CROSSFADE STAGE — one constant cream background, content crossfades in place
+
+   The five cream sections share a SINGLE pinned, full-screen cream stage that
+   never moves and has no rounded corners. All sections are stacked absolutely
+   inside it; only their opacity (and, for tall ones, an internal scroll) is
+   driven by the page scroll.
+
+   Per-section scroll timeline (px), measured from real content height:
+
+     ┌─ HOLD ───────────┬─ SCROLL-THROUGH ─────┬─ CROSSFADE ──────────┐
+     │ text fully shown, │ tall content slides  │ this text fades out, │
+     │ nothing moving    │ up to reveal bottom  │ next text fades in   │
+     │ opacity 1, y 0    │ opacity 1, y 0→bottom │ opacity 1→0 / 0→1    │
+     └───────────────────┴──────────────────────┴──────────────────────┘
+
+   Reading (scroll-through) and transitioning (crossfade) never overlap, so
+   the scroll and the fade never fight each other. Short sections simply have
+   a zero-length scroll-through. The next section's fade-in is the SAME scroll
+   window as the current section's fade-out — a true crossfade on one
+   unchanging background.
+   ========================================================================== */
+
+const STAGE_HOLD = 0.5; // viewport-heights a section stays fully visible
+const STAGE_CROSSFADE = 0.7; // viewport-heights the transition spans
+/* Smooth, slightly cinematic ease for the leave/enter motion. */
+const EASE_STAGE = cubicBezier(0.4, 0, 0.2, 1);
+
+type StageWindow = {
+  fadeIn: [number, number];
+  fadeOut: [number, number];
+  read: [number, number];
+  travel: number;
+  isFirst: boolean;
+  isLast: boolean;
+};
+
+function CrossfadeLayer({
+  index,
+  progress,
+  win,
+  onMeasure,
+  children,
+}: {
+  index: number;
+  progress: MotionValue<number>;
+  win: StageWindow;
+  onMeasure: (index: number, height: number) => void;
+  children: ReactNode;
+}) {
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  /* Measure natural content height (the inner div is height:auto even though
+     the layer above it is pinned to the viewport box). ResizeObserver keeps it
+     correct across font swap, responsive reflow and window resize. */
+  useLayoutEffect(() => {
+    const el = contentRef.current;
+    if (!el) return;
+    const report = () => onMeasure(index, el.offsetHeight);
+    report();
+    const ro = new ResizeObserver(report);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [index, onMeasure]);
+
+  /* No fade. Same diagonal mask-wipe the Hero uses to make its title text
+     vanish on scroll. `wipe` goes 0 (fully shown) → 1 (fully wiped away).
+       fadeIn window  : wipe 1 → 0  (incoming text un-wipes into view)
+       fadeOut window : wipe 0 → 1  (outgoing text wipes itself away)
+     The two windows never overlap a single layer, so each value is just one
+     ramp; summing them keeps it 0 while the section is being read. */
+  const wipeIn = useTransform(progress, win.fadeIn, [win.isFirst ? 0 : 1, 0], {
+    ease: EASE_STAGE,
+  });
+  const wipeOut = useTransform(progress, win.fadeOut, [0, win.isLast ? 0 : 1], {
+    ease: EASE_STAGE,
+  });
+  const maskImage = useTransform(() => {
+    const t = wipeIn.get() + wipeOut.get();
+    return `linear-gradient(46deg, transparent ${(-100 + 200 * t).toFixed(1)}%, #000 ${(200 * t).toFixed(1)}%)`;
+  });
+
+  /* Subtle directional drift so leave/enter read as motion, not a clip alone:
+     outgoing text glides up as it wipes out, incoming rises into place. */
+  const enterY = useTransform(progress, win.fadeIn, [win.isFirst ? 0 : 48, 0], {
+    ease: EASE_STAGE,
+  });
+  const exitY = useTransform(progress, win.fadeOut, [0, win.isLast ? 0 : -48], {
+    ease: EASE_STAGE,
+  });
+  const readY = useTransform(progress, win.read, [0, win.travel]);
+  const y = useTransform(() => readY.get() + enterY.get() + exitY.get());
+
+  /* Disable interaction once a layer is more than half wiped away. */
+  const pointerEvents = useTransform(() =>
+    wipeIn.get() + wipeOut.get() > 0.5 ? "none" : "auto",
+  );
+
+  return (
+    <motion.div
+      style={{ position: "absolute", inset: 0, pointerEvents }}
+    >
+      <motion.div
+        style={{
+          y,
+          maskImage,
+          WebkitMaskImage: maskImage,
+          width: "100%",
+          willChange: "transform, mask-image",
+        }}
+      >
+        <div ref={contentRef} style={{ width: "100%" }}>
+          {children}
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+function CrossfadeStage({ sections }: { sections: ReactNode[] }) {
+  const N = sections.length;
+  const outerRef = useRef<HTMLDivElement>(null);
+  const [vh, setVh] = useState(0);
+  const [heights, setHeights] = useState<number[]>(() => Array(N).fill(0));
+
+  useLayoutEffect(() => {
+    const update = () => setVh(window.innerHeight);
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+
+  const onMeasure = useCallback((i: number, h: number) => {
+    setHeights((prev) => {
+      if (Math.abs((prev[i] ?? 0) - h) < 1) return prev;
+      const next = prev.slice();
+      next[i] = h;
+      return next;
+    });
+  }, []);
+
+  /* Build the pixel timeline from measured heights, then express every window
+     as a fraction of total scroll T so it maps straight onto scrollYProgress. */
+  const safeVh = vh || 800;
+  const hold = safeVh * STAGE_HOLD;
+  const crossfade = safeVh * STAGE_CROSSFADE;
+
+  let cursor = 0;
+  const segs = sections.map((_, i) => {
+    const contentH = heights[i] || safeVh;
+    const scrollThrough = Math.max(0, contentH - safeVh);
+    const readStart = cursor;
+    const transStart = cursor + hold; // translate begins after the hold
+    const readEnd = transStart + scrollThrough;
+    cursor = readEnd;
+    const isLast = i === N - 1;
+    let fadeOutStart = 0;
+    let fadeOutEnd = 0;
+    if (!isLast) {
+      fadeOutStart = cursor;
+      cursor += crossfade;
+      fadeOutEnd = cursor;
+    }
+    return {
+      readStart,
+      transStart,
+      readEnd,
+      fadeOutStart,
+      fadeOutEnd,
+      scrollThrough,
+      isLast,
+    };
+  });
+  const T = Math.max(cursor, 1);
+
+  const windows: StageWindow[] = segs.map((s, i) => {
+    const isFirst = i === 0;
+    /* Off-range sentinels so the value clamps to a constant: the first section
+       is always visible until its fade-out; the last never fades out. */
+    const fadeIn: [number, number] = isFirst
+      ? [-2, -1]
+      : [segs[i - 1].fadeOutStart / T, segs[i - 1].fadeOutEnd / T];
+    const fadeOut: [number, number] = s.isLast
+      ? [2, 3]
+      : [s.fadeOutStart / T, s.fadeOutEnd / T];
+    const readA = s.transStart / T;
+    const readB = s.readEnd / T;
+    const read: [number, number] =
+      readB > readA ? [readA, readB] : [readA, readA + 1e-4];
+    return {
+      fadeIn,
+      fadeOut,
+      read,
+      travel: -s.scrollThrough,
+      isFirst,
+      isLast: s.isLast,
+    };
+  });
+
+  const { scrollYProgress } = useScroll({
+    target: outerRef,
+    offset: ["start start", "end end"],
+  });
+
+  return (
+    <div
+      ref={outerRef}
+      style={{ position: "relative", height: `calc(100svh + ${T}px)` }}
+    >
+      <div
+        className="sticky top-0 h-[100svh] overflow-hidden"
+        style={{ background: "#f5efe5" }}
+      >
+        {sections.map((node, i) => (
+          <CrossfadeLayer
+            key={i}
+            index={i}
+            progress={scrollYProgress}
+            win={windows[i]}
+            onMeasure={onMeasure}
+          >
+            {node}
+          </CrossfadeLayer>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================================
    PAGE — root export
    ========================================================================== */
 
@@ -5903,32 +6134,18 @@ export default function Home() {
     <IntroProvider sidebar={<Sidebar />}>
       <main>
         <Hero />
-        {(() => {
-          const slideWrapperClass =
-            "relative sticky top-0 h-[100svh] overflow-y-auto overflow-x-hidden bg-[#f5efe5] rounded-t-[2rem] border-t border-[rgba(15,14,13,0.04)] shadow-[0_-20px_40px_rgba(15,14,13,0.05)]";
-          return (
-            <>
-              <div className={`${slideWrapperClass} z-10`}>
-                <FluidSection />
-              </div>
-              <div className={`${slideWrapperClass} z-20`}>
-                <WhatWeBuild />
-              </div>
-              <div className={`${slideWrapperClass} z-30`}>
-                <Pipeline />
-              </div>
-              <div className={`${slideWrapperClass} z-40`}>
-                <Evidence />
-              </div>
-              <div className={`${slideWrapperClass} z-50`}>
-                <EtymologyEntry />
-              </div>
-              <div className="relative z-[60] bg-[#0f0e0d]">
-                <SiteFooter />
-              </div>
-            </>
-          );
-        })()}
+        <CrossfadeStage
+          sections={[
+            <FluidSection key="fluid" />,
+            <WhatWeBuild key="build" />,
+            <Pipeline key="pipeline" />,
+            <Evidence key="evidence" />,
+            <EtymologyEntry key="etymology" />,
+          ]}
+        />
+        <div className="relative z-[60] bg-[#0f0e0d]">
+          <SiteFooter />
+        </div>
       </main>
     </IntroProvider>
   );
