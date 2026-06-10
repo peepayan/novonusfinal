@@ -2077,7 +2077,7 @@ function TopographicalDots({
    colour-blending letters always trails the head. Smooth feel.
    ========================================================================== */
 const SLIDE2_TEXT =
-  "Modern robotics has trained on the wrong data for thirty years.";
+  "Modern robotics has been training on the wrong data.";
 
 function RevealChar({
   char,
@@ -3238,7 +3238,7 @@ function Hero() {
             <motion.div
               className="pointer-events-none absolute inset-x-0 z-[7] hidden md:block"
               style={{
-                bottom: "clamp(3.5rem, 10vh, 7rem)",
+                bottom: "clamp(6.5rem, 14vh, 9rem)",
                 opacity: headlinesTogetherOpacity,
               }}
               aria-hidden={deepDive}
@@ -4304,7 +4304,7 @@ function Hero() {
                     position: "relative",
                     fontFamily:
                       "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
-                    fontWeight: 900,
+                    fontWeight: 800,
                     fontStyle: "normal",
                     fontSize: "clamp(2.4rem, 5.2vw, 4.6rem)",
                     lineHeight: 1.03,
@@ -5903,14 +5903,32 @@ export default function Home() {
     <IntroProvider sidebar={<Sidebar />}>
       <main>
         <Hero />
-        <FluidSection />
-        <WhatWeBuild />
-        <Pipeline />
-        <Evidence />
-        <section className="relative" style={{ minHeight: "100svh" }}>
-          <EtymologyEntry />
-        </section>
-        <SiteFooter />
+        {(() => {
+          const slideWrapperClass =
+            "relative sticky top-0 h-[100svh] overflow-y-auto overflow-x-hidden bg-[#f5efe5] rounded-t-[2rem] border-t border-[rgba(15,14,13,0.04)] shadow-[0_-20px_40px_rgba(15,14,13,0.05)]";
+          return (
+            <>
+              <div className={`${slideWrapperClass} z-10`}>
+                <FluidSection />
+              </div>
+              <div className={`${slideWrapperClass} z-20`}>
+                <WhatWeBuild />
+              </div>
+              <div className={`${slideWrapperClass} z-30`}>
+                <Pipeline />
+              </div>
+              <div className={`${slideWrapperClass} z-40`}>
+                <Evidence />
+              </div>
+              <div className={`${slideWrapperClass} z-50`}>
+                <EtymologyEntry />
+              </div>
+              <div className="relative z-[60] bg-[#0f0e0d]">
+                <SiteFooter />
+              </div>
+            </>
+          );
+        })()}
       </main>
     </IntroProvider>
   );
