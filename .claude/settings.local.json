@@ -31,7 +31,9 @@
       "Bash(npx next *)",
       "WebFetch(domain:www.deltaroboticsinc.com)",
       "Bash(echo \"started pid=$!\")",
-      "Bash(cat \"C:\\\\\\\\Users\\\\\\\\deepa\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\claude\\\\\\\\C--Users-deepa-novonusfinal\\\\\\\\da39013d-a620-4415-8cbe-63bc6c5e617e\\\\\\\\tasks\\\\\\\\bjsfzb27h.output\")"
+      "Bash(cat \"C:\\\\\\\\Users\\\\\\\\deepa\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\claude\\\\\\\\C--Users-deepa-novonusfinal\\\\\\\\da39013d-a620-4415-8cbe-63bc6c5e617e\\\\\\\\tasks\\\\\\\\bjsfzb27h.output\")",
+      "Bash(claude update *)",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\deepa\\\\.claude\" -Recurse | Select-Object FullName | Where-Object { $_.FullName -match \"skill\" })"
     ]
   }
 }

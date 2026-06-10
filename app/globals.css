@@ -19,32 +19,28 @@
   --color-cyan: var(--cyan);
   --color-royal: var(--royal);
   --color-turq: var(--turq);
-  /* Single typeface: Kode Mono drives every role (Delta Robotics style). */
-  --font-sans: var(--font-kode-mono);
-  --font-mono: var(--font-kode-mono);
-  --font-brand: var(--font-kode-mono);
-  --font-grand: var(--font-kode-mono);
+  --font-sans: var(--font-inter-tight);
+  --font-mono: var(--font-inter-tight);
+  --font-brand: var(--font-inter-tight);
+  --font-grand: var(--font-inter-tight);
 
   --animate-neon-pulse: neon-pulse 2.4s ease-in-out infinite;
 }
 
-/* Rewire every legacy font variable to Kode Mono so the dozens of inline
-   `style={{ fontFamily: 'var(--font-...)' }}` call sites in page.tsx all
-   render in the same monospace without per-site edits. Applied on html so
-   it overrides the next/font className declarations on the same element. */
+/* Rewire every font variable to Inter Tight. Applied on html so it
+   overrides the next/font className declarations on the same element. */
 html {
-  --font-inter: var(--font-kode-mono);
-  --font-geist-mono: var(--font-kode-mono);
-  --font-inclusive: var(--font-kode-mono);
-  --font-cinzel: var(--font-kode-mono);
-  --font-space-grotesk: var(--font-kode-mono);
-  --font-orbitron: var(--font-kode-mono);
-  --font-stack-sans-notch: var(--font-kode-mono);
-  --font-dm-sans: var(--font-kode-mono);
-  --font-tt-norms-pro: var(--font-kode-mono);
-  --font-tt-norms-pro-expanded: var(--font-kode-mono);
-  --font-inter-tight: var(--font-kode-mono);
-  --font-eb-garamond: var(--font-kode-mono);
+  --font-kode-mono: var(--font-inter-tight);
+  --font-inter: var(--font-inter-tight);
+  --font-geist-mono: var(--font-inter-tight);
+  --font-inclusive: var(--font-inter-tight);
+  --font-cinzel: var(--font-inter-tight);
+  --font-space-grotesk: var(--font-inter-tight);
+  --font-orbitron: var(--font-inter-tight);
+  --font-stack-sans-notch: var(--font-inter-tight);
+  --font-dm-sans: var(--font-inter-tight);
+  --font-tt-norms-pro: var(--font-inter-tight);
+  --font-tt-norms-pro-expanded: var(--font-inter-tight);
 }
 
 html {
@@ -60,8 +56,7 @@ body {
 }
 
 body {
-  font-family: var(--font-kode-mono), ui-monospace, SFMono-Regular, Menlo,
-    Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-family: var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
