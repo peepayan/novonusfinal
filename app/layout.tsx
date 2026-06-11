@@ -13,6 +13,7 @@ import {
   EB_Garamond,
 } from "next/font/google";
 import localFont from "next/font/local";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 /* TT Norms Pro — self-hosted, Light + Medium + Bold weights, WOFF2 for
@@ -164,7 +165,10 @@ export default function RootLayout({
       lang="en"
       className={`${inter.variable} ${interTight.variable} ${geistMono.variable} ${inclusiveSans.variable} ${cinzel.variable} ${spaceGrotesk.variable} ${orbitron.variable} ${ttNormsPro.variable} ${ttNormsProExpanded.variable} ${stackSansNotch.variable} ${dmSans.variable} ${kodeMono.variable} ${ebGaramond.variable} h-full antialiased`}
     >
-      <body className="min-h-full bg-ink text-paper" suppressHydrationWarning>{children}</body>
+      <body className="min-h-full bg-ink text-paper" suppressHydrationWarning>
+        {children}
+        <Analytics />
+      </body>
     </html>
   );
 }

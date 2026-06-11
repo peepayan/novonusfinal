@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@paper-design/shaders-react": "^0.0.76",
+    "@vercel/analytics": "^2.0.1",
     "framer-motion": "^11.11.17",
     "lucide-react": "^0.460.0",
     "next": "^16.2.4",
