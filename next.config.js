@@ -1,18 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  async redirects() {
-    return [
-      {
-        source: '/demo',
-        destination: '/demo/',
-        permanent: false,
-      },
-    ];
-  },
   async rewrites() {
     return [
       {
-        source: '/demo/',
+        source: '/demo',
         destination: 'https://novonusdemo1.vercel.app/',
       },
       {
