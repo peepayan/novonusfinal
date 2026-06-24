@@ -4,7 +4,7 @@
   /* Neural-interface palette — strict five-hue system */
   --ink: #000000;          /* deep black: backgrounds */
   --paper: #ffffff;        /* pure white: primary text */
-  --cyan: #6d28d9;         /* dark purple: primary accent (legacy var name) */
+  --cyan: #8b5cf6;         /* dark purple: primary accent (legacy var name) */
   --royal: #2563eb;        /* royal blue: depth / gradient */
   --turq: #5eead4;         /* bright turquoise: highlights */
   --background: var(--ink);
@@ -25,6 +25,12 @@
   --font-grand: var(--font-inter-tight);
 
   --animate-neon-pulse: neon-pulse 2.4s ease-in-out infinite;
+  --animate-spotlight: spotlight 2s ease 0.75s 1 forwards;
+}
+
+@keyframes spotlight {
+  0% { opacity: 0; transform: translate(-72%, -62%) scale(0.5); }
+  100% { opacity: 1; transform: translate(-50%, -40%) scale(1); }
 }
 
 /* Rewire every font variable to Inter Tight. Applied on html so it

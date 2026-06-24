@@ -11,6 +11,10 @@ import {
   DM_Sans,
   Kode_Mono,
   EB_Garamond,
+  Instrument_Serif,
+  Crimson_Text,
+  Radley,
+  JetBrains_Mono,
 } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
@@ -137,6 +141,39 @@ const kodeMono = Kode_Mono({
   display: "swap",
 });
 
+const jetBrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains-mono",
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  display: "swap",
+});
+
+const radley = Radley({
+  variable: "--font-radley",
+  subsets: ["latin"],
+  weight: ["400"],
+  style: ["normal", "italic"],
+  display: "swap",
+});
+
+const crimsonText = Crimson_Text({
+  variable: "--font-crimson-text",
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
+  style: ["normal", "italic"],
+  display: "swap",
+});
+
+/* Instrument Serif — Google's transitional serif, designed for large display
+   headings. Only one weight (400) with normal + italic. */
+const instrumentSerif = Instrument_Serif({
+  variable: "--font-instrument-serif",
+  subsets: ["latin"],
+  weight: ["400"],
+  style: ["normal", "italic"],
+  display: "swap",
+});
+
 /* EB Garamond — classical Garamond revival with true italic, small caps,
    and Greek glyph coverage. Drives the etymology section's newspaper
    aesthetic and renders νοῦς in the same typeface as the Latin. */
@@ -162,7 +199,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${interTight.variable} ${geistMono.variable} ${inclusiveSans.variable} ${cinzel.variable} ${spaceGrotesk.variable} ${orbitron.variable} ${ttNormsPro.variable} ${ttNormsProExpanded.variable} ${stackSansNotch.variable} ${dmSans.variable} ${kodeMono.variable} ${ebGaramond.variable} h-full antialiased`}
+      className={`${inter.variable} ${interTight.variable} ${geistMono.variable} ${inclusiveSans.variable} ${cinzel.variable} ${spaceGrotesk.variable} ${orbitron.variable} ${ttNormsPro.variable} ${ttNormsProExpanded.variable} ${stackSansNotch.variable} ${dmSans.variable} ${kodeMono.variable} ${ebGaramond.variable} ${instrumentSerif.variable} ${crimsonText.variable} ${radley.variable} ${jetBrainsMono.variable} h-full antialiased`}
     >
       <body className="min-h-full bg-ink text-paper" suppressHydrationWarning>{children}</body>
     </html>

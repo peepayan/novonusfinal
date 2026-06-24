@@ -17,12 +17,26 @@ import {
   animate,
   cubicBezier,
   motion,
+  motionValue,
   useMotionValue,
   useMotionValueEvent,
   useScroll,
   useTransform,
   type MotionValue,
 } from "framer-motion";
+import { gsap } from "gsap";
+import * as THREE from "three";
+import { MeshGradient } from "@paper-design/shaders-react";
+import { SplineScene } from "@/components/ui/splite";
+import { Spotlight } from "@/components/ui/spotlight";
+import { Component as EtherealShadow } from "@/components/ui/etheral-shadow";
+
+/* MotionValue provided by CrossfadeLayer — goes 0 (masked) → 1 (fully visible).
+   Section components subscribe to this to fire their GSAP entrance animations
+   exactly once when the crossfade reveals them. */
+const ZERO_MV = motionValue(0);
+const SectionVisibleCtx = createContext<MotionValue<number>>(ZERO_MV);
+
 /* ============================================================================
    INTRO PROVIDER — cinematic preloader phase machine
    ========================================================================== */
@@ -879,6 +893,9 @@ function TopographicalDots({
   earthOffsetProgress,
   cliffMorphProgress,
   cliffPhaseProgress,
+  boxAlphaProgress,
+  dotFillProgress,
+  dotOpacity,
 }: {
   morphProgress?: MotionValue<number>;
   invertProgress?: MotionValue<number>;
@@ -888,6 +905,9 @@ function TopographicalDots({
   earthOffsetProgress?: MotionValue<number>;
   cliffMorphProgress?: MotionValue<number>;
   cliffPhaseProgress?: MotionValue<number>;
+  boxAlphaProgress?: MotionValue<number>;
+  dotFillProgress?: MotionValue<number>;
+  dotOpacity?: MotionValue<number>;
 } = {}) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -923,7 +943,7 @@ function TopographicalDots({
 
     const BASE_DARK = { r: 15, g: 14, b: 13 };
     const BASE_CREAM = { r: 245, g: 239, b: 229 };
-    const PURPLE = { r: 109, g: 40, b: 217 };
+    const PURPLE = { r: 139, g: 92, b: 246 };
     const GREEN = { r: 110, g: 231, b: 183 };
 
     type Wave = { x: number; y: number; t: number; amp: number };
@@ -1737,6 +1757,15 @@ function TopographicalDots({
       const cliffPhase = cliffPhaseProgress
         ? Math.max(0, Math.min(1, cliffPhaseProgress.get()))
         : 0;
+      const boxAlpha = boxAlphaProgress
+        ? Math.max(0, Math.min(1, boxAlphaProgress.get()))
+        : 1;
+      const dotFill = dotFillProgress
+        ? Math.max(0, Math.min(1, dotFillProgress.get()))
+        : 0;
+      const dotOpacityVal = dotOpacity
+        ? Math.max(0, Math.min(1, dotOpacity.get()))
+        : 1;
       /* Cursor interaction belongs to the open grid. As the field morphs
          into the brain we fade it, so the brain doesn't ripple under the
          pointer. */
@@ -1829,7 +1858,9 @@ function TopographicalDots({
       const baseG = BASE_DARK.g * (1 - invert) + BASE_CREAM.g * invert;
       const baseB = BASE_DARK.b * (1 - invert) + BASE_CREAM.b * invert;
       const baseAlpha = BASE_ALPHA * (1 - invert) + INVERT_ALPHA * invert;
-      const baseFill = `rgba(${baseR | 0}, ${baseG | 0}, ${baseB | 0}, ${baseAlpha})`;
+      const outsideDotFactor = Math.max(0.12, dotOpacityVal);
+      const baseFillInside = `rgba(${baseR | 0}, ${baseG | 0}, ${baseB | 0}, ${baseAlpha * dotOpacityVal})`;
+      const baseFillOutside = `rgba(${baseR | 0}, ${baseG | 0}, ${baseB | 0}, ${baseAlpha * outsideDotFactor})`;
 
       /* Card-style 3D tilt: the canvas surface tilts toward the
          cursor via CSS perspective + rotateX/Y, scaled by morph so
@@ -1875,8 +1906,8 @@ function TopographicalDots({
          in place. */
       canvas.style.transform = `perspective(1200px) translateX(${eyeTranslateX.toFixed(1)}px) scale(${eyeScale.toFixed(3)}) rotateX(${effTiltX.toFixed(2)}deg) rotateY(${effTiltY.toFixed(2)}deg)`;
 
-      const textAlpha = 1 - invert;
-      const drawBox = textAlpha > 0;
+      const textAlpha = boxAlpha;
+      const drawBox = textAlpha > 0.01;
       // Make the box large enough to encase the eyebrow, title, and subtitle
       const boxW = Math.min(width * 0.92, 1060);
       const boxH = Math.min(height * 0.85, 580);
@@ -1887,6 +1918,8 @@ function TopographicalDots({
       const boxMaxX = canvasCenterX + boxW / 2;
       const boxMinY = canvasCenterY - boxH / 2;
       const boxMaxY = canvasCenterY + boxH / 2;
+      const padW = boxW / 2 + 16;
+      const padH = boxH / 2 + 16;
 
       for (let i = 0; i < cells.length; i++) {
         const cell = cells[i];
@@ -1903,13 +1936,6 @@ function TopographicalDots({
         const baseX = s3X + (cell.cx - s3X) * cliffMorph;
         const baseY = s3Y + (cell.cy - s3Y) * cliffMorph;
 
-        if (drawBox) {
-          const padW = boxW / 2 + 16;
-          const padH = boxH / 2 + 16;
-          if (Math.abs(baseX - canvasCenterX) < padW && Math.abs(baseY - canvasCenterY) < padH) {
-            continue;
-          }
-        }
 
         let elev = 0;
         if (peakActive) {
@@ -1935,8 +1961,9 @@ function TopographicalDots({
         }
         elev *= cursorAttenuation;
 
-        if (!hasAnyMotion || elev < 0.012) {
-          ctx.fillStyle = baseFill;
+        const isInsideBox = Math.abs(baseX - canvasCenterX) < padW && Math.abs(baseY - canvasCenterY) < padH;
+        if (!hasAnyMotion || elev < 0.012 || (!isInsideBox && dotOpacityVal < 1)) {
+          ctx.fillStyle = isInsideBox ? baseFillInside : baseFillOutside;
           ctx.beginPath();
           ctx.arc(baseX, baseY, BASE_SIZE, 0, Math.PI * 2);
           ctx.fill();
@@ -1955,8 +1982,9 @@ function TopographicalDots({
         const cr = baseR * (1 - blend) + gr * blend;
         const cg = baseG * (1 - blend) + gg * blend;
         const cb = baseB * (1 - blend) + gb * blend;
+        const dotFactor = isInsideBox ? dotOpacityVal : outsideDotFactor;
         const alpha =
-          baseAlpha + Math.min(elevClamped, 1) * 0.55 * cursorAttenuation;
+          (baseAlpha + Math.min(elevClamped, 1) * 0.55 * cursorAttenuation) * dotFactor;
 
         ctx.fillStyle = `rgba(${cr | 0}, ${cg | 0}, ${cb | 0}, ${alpha})`;
         ctx.beginPath();
@@ -2040,6 +2068,9 @@ function TopographicalDots({
     earthOffsetProgress,
     cliffMorphProgress,
     cliffPhaseProgress,
+    boxAlphaProgress,
+    dotFillProgress,
+    dotOpacity,
   ]);
 
   return (
@@ -2257,78 +2288,243 @@ function Manifesto() {
    massive left-aligned headline, body text as a quiet column on the right.
    ========================================================================== */
 function FluidSection() {
-  return (
-    <section className="relative flex min-h-screen items-center overflow-hidden" style={{ color: "#0f0e0d" }}>
-      <PaperBackground />
-      <div className="relative mx-auto w-full max-w-[1400px] px-6 py-16 md:px-10 md:py-20">
-        {/* Section header bar */}
-        <div
-          style={{
-            borderTop: "1px solid rgba(15,14,13,0.10)",
-            paddingTop: "2rem",
-            marginBottom: "4.5rem",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <span
-            className="font-mono text-[10px] uppercase tracking-[0.28em]"
-            style={{ color: "rgba(15,14,13,0.38)" }}
-          >
-            the layer
-          </span>
-          <span
-            className="font-mono text-[10px] uppercase tracking-[0.28em]"
-            style={{ color: "rgba(15,14,13,0.20)" }}
-          >
-            §&nbsp;02
-          </span>
-        </div>
+  const lineRef     = useRef<HTMLDivElement>(null);
+  const headlineRef = useRef<HTMLHeadingElement>(null);
+  const bodyRef     = useRef<HTMLDivElement>(null);
+  const tableRef    = useRef<HTMLDivElement>(null);
+  const visible     = useContext(SectionVisibleCtx);
+  const animated    = useRef(false);
 
-        {/* Two-column layout: headline + body */}
-        <div className="grid grid-cols-1 items-start gap-14 md:grid-cols-[1fr_0.6fr] md:gap-20">
-          <motion.h2
-            initial={{ opacity: 0, y: 36 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+  useEffect(() => {
+    if (!visible) return;
+    const handler = (v: number) => {
+      if (v < 0.05 && animated.current) {
+        animated.current = false;
+        gsap.set(lineRef.current, { scaleX: 0, transformOrigin: "left center" });
+        if (headlineRef.current) gsap.set(headlineRef.current.querySelectorAll(".word-inner"), { y: "105%", opacity: 0 });
+        gsap.set(bodyRef.current, { opacity: 0, y: 22 });
+        gsap.set(tableRef.current, { opacity: 0, y: 22 });
+      }
+      if (v > 0.35 && !animated.current) {
+        animated.current = true;
+        const mm = gsap.matchMedia();
+        mm.add("(prefers-reduced-motion: no-preference)", () => {
+          const tl = gsap.timeline();
+          tl.fromTo(
+            lineRef.current,
+            { scaleX: 0, transformOrigin: "left center" },
+            { scaleX: 1, duration: 0.8, ease: "power2.inOut" }
+          );
+          tl.fromTo(
+            headlineRef.current!.querySelectorAll(".word-inner"),
+            { y: "105%", opacity: 0 },
+            { y: "0%", opacity: 1, stagger: 0.07, duration: 0.85, ease: "power3.out" },
+            "-=0.45"
+          );
+          tl.fromTo(
+            bodyRef.current,
+            { opacity: 0, y: 22 },
+            { opacity: 1, y: 0, duration: 0.75, ease: "power2.out" },
+            "-=0.55"
+          );
+          tl.fromTo(
+            tableRef.current,
+            { opacity: 0, y: 22 },
+            { opacity: 1, y: 0, duration: 0.75, ease: "power2.out" },
+            "-=0.45"
+          );
+        });
+        mm.add("(prefers-reduced-motion: reduce)", () => {
+          if (headlineRef.current) gsap.set(headlineRef.current.querySelectorAll(".word-inner"), { opacity: 1, y: 0 });
+          gsap.set([bodyRef.current, tableRef.current], { opacity: 1, y: 0 });
+        });
+      }
+    };
+    handler(visible.get());
+    return visible.on("change", handler);
+  }, [visible]);
+
+  const lines = [
+    { text: "Robot cells your",    ghost: false },
+    { text: "factory workers",     ghost: true  },
+    { text: "can teach.",          ghost: false },
+  ];
+
+  return (
+    <section
+      className="relative overflow-hidden"
+      style={{ color: "#0f0e0d" }}
+    >
+      <div className="relative mx-auto w-full max-w-[1400px] px-6 py-16 md:px-10 md:py-20">
+        {/* Animated header bar */}
+        <div style={{ marginBottom: "4.5rem" }}>
+          <div
+            ref={lineRef}
             style={{
-              fontWeight: 600,
-              fontSize: "clamp(3.2rem, 7vw, 7rem)",
-              lineHeight: 0.91,
-              letterSpacing: "-0.035em",
-              color: "#0f0e0d",
+              height: 1,
+              background: "rgba(15,14,13,0.10)",
+              transform: "scaleX(0)",
+              transformOrigin: "left",
+            }}
+          />
+          <div
+            style={{
+              paddingTop: "2rem",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
             }}
           >
-            We built<br />
-            <span style={{ color: "rgba(15,14,13,0.20)" }}>the layer</span><br />
-            everyone<br />
-            missed.
-          </motion.h2>
+            <span
+              className="font-mono text-[10px] uppercase tracking-[0.28em]"
+              style={{ color: "rgba(15,14,13,0.38)" }}
+            >
+              what we build
+            </span>
+            <span
+              className="font-mono text-[10px] uppercase tracking-[0.28em]"
+              style={{ color: "rgba(15,14,13,0.20)" }}
+            >
+              §&nbsp;01
+            </span>
+          </div>
+        </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.85, delay: 0.18, ease: [0.22, 1, 0.36, 1] }}
-            style={{ paddingTop: "clamp(0rem, 1.5vw, 2rem)" }}
+        {/* GSAP-animated headline */}
+        <h2
+          ref={headlineRef}
+          style={{
+            fontWeight: 600,
+            fontSize: "clamp(3.2rem, 7vw, 7rem)",
+            lineHeight: 0.91,
+            letterSpacing: "-0.035em",
+            color: "#0f0e0d",
+            marginBottom: "2.5rem",
+          }}
+        >
+          {lines.map((l, i) => (
+            <span key={i} style={{ display: "block", overflow: "hidden", paddingBottom: "0.06em" }}>
+              <span
+                className="word-inner"
+                style={{
+                  display: "block",
+                  color: l.ghost ? "rgba(15,14,13,0.20)" : "#0f0e0d",
+                  opacity: 0,
+                }}
+              >
+                {l.text}
+              </span>
+            </span>
+          ))}
+        </h2>
+
+        {/* Subhead */}
+        <div ref={bodyRef} style={{ opacity: 0, marginBottom: "4rem" }}>
+          <p
+            style={{
+              maxWidth: "54ch",
+              fontSize: "clamp(0.9375rem, 1.2vw, 1.1rem)",
+              lineHeight: 1.65,
+              color: "rgba(15,14,13,0.58)",
+              fontWeight: 400,
+            }}
+          >
+            We deploy autonomous manipulation onto the robots you already trust.
+            You bring the hardware. We bring the rig, the pipeline, the policy,
+            the safety supervisor, and the integration.
+          </p>
+        </div>
+
+        {/* Three pillars */}
+        <div ref={tableRef} style={{ opacity: 0 }}>
+          <div
+            className="grid grid-cols-1 md:grid-cols-3"
+            style={{ borderTop: "1px solid rgba(15,14,13,0.10)" }}
+          >
+            {([
+              {
+                n: "01",
+                title: "A multimodal data-capture rig.",
+                body: "A wearable system — EMG for muscle-level force, plus force, motion, and vision — that records how a human expert applies force during a real task, synchronized in real time. It captures the force intuition cameras and teleoperation miss.",
+              },
+              {
+                n: "02",
+                title: "A force-grounded training pipeline.",
+                body: null,
+              },
+              {
+                n: "03",
+                title: "The deepest force dataset in fragile assembly.",
+                body: "Everything compounds into a proprietary, force-grounded dataset — our core moat and the engine for every robot we train.",
+              },
+            ] as const).map((p, i) => (
+              <div
+                key={p.n}
+                style={{
+                  padding: "2.5rem 2rem 2.5rem 0",
+                  borderRight: i < 2 ? "1px solid rgba(15,14,13,0.10)" : "none",
+                  paddingLeft: i > 0 ? "2rem" : 0,
+                }}
+              >
+                <span
+                  className="font-mono text-[10px] uppercase tracking-[0.22em]"
+                  style={{ color: "rgba(15,14,13,0.30)", display: "block", marginBottom: "1rem" }}
+                >
+                  {p.n}
+                </span>
+                <p
+                  style={{
+                    fontSize: "clamp(0.9375rem, 1.1vw, 1.05rem)",
+                    fontWeight: 600,
+                    lineHeight: 1.35,
+                    color: "#0f0e0d",
+                    marginBottom: "0.9rem",
+                    letterSpacing: "-0.01em",
+                  }}
+                >
+                  {p.title}
+                </p>
+                {p.n === "02" ? (
+                  <p style={{ fontSize: "0.875rem", lineHeight: 1.7, color: "rgba(15,14,13,0.52)", fontWeight: 400 }}>
+                    It predicts grip force from muscle signals (validated against real sensors at{" "}
+                    <strong style={{ color: "#0f0e0d", fontWeight: 700 }}>R² = 0.96</strong>),
+                    turns a small set of real demonstrations into thousands of physics-simulated scenarios,
+                    verifies each against the real human force so only valid ones survive, and trains a
+                    force-aware policy that handles fragile parts the way a skilled human would.
+                  </p>
+                ) : (
+                  <p style={{ fontSize: "0.875rem", lineHeight: 1.7, color: "rgba(15,14,13,0.52)", fontWeight: 400 }}>
+                    {p.body}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Closing line */}
+          <div
+            style={{
+              marginTop: "4rem",
+              paddingTop: "3rem",
+              borderTop: "1px solid rgba(15,14,13,0.10)",
+            }}
           >
             <p
               style={{
-                fontSize: "clamp(0.975rem, 1.3vw, 1.2rem)",
-                lineHeight: 1.65,
+                fontSize: "clamp(1.1rem, 2vw, 1.6rem)",
+                fontWeight: 500,
+                lineHeight: 1.4,
                 color: "rgba(15,14,13,0.60)",
-                fontWeight: 400,
+                letterSpacing: "-0.02em",
+                maxWidth: "36ch",
               }}
             >
-              We are a deep-tech company building the data infrastructure
-              that lets robots learn contact-rich manipulation from human
-              operators. Building toward the first deployable robot cells
-              that can be retrained by your own factory workers, on
-              whatever robot brand you already trust.
+              Customers bring the robots they already trust.{" "}
+              <span style={{ color: "#0f0e0d", fontWeight: 600 }}>
+                We make them able to feel.
+              </span>
             </p>
-          </motion.div>
+          </div>
         </div>
       </div>
     </section>
@@ -2434,42 +2630,82 @@ function PipelineArrow({ index }: { index: number }) {
 }
 
 function Pipeline() {
+  const stepsRef  = useRef<HTMLDivElement>(null);
+  const lineRef   = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
+  const h2Ref     = useRef<HTMLHeadingElement>(null);
+  const visible   = useContext(SectionVisibleCtx);
+  const animated  = useRef(false);
+
+  useEffect(() => {
+    if (!visible) return;
+    return visible.on("change", (v: number) => {
+      if (v > 0.35 && !animated.current) {
+        animated.current = true;
+        const mm = gsap.matchMedia();
+        mm.add("(prefers-reduced-motion: no-preference)", () => {
+          const tl = gsap.timeline();
+          tl.fromTo(
+            headerRef.current,
+            { opacity: 0, y: 12 },
+            { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }
+          );
+          tl.fromTo(
+            h2Ref.current,
+            { opacity: 0, y: 28 },
+            { opacity: 1, y: 0, duration: 0.75, ease: "power3.out" },
+            "-=0.3"
+          );
+          tl.fromTo(
+            lineRef.current,
+            { scaleY: 0, transformOrigin: "top center" },
+            { scaleY: 1, duration: 1.8, ease: "power2.inOut" },
+            "-=0.6"
+          );
+          if (stepsRef.current) {
+            tl.fromTo(
+              stepsRef.current.querySelectorAll(".pipeline-step"),
+              { opacity: 0, x: -24 },
+              { opacity: 1, x: 0, stagger: 0.1, duration: 0.65, ease: "power2.out" },
+              "-=1.5"
+            );
+          }
+        });
+        mm.add("(prefers-reduced-motion: reduce)", () => {
+          if (stepsRef.current)
+            gsap.set(stepsRef.current.querySelectorAll(".pipeline-step"), { opacity: 1, x: 0 });
+          gsap.set([headerRef.current, h2Ref.current], { opacity: 1, y: 0 });
+        });
+      }
+    });
+  }, [visible]);
+
   return (
     <section className="relative overflow-hidden" style={{ color: "#0f0e0d" }}>
-      <PaperBackground />
       <div className="relative mx-auto max-w-[1400px] px-6 pt-24 pb-24 md:px-10 md:pt-28 md:pb-36">
 
-        {/* Section header bar */}
-        <div
-          style={{
-            borderTop: "1px solid rgba(15,14,13,0.10)",
-            paddingTop: "2rem",
-            marginBottom: "4.5rem",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <span
-            className="font-mono text-[10px] uppercase tracking-[0.28em]"
-            style={{ color: "rgba(15,14,13,0.38)" }}
+        <div ref={headerRef} style={{ opacity: 0 }}>
+          <div
+            style={{
+              borderTop: "1px solid rgba(15,14,13,0.10)",
+              paddingTop: "2rem",
+              marginBottom: "4.5rem",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
           >
-            the pipeline
-          </span>
-          <span
-            className="font-mono text-[10px] uppercase tracking-[0.28em]"
-            style={{ color: "rgba(15,14,13,0.20)" }}
-          >
-            01&nbsp;—&nbsp;05
-          </span>
+            <span className="font-mono text-[10px] uppercase tracking-[0.28em]" style={{ color: "rgba(15,14,13,0.38)" }}>
+              the pipeline
+            </span>
+            <span className="font-mono text-[10px] uppercase tracking-[0.28em]" style={{ color: "rgba(15,14,13,0.20)" }}>
+              01&nbsp;—&nbsp;05
+            </span>
+          </div>
         </div>
 
-        {/* Headline */}
-        <motion.h2
-          initial={{ opacity: 0, y: 28 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-60px" }}
-          transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
+        <h2
+          ref={h2Ref}
           style={{
             fontWeight: 600,
             fontSize: "clamp(2.2rem, 4.8vw, 4.5rem)",
@@ -2478,113 +2714,85 @@ function Pipeline() {
             color: "#0f0e0d",
             maxWidth: "20ch",
             marginBottom: "5rem",
+            opacity: 0,
           }}
         >
           Five steps from human demonstration to deployed robot.
-        </motion.h2>
+        </h2>
 
-        {/* Steps — open numbered ledger */}
-        <div>
-          {PIPELINE_STEPS.map((s, i) => (
-            <motion.div
-              key={s.n}
-              initial={{ opacity: 0, y: 18 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-40px" }}
-              transition={{
-                duration: 0.65,
-                delay: i * 0.07,
-                ease: [0.22, 1, 0.36, 1],
-              }}
-              style={{
-                display: "grid",
-                gridTemplateColumns: "clamp(3rem, 5.5vw, 5.5rem) 1fr",
-                gap: "clamp(1rem, 2.5vw, 3rem)",
-                padding: "2.5rem 0",
-                borderTop: "1px solid rgba(15,14,13,0.08)",
-                alignItems: "start",
-              }}
-            >
-              {/* Ghost step number */}
-              <span
-                aria-hidden
+        <div style={{ position: "relative" }}>
+          {/* Animated vertical connector line */}
+          <div
+            ref={lineRef}
+            aria-hidden
+            style={{
+              position: "absolute",
+              left: "calc(clamp(3rem, 5.5vw, 5.5rem) / 2)",
+              top: 0,
+              bottom: 0,
+              width: 1,
+              background: "linear-gradient(to bottom, rgba(15,14,13,0.18) 0%, rgba(15,14,13,0.06) 100%)",
+              transform: "scaleY(0)",
+              transformOrigin: "top",
+              zIndex: 0,
+            }}
+          />
+
+          <div ref={stepsRef}>
+            {PIPELINE_STEPS.map((s, i) => (
+              <div
+                key={s.n}
+                className="pipeline-step"
                 style={{
-                  fontWeight: 700,
-                  fontSize: "clamp(2.2rem, 4vw, 4rem)",
-                  lineHeight: 1,
-                  color: "rgba(15,14,13,0.09)",
-                  letterSpacing: "-0.04em",
-                  fontVariantNumeric: "tabular-nums",
-                  paddingTop: "0.15rem",
-                  userSelect: "none",
+                  display: "grid",
+                  gridTemplateColumns: "clamp(3rem, 5.5vw, 5.5rem) 1fr",
+                  gap: "clamp(1rem, 2.5vw, 3rem)",
+                  padding: "2.5rem 0",
+                  borderTop: "1px solid rgba(15,14,13,0.08)",
+                  alignItems: "start",
+                  position: "relative",
+                  zIndex: 1,
+                  opacity: 0,
                 }}
               >
-                {s.n}
-              </span>
-
-              {/* Content */}
-              <div>
-                <div
+                <span
+                  aria-hidden
                   style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.75rem",
-                    marginBottom: "0.6rem",
+                    fontWeight: 700,
+                    fontSize: "clamp(2.2rem, 4vw, 4rem)",
+                    lineHeight: 1,
+                    color: "rgba(15,14,13,0.09)",
+                    letterSpacing: "-0.04em",
+                    fontVariantNumeric: "tabular-nums",
+                    paddingTop: "0.15rem",
+                    userSelect: "none",
                   }}
                 >
-                  <span
-                    className="font-mono text-[9px] uppercase tracking-[0.26em]"
-                    style={{ color: "rgba(15,14,13,0.33)" }}
-                  >
-                    {s.sub}
-                  </span>
-                  <span
-                    aria-hidden
-                    style={{
-                      display: "inline-block",
-                      width: "3px",
-                      height: "3px",
-                      borderRadius: "50%",
-                      background: "rgba(15,14,13,0.22)",
-                    }}
-                  />
-                  <span
-                    className="font-mono text-[9px] uppercase tracking-[0.26em]"
-                    style={{ color: "rgba(15,14,13,0.20)" }}
-                  >
-                    active
-                  </span>
+                  {s.n}
+                </span>
+                <div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.6rem" }}>
+                    <span className="font-mono text-[9px] uppercase tracking-[0.26em]" style={{ color: "rgba(15,14,13,0.33)" }}>
+                      {s.sub}
+                    </span>
+                    <span aria-hidden style={{ display: "inline-block", width: 3, height: 3, borderRadius: "50%", background: "rgba(15,14,13,0.22)" }} />
+                    <span className="font-mono text-[9px] uppercase tracking-[0.26em]" style={{ color: "rgba(15,14,13,0.20)" }}>
+                      active
+                    </span>
+                  </div>
+                  <h3 style={{ fontWeight: 600, fontSize: "clamp(0.875rem, 1.2vw, 1.1rem)", letterSpacing: "0.08em", textTransform: "uppercase", color: "#0f0e0d", marginBottom: "0.5rem" }}>
+                    {s.title}
+                  </h3>
+                  <p style={{ fontSize: "0.875rem", lineHeight: 1.7, color: "rgba(15,14,13,0.55)" }}>
+                    {s.body}
+                  </p>
                 </div>
-                <h3
-                  style={{
-                    fontWeight: 600,
-                    fontSize: "clamp(0.875rem, 1.2vw, 1.1rem)",
-                    letterSpacing: "0.08em",
-                    textTransform: "uppercase",
-                    color: "#0f0e0d",
-                    marginBottom: "0.5rem",
-                  }}
-                >
-                  {s.title}
-                </h3>
-                <p
-                  style={{
-                    fontSize: "0.875rem",
-                    lineHeight: 1.7,
-                    color: "rgba(15,14,13,0.55)",
-                  }}
-                >
-                  {s.body}
-                </p>
               </div>
-            </motion.div>
-          ))}
-
-          {/* Close rule after last step */}
-          <div style={{ borderTop: "1px solid rgba(15,14,13,0.08)" }} />
+            ))}
+            <div style={{ borderTop: "1px solid rgba(15,14,13,0.08)" }} />
+          </div>
         </div>
 
-        {/* Payoff paragraph */}
         <motion.p
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
@@ -2967,21 +3175,22 @@ function Hero() {
          v=0.82 → 0.90  "The skilled labor base is eroding" +
                         subtitle reveal on the RIGHT.
          v>0.90         hold the final state. */
-  const HERO_DISAPPEAR_START = 0.02;
-  const HERO_DISAPPEAR_END = 0.07;
-  const HERO_WORD_DURATION = 0.04;
-  const invertProgress = useTransform(scrollYProgress, [0.07, 0.11], [0, 1]);
-  const morphProgress = useTransform(scrollYProgress, [0.11, 0.19], [0, 1]);
+  /* Fractions scaled from original 370svh design so each animation phase
+     covers the same absolute scroll distance at the current 230svh section.
+     Scale factor: 370/230 ≈ 1.609.  Hold after last text = only ~82svh. */
+  const HERO_DISAPPEAR_START = 0.032;
+  const HERO_DISAPPEAR_END = 0.113;
+  const HERO_WORD_DURATION = 0.064;
+  const invertProgress = useTransform(scrollYProgress, [0, 1], [1, 1]);
+  const morphProgress = useTransform(scrollYProgress, [0.177, 0.306], [0, 1]);
+  const boxAlphaProgress = useTransform(scrollYProgress, [0.113, 0.161], [1, 0]);
+  const dotEnterProgress = useTransform(scrollYProgress, [0.080, 0.161], [0, 1]);
+  const dotFillProgress = useTransform(scrollYProgress, [0.113, 0.177], [0, 1]);
   const heroBg = useTransform(invertProgress, [0, 1], ["#f5efe5", "#0f0e0d"]);
   const revealHead = useTransform(
     scrollYProgress,
-    [0.19, 0.30, 0.34, 0.39],
-    [
-      0,
-      SLIDE2_TEXT.length + 7,
-      SLIDE2_TEXT.length + 7,
-      0,
-    ],
+    [0.306, 0.483],
+    [0, SLIDE2_TEXT.length + 7],
   );
   /* All deep-dive morphs (brain → clock → earth → cliffs) are gated
      on `deepDive`. In default (short) mode each raw transform is
@@ -3023,7 +3232,7 @@ function Hero() {
      with zero entrance animation. */
   const [hydrated, setHydrated] = useState(false);
   useMotionValueEvent(scrollYProgress, "change", (v) => {
-    setStage(v > 0.30 && v < 0.39 ? 3 : 0);
+    setStage(v > 0.483 && v < 0.531 ? 3 : 0);
     /* visionReady / erodingReady / cliffReady trigger the entrance
        of the per-stage cliff overlays (Current Teleop / Skilled
        labor / Sim-to-real gap). They are gated on `deepDive` so the
@@ -3044,35 +3253,21 @@ function Hero() {
     setHydrated(true);
   }, [scrollYProgress, deepDive]);
 
-  /* Opacity of the Learn More button — fades in just after SLIDE2
-     text has fully revealed (~0.30 of pinRef progress) and fades
-     out as the short-path "headlines together" view takes over.
-     Forced to 0 in deep-dive mode (the user has already chosen). */
-  const learnMoreOpacityRaw = useTransform(
-    scrollYProgress,
-    [0.28, 0.32, 0.42, 0.47],
-    [0, 1, 1, 0],
-  );
-  const learnMoreOpacity = useTransform(learnMoreOpacityRaw, (v) =>
-    deepDive ? 0 : v,
-  );
-  const learnMorePointer = useTransform(learnMoreOpacityRaw, (v) =>
-    !deepDive && v > 0.5 ? "auto" : "none",
-  );
-
-  /* Opacity driving the "three headlines together" overlay that
-     replaces the deep-dive cliff sequence in the short path. Brain
-     stays as the dot art; the three titles + subtitles fade in
-     simultaneously, sit briefly, then begin fading as the frame
-     exit kicks in. Forced to 0 in deep-dive mode. */
+  /* Shared opacity for the "three problems + Learn More" overlay.
+     Fades in once the brain has fully formed and slide-2 text has
+     peaked, then holds for most of the short-path section before
+     fading as the section exits. Forced to 0 in deep-dive mode. */
   const headlinesTogetherRaw = useTransform(
     scrollYProgress,
-    [0.45, 0.62, 0.95, 1.0],
-    [0, 1, 1, 0.6],
+    [0.531, 0.644],
+    [0, 1],
   );
   const headlinesTogetherOpacity = useTransform(
     headlinesTogetherRaw,
     (v) => (deepDive ? 0 : v),
+  );
+  const learnMorePointer = useTransform(headlinesTogetherRaw, (v) =>
+    !deepDive && v > 0.5 ? "auto" : "none",
   );
 
   return (
@@ -3118,7 +3313,7 @@ function Hero() {
         ref={sectionRef}
         className="relative"
         style={{
-          height: deepDive ? "880svh" : "370svh",
+          height: deepDive ? "880svh" : "230svh",
         }}
       >
         {/* Invisible scroll-measurement marker. */}
@@ -3126,7 +3321,7 @@ function Hero() {
           ref={pinRef}
           aria-hidden
           className="pointer-events-none absolute left-0 right-0 top-0"
-          style={{ height: deepDive ? "880svh" : "370svh" }}
+          style={{ height: deepDive ? "880svh" : "230svh" }}
         />
         <div className="sticky top-0 h-[100svh] overflow-hidden">
           {/* Hero content — fills the viewport while pinned */}
@@ -3139,6 +3334,22 @@ function Hero() {
             className="pointer-events-none absolute inset-0 z-0"
             style={{ backgroundColor: heroBg }}
           />
+
+          {/* Ethereal shadow — hero background, fades out with slide-1 content */}
+          <motion.div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 z-[1]"
+            style={{ opacity: boxAlphaProgress }}
+          >
+            <EtherealShadow
+              color="rgba(109, 40, 217, 0.85)"
+              animation={{ scale: 100, speed: 90 }}
+              noise={{ opacity: 1, scale: 1.2 }}
+              sizing="fill"
+            />
+          </motion.div>
+
+          {/* Topographical dots — dots hidden on slide 1, box always visible */}
           <TopographicalDots
             morphProgress={morphProgress}
             invertProgress={invertProgress}
@@ -3148,6 +3359,9 @@ function Hero() {
             earthOffsetProgress={earthOffsetProgress}
             cliffMorphProgress={cliffMorphProgress}
             cliffPhaseProgress={cliffPhaseProgress}
+            boxAlphaProgress={boxAlphaProgress}
+            dotFillProgress={dotFillProgress}
+            dotOpacity={dotEnterProgress}
           />
 
 
@@ -3188,109 +3402,95 @@ function Hero() {
             </div>
           </div>
 
-          {/* LEARN MORE button — appears just after the SLIDE2 sentence
-              completes (scrollYProgress ≈ 0.30) and fades out by 0.47.
-              Click flips deepDive=true and smooth-scrolls into Current
-              Teleoperation; scroll past without clicking takes the
-              short path (HeadlinesTogether → frame exit → dictionary).
-              Forced invisible + non-interactive once deepDive is true. */}
-          <motion.div
-            className="pointer-events-none absolute inset-x-0 z-[8] flex justify-center px-6"
-            style={{
-              bottom: "clamp(3.5rem, 10vh, 7rem)",
-              opacity: learnMoreOpacity,
-            }}
-          >
-            <motion.button
-              type="button"
-              onClick={handleLearnMore}
-              style={{
-                pointerEvents: learnMorePointer,
-                fontFamily:
-                  "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
-                fontSize: "clamp(0.95rem, 1.1vw, 1.1rem)",
-                fontWeight: 500,
-                padding: "0.85rem 1.7rem",
-                border: "1px solid rgba(245, 239, 229, 0.34)",
-                borderRadius: "999px",
-                backgroundColor: "rgba(245, 239, 229, 0.07)",
-                color: "rgba(245, 239, 229, 0.96)",
-                letterSpacing: "0.02em",
-                cursor: "pointer",
-                backdropFilter: "blur(8px) saturate(140%)",
-                WebkitBackdropFilter: "blur(8px) saturate(140%)",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "0.7rem",
-              }}
-            >
-              Learn more
-              <span aria-hidden style={{ display: "inline-block" }}>
-                →
-              </span>
-            </motion.button>
-          </motion.div>
-
-          {/* HEADLINES TOGETHER — short-path payoff: the three deep-dive
-              titles fade in simultaneously over the brain dot art,
-              hold while the user reads, then begin to fade as the
-              frame exit kicks in. Hidden in deep-dive mode (those
-              titles play out sequentially with their own morphs). */}
+          {/* THREE PROBLEMS + LEARN MORE — short-path payoff. All three
+              problem titles appear together with a Learn More button
+              on the right. Fades in once the brain is fully formed
+              and slide-2 text has peaked. Hidden in deep-dive mode. */}
           {hydrated && (
             <motion.div
-              className="pointer-events-none absolute inset-x-0 z-[7] hidden md:block"
+              className="absolute inset-x-0 z-[7] hidden md:block"
               style={{
-                bottom: "clamp(6.5rem, 14vh, 9rem)",
+                bottom: "clamp(5rem, 11vh, 8rem)",
                 opacity: headlinesTogetherOpacity,
               }}
               aria-hidden={deepDive}
             >
-              <div className="mx-auto grid max-w-[1320px] grid-cols-3 gap-8 px-10 lg:gap-12 lg:px-14">
-                {[
-                  {
-                    tokens: MODERN_TELEOP_TITLE_TOKENS,
-                    note: "vision-only stacks plateau on contact-rich tasks.",
-                  },
-                  {
-                    tokens: ERODING_TITLE_TOKENS,
-                    note: "50M manufacturing roles projected unfilled by 2030.",
-                  },
-                  {
-                    tokens: GAP_TITLE_TOKENS,
-                    note: "no simulator yet models friction, deformation, multi-point contact.",
-                  },
-                ].map((col, idx) => (
-                  <div key={idx} className="flex flex-col">
-                    <h3
-                      style={{
-                        fontFamily:
-                          "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
-                        fontWeight: 600,
-                        fontSize: "clamp(1.05rem, 1.55vw, 1.55rem)",
-                        lineHeight: 1.15,
-                        letterSpacing: "-0.015em",
-                        margin: 0,
-                        color: "rgba(245, 239, 229, 0.96)",
-                      }}
-                    >
-                      {col.tokens.join(" ")}
-                    </h3>
-                    <p
-                      style={{
-                        marginTop: "0.55rem",
-                        fontFamily:
-                          "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
-                        fontWeight: 400,
-                        fontSize: "clamp(0.82rem, 0.95vw, 1rem)",
-                        lineHeight: 1.45,
-                        letterSpacing: "0.005em",
-                        color: "rgba(245, 239, 229, 0.55)",
-                      }}
-                    >
-                      {col.note}
-                    </p>
-                  </div>
-                ))}
+              <div className="mx-auto flex max-w-[1320px] items-end gap-8 px-10 lg:gap-12 lg:px-14">
+                <div className="pointer-events-none grid flex-1 grid-cols-3 gap-8 lg:gap-12">
+                  {[
+                    {
+                      tokens: MODERN_TELEOP_TITLE_TOKENS,
+                      note: "vision-only stacks plateau on contact-rich tasks.",
+                    },
+                    {
+                      tokens: ERODING_TITLE_TOKENS,
+                      note: "50M manufacturing roles projected unfilled by 2030.",
+                    },
+                    {
+                      tokens: GAP_TITLE_TOKENS,
+                      note: "no simulator yet models friction, deformation, multi-point contact.",
+                    },
+                  ].map((col, idx) => (
+                    <div key={idx} className="flex flex-col">
+                      <h3
+                        style={{
+                          fontFamily:
+                            "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
+                          fontWeight: 600,
+                          fontSize: "clamp(1.05rem, 1.55vw, 1.55rem)",
+                          lineHeight: 1.15,
+                          letterSpacing: "-0.015em",
+                          margin: 0,
+                          color: "rgba(245, 239, 229, 0.96)",
+                        }}
+                      >
+                        {col.tokens.join(" ")}
+                      </h3>
+                      <p
+                        style={{
+                          marginTop: "0.55rem",
+                          fontFamily:
+                            "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
+                          fontWeight: 400,
+                          fontSize: "clamp(0.82rem, 0.95vw, 1rem)",
+                          lineHeight: 1.45,
+                          letterSpacing: "0.005em",
+                          color: "rgba(245, 239, 229, 0.55)",
+                        }}
+                      >
+                        {col.note}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+                <motion.button
+                  type="button"
+                  onClick={handleLearnMore}
+                  style={{
+                    pointerEvents: learnMorePointer,
+                    flexShrink: 0,
+                    fontFamily:
+                      "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
+                    fontSize: "clamp(0.85rem, 0.95vw, 1rem)",
+                    fontWeight: 500,
+                    padding: "0.75rem 1.5rem",
+                    border: "1px solid rgba(245, 239, 229, 0.34)",
+                    borderRadius: "999px",
+                    backgroundColor: "rgba(245, 239, 229, 0.07)",
+                    color: "rgba(245, 239, 229, 0.96)",
+                    letterSpacing: "0.02em",
+                    cursor: "pointer",
+                    backdropFilter: "blur(8px) saturate(140%)",
+                    WebkitBackdropFilter: "blur(8px) saturate(140%)",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "0.6rem",
+                    marginBottom: "0.2rem",
+                  }}
+                >
+                  Learn more
+                  <span aria-hidden style={{ display: "inline-block" }}>→</span>
+                </motion.button>
               </div>
             </motion.div>
           )}
@@ -4130,10 +4330,22 @@ function Hero() {
               text blocks — no on-mount entrance animation on a
               scrolled-refresh. */}
           {hydrated && (
+          <>
+          {/* Border — fades on scroll exactly like the original canvas box */}
+          <motion.div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 z-[5] hidden items-center justify-center md:flex"
+            style={{ opacity: boxAlphaProgress }}
+          >
+            <div
+              className="border border-[rgba(245,239,229,0.18)]"
+              style={{ width: "min(92vw, 1060px)", height: "min(85svh, 580px)" }}
+            />
+          </motion.div>
           <motion.div
             className="pointer-events-none absolute inset-0 z-[5] hidden items-center justify-center px-6 md:flex md:px-10"
           >
-            <div className="pointer-events-none flex w-full max-w-[1100px] flex-col items-center">
+            <div className="pointer-events-none flex flex-col items-center justify-center" style={{ width: "min(92vw, 1060px)", height: "min(85svh, 580px)" }}>
               {/* Eyebrow — rises from its overflow-hidden barrier after the title */}
               <div
                 style={{
@@ -4157,12 +4369,13 @@ function Hero() {
                   style={{
                     position: "relative",
                     fontFamily:
-                      "var(--font-tt-norms-pro), ui-sans-serif, system-ui",
-                    fontWeight: 300,
+                      "var(--font-jetbrains-mono), 'JetBrains Mono', 'Fira Code', monospace",
+                    fontWeight: 400,
                     fontStyle: "normal",
-                    fontSize: "clamp(0.92rem, 1.1vw, 1.1rem)",
+                    fontSize: "clamp(0.7rem, 0.85vw, 0.85rem)",
                     lineHeight: 1.5,
-                    letterSpacing: "0.005em",
+                    letterSpacing: "0.12em",
+                    textTransform: "uppercase",
                     color: "var(--cyan)",
                     margin: 0,
                     textAlign: "center",
@@ -4194,7 +4407,7 @@ function Hero() {
                             scrollProgress={scrollYProgress}
                             start={wins[i].start}
                             end={wins[i].end}
-                            color={isBracket ? undefined : "#0f0e0d"}
+                            color={isBracket ? undefined : "rgba(245, 239, 229, 0.72)"}
                           >
                             {tok}
                           </HeroWord>
@@ -4305,14 +4518,14 @@ function Hero() {
                   style={{
                     position: "relative",
                     fontFamily:
-                      "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
-                    fontWeight: 800,
+                      "var(--font-crimson-text), Georgia, 'Times New Roman', serif",
+                    fontWeight: 400,
                     fontStyle: "normal",
-                    fontSize: "clamp(2.4rem, 5.2vw, 4.6rem)",
-                    lineHeight: 1.03,
-                    letterSpacing: "-0.035em",
+                    fontSize: "clamp(2.8rem, 5.8vw, 5.4rem)",
+                    lineHeight: 1.0,
+                    letterSpacing: "-0.015em",
                     margin: 0,
-                    color: "#0f0e0d",
+                    color: "rgba(245, 239, 229, 0.96)",
                     textAlign: "center",
                   }}
                 >
@@ -4481,7 +4694,7 @@ function Hero() {
                     fontSize: "clamp(1.15rem, 1.45vw, 1.45rem)",
                     lineHeight: 1.6,
                     letterSpacing: "-0.005em",
-                    color: "rgba(15, 14, 13, 0.78)",
+                    color: "rgba(245, 239, 229, 0.96)",
                     margin: 0,
                     textAlign: "center",
                   }}
@@ -4639,6 +4852,7 @@ function Hero() {
               </div>
             </div>
           </motion.div>
+          </>
           )}
 
           </div>
@@ -5034,10 +5248,42 @@ const EVIDENCE_STATS = [
   },
 ] as const;
 
+function GSAPCounter({ target, suffix = "", decimals = 0 }: { target: number; suffix?: string; decimals?: number }) {
+  const ref     = useRef<HTMLSpanElement>(null);
+  const visible = useContext(SectionVisibleCtx);
+  const started = useRef(false);
+
+  useEffect(() => {
+    if (!visible) return;
+    return visible.on("change", (v: number) => {
+      if (v > 0.3 && !started.current && ref.current) {
+        started.current = true;
+        const obj = { val: 0 };
+        gsap.to(obj, {
+          val: target,
+          duration: 2.4,
+          ease: "power3.out",
+          onUpdate() {
+            if (ref.current) {
+              const display = decimals > 0 ? obj.val.toFixed(decimals) : Math.round(obj.val).toString();
+              ref.current.textContent = display + suffix;
+            }
+          },
+        });
+      }
+    });
+  }, [visible, target, suffix, decimals]);
+
+  return (
+    <span ref={ref} className="tabular-nums">
+      {decimals > 0 ? (0).toFixed(decimals) : "0"}{suffix}
+    </span>
+  );
+}
+
 function Evidence() {
   return (
     <section className="relative overflow-hidden" style={{ color: "#0f0e0d" }}>
-      <PaperBackground />
       <div className="relative mx-auto max-w-[1400px] px-6 pt-24 pb-24 md:px-10 md:pt-28 md:pb-36">
 
         {/* Section header bar */}
@@ -5122,6 +5368,10 @@ function Evidence() {
                 padding: "2.5rem 2rem",
                 borderBottom: "1px solid rgba(15,14,13,0.08)",
                 borderRight: "1px solid rgba(15,14,13,0.08)",
+                transition: "box-shadow 0.25s ease, transform 0.25s ease",
+              }}
+              whileHover={{
+                boxShadow: "inset 0 0 0 1px rgba(15,14,13,0.10)",
               }}
             >
               {/* Dominant number */}
@@ -5135,7 +5385,33 @@ function Evidence() {
                   marginBottom: "0.75rem",
                 }}
               >
-                <StatCounter target={s.num} suffix={s.suffix} />
+                <GSAPCounter target={s.num} suffix={s.suffix} decimals={Number.isInteger(s.num) ? 0 : 1} />
+              </div>
+
+              {/* Fill bar */}
+              <div
+                style={{
+                  height: 2,
+                  background: "rgba(15,14,13,0.06)",
+                  borderRadius: 1,
+                  marginBottom: "0.75rem",
+                  overflow: "hidden",
+                }}
+              >
+                <motion.div
+                  initial={{ scaleX: 0 }}
+                  whileInView={{ scaleX: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 1.6, delay: 0.3 + (i % 3) * 0.15, ease: [0.22, 1, 0.36, 1] }}
+                  style={{
+                    height: "100%",
+                    background: "#0f0e0d",
+                    borderRadius: 1,
+                    transformOrigin: "left",
+                    width: "100%",
+                    opacity: 0.45,
+                  }}
+                />
               </div>
 
               {/* Label */}
@@ -5528,25 +5804,83 @@ function Technicals() {
    SITE FOOTER — minimal two-line strip
    ========================================================================== */
 function SiteFooter() {
+  const trackRef = useRef<HTMLDivElement>(null);
+  const lineRef  = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = trackRef.current;
+    if (!el || typeof window === "undefined") return;
+    // Wait one frame for layout
+    const id = requestAnimationFrame(() => {
+      const w = el.scrollWidth / 2;
+      gsap.fromTo(
+        el,
+        { x: 0 },
+        { x: -w, duration: 30, ease: "none", repeat: -1 }
+      );
+    });
+    return () => {
+      cancelAnimationFrame(id);
+      gsap.killTweensOf(el);
+    };
+  }, []);
+
+  const text = "NOVONUS — THE TRAINING LAYER FOR INDUSTRIAL ROBOTICS — ";
+  const looped = text.repeat(12);
+
   return (
     <footer
       className="relative overflow-hidden"
       style={{
-        fontFamily:
-          "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
+        fontFamily: "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
+        backgroundColor: "#0f0e0d",
+        color: "#f5efe5",
       }}
     >
-      <PaperBackground />
+      {/* Gradient accent line */}
+      <div
+        ref={lineRef}
+        style={{
+          height: 1,
+          background: "linear-gradient(90deg, transparent 0%, rgba(139,92,246,0.6) 30%, rgba(110,231,183,0.6) 70%, transparent 100%)",
+        }}
+      />
+
+      {/* Marquee strip */}
+      <div
+        style={{
+          overflow: "hidden",
+          borderBottom: "1px solid rgba(245,239,229,0.06)",
+          padding: "1.1rem 0",
+        }}
+      >
+        <div
+          ref={trackRef}
+          style={{ display: "flex", whiteSpace: "nowrap", width: "max-content" }}
+        >
+          <span
+            className="font-mono text-[9px] uppercase tracking-[0.34em]"
+            style={{ color: "rgba(245,239,229,0.20)", display: "inline-block" }}
+          >
+            {looped}
+          </span>
+        </div>
+      </div>
+
+      {/* Footer content */}
       <div
         className="relative mx-auto max-w-[1400px] px-6 py-10 md:px-10 md:py-12"
-        style={{ borderTop: "1px solid rgba(15, 14, 13, 0.10)" }}
       >
         <div
           className="flex flex-col items-start justify-between gap-2 text-[12px] md:flex-row md:items-center md:text-[13px]"
-          style={{ color: "rgba(15, 14, 13, 0.55)" }}
+          style={{ color: "rgba(245,239,229,0.38)" }}
         >
-          <p>Novonus / The training layer for industrial robotics</p>
-          <p>© 2026</p>
+          <p style={{ letterSpacing: "0.01em" }}>
+            Novonus{" "}
+            <span style={{ color: "rgba(245,239,229,0.18)", margin: "0 0.4em" }}>—</span>
+            The training layer for industrial robotics
+          </p>
+          <p style={{ fontVariantNumeric: "tabular-nums" }}>© 2026</p>
         </div>
       </div>
     </footer>
@@ -5578,6 +5912,67 @@ function EtymologyEntry() {
   const accent = "rgba(26, 23, 20, 0.78)";
   const hairline = "rgba(26, 23, 20, 0.22)";
 
+  const cardRef     = useRef<HTMLDivElement>(null);
+  const kickerRef   = useRef<HTMLParagraphElement>(null);
+  const headRef     = useRef<HTMLElement>(null);
+  const bodyRef     = useRef<HTMLDivElement>(null);
+  const tailRef     = useRef<HTMLParagraphElement>(null);
+  const visible     = useContext(SectionVisibleCtx);
+  const animated    = useRef(false);
+
+  useEffect(() => {
+    if (!visible) return;
+    return visible.on("change", (v: number) => {
+      if (v < 0.05 && animated.current) {
+        animated.current = false;
+        gsap.set(cardRef.current, { opacity: 0, y: 48, scale: 0.97 });
+        gsap.set(kickerRef.current, { opacity: 0, letterSpacing: "0.85em" });
+        gsap.set(headRef.current, { opacity: 0, y: 18 });
+        gsap.set(bodyRef.current, { opacity: 0 });
+        gsap.set(tailRef.current, { opacity: 0, y: 12 });
+      }
+      if (v > 0.35 && !animated.current) {
+        animated.current = true;
+        const mm = gsap.matchMedia();
+        mm.add("(prefers-reduced-motion: no-preference)", () => {
+          const tl = gsap.timeline();
+          tl.fromTo(
+            cardRef.current,
+            { opacity: 0, y: 48, scale: 0.97 },
+            { opacity: 1, y: 0, scale: 1, duration: 1.0, ease: "power3.out" }
+          );
+          tl.fromTo(
+            kickerRef.current,
+            { opacity: 0, letterSpacing: "0.85em" },
+            { opacity: 1, letterSpacing: "0.55em", duration: 0.9, ease: "power2.out" },
+            "-=0.6"
+          );
+          tl.fromTo(
+            headRef.current,
+            { opacity: 0, y: 18 },
+            { opacity: 1, y: 0, duration: 0.7, ease: "power2.out" },
+            "-=0.55"
+          );
+          tl.fromTo(
+            bodyRef.current,
+            { opacity: 0 },
+            { opacity: 1, duration: 0.6, ease: "power2.out" },
+            "-=0.4"
+          );
+          tl.fromTo(
+            tailRef.current,
+            { opacity: 0, y: 12 },
+            { opacity: 1, y: 0, duration: 0.7, ease: "power2.out" },
+            "-=0.3"
+          );
+        });
+        mm.add("(prefers-reduced-motion: reduce)", () => {
+          gsap.set([cardRef.current, kickerRef.current, headRef.current, bodyRef.current, tailRef.current], { opacity: 1, y: 0, scale: 1 });
+        });
+      }
+    });
+  }, [visible]);
+
   return (
     <div
       className="relative flex min-h-[100svh] w-full items-center justify-center px-6 md:px-14"
@@ -5595,6 +5990,7 @@ function EtymologyEntry() {
           interior padding. Stays centered in the viewport via the
           parent's flex centering. */}
       <div
+        ref={cardRef}
         className="relative mx-auto w-full max-w-[1180px]"
         style={{
           backgroundColor: "#ece4d2",
@@ -5602,12 +5998,14 @@ function EtymologyEntry() {
           borderRadius: "26px",
           padding: "clamp(2.6rem, 5.4vw, 4.4rem) clamp(2rem, 5vw, 4rem)",
           boxShadow: "0 1px 0 rgba(255, 255, 255, 0.45) inset",
+          opacity: 0,
         }}
       >
         {/* INTRODUCING — kicker sits at the top of the framed card,
             centered, with generous letter-spacing so it reads as
             a running head over the entry below. */}
         <p
+          ref={kickerRef}
           className="text-center"
           style={{
             margin: "0 0 2.2rem",
@@ -5625,7 +6023,7 @@ function EtymologyEntry() {
 
         {/* PRIMARY HEADWORD — `novo·nus` with a single middle-dot
             between the two roots. */}
-        <header style={{ marginBottom: "1.8rem" }}>
+        <header ref={headRef} style={{ marginBottom: "1.8rem" }}>
           <div
             style={{
               display: "flex",
@@ -5688,7 +6086,7 @@ function EtymologyEntry() {
 
         {/* ROOTS — the two individual meanings come FIRST so the
             compound definition lands as the punchline below. */}
-        <div className="grid grid-cols-1 gap-7 md:grid-cols-2 md:gap-12">
+        <div ref={bodyRef} className="grid grid-cols-1 gap-7 md:grid-cols-2 md:gap-12">
           {/* NOVO */}
           <article>
             <header style={{ marginBottom: "0.55rem" }}>
@@ -5878,6 +6276,7 @@ function EtymologyEntry() {
             Inter Tight to match the site's body text, plain roman,
             no em-dash so it reads as its own clean line. */}
         <p
+          ref={tailRef}
           className="text-center"
           style={{
             margin: "4.5rem 0 0",
@@ -5919,8 +6318,32 @@ function EtymologyEntry() {
    unchanging background.
    ========================================================================== */
 
-const STAGE_HOLD = 0.5; // viewport-heights a section stays fully visible
-const STAGE_CROSSFADE = 0.7; // viewport-heights the transition spans
+function StageMeshBackground() {
+  const [dims, setDims] = useState({ width: 1920, height: 1080 });
+  useEffect(() => {
+    const update = () => setDims({ width: window.innerWidth, height: window.innerHeight });
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+  return (
+    <div style={{ position: "absolute", inset: 0, zIndex: 0 }}>
+      <MeshGradient
+        width={dims.width}
+        height={dims.height}
+        colors={["#f5efe5", "#e8d5b7", "#c9b0e8", "#e8d0f5", "#d4c5a9", "#f0e6d3"]}
+        distortion={1.2}
+        swirl={0.6}
+        speed={0.2}
+        grainMixer={0}
+        grainOverlay={0}
+      />
+    </div>
+  );
+}
+
+const STAGE_HOLD = 0.45; // viewport-heights a section stays fully visible
+const STAGE_CROSSFADE = 0.4; // viewport-heights the transition spans
 /* Smooth, slightly cinematic ease for the leave/enter motion. */
 const EASE_STAGE = cubicBezier(0.4, 0, 0.2, 1);
 
@@ -5994,6 +6417,12 @@ function CrossfadeLayer({
     wipeIn.get() + wipeOut.get() > 0.5 ? "none" : "auto",
   );
 
+  /* 0 when section is wiped away, 1 when fully visible. */
+  const sectionVisible = useTransform(() => {
+    const t = wipeIn.get() + wipeOut.get();
+    return Math.max(0, 1 - t * 2.5);
+  });
+
   return (
     <motion.div
       style={{ position: "absolute", inset: 0, pointerEvents }}
@@ -6004,14 +6433,106 @@ function CrossfadeLayer({
           maskImage,
           WebkitMaskImage: maskImage,
           width: "100%",
-          willChange: "transform, mask-image",
+          willChange: "transform",
         }}
       >
         <div ref={contentRef} style={{ width: "100%" }}>
-          {children}
+          <SectionVisibleCtx.Provider value={sectionVisible}>
+            {children}
+          </SectionVisibleCtx.Provider>
         </div>
       </motion.div>
     </motion.div>
+  );
+}
+
+/* Three.js ambient dust — tiny cream-section particles that drift slowly upward.
+   Positioned absolute to fill whatever parent it lives in. */
+function FloatingDust() {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || typeof window === "undefined") return;
+
+    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: false });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.0));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
+    camera.position.z = 5;
+
+    const N = 65;
+    const positions = new Float32Array(N * 3);
+    const velocities = new Float32Array(N * 2); // x, y velocity per particle
+    for (let i = 0; i < N; i++) {
+      positions[i * 3]     = (Math.random() - 0.5) * 14;
+      positions[i * 3 + 1] = (Math.random() - 0.5) * 10;
+      positions[i * 3 + 2] = (Math.random() - 0.5) * 2;
+      velocities[i * 2]     = (Math.random() - 0.5) * 0.0015;
+      velocities[i * 2 + 1] = Math.random() * 0.0008 + 0.0002;
+    }
+
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+
+    const mat = new THREE.PointsMaterial({
+      color: 0x0f0e0d,
+      size: 0.025,
+      transparent: true,
+      opacity: 0.15,
+      sizeAttenuation: true,
+    });
+
+    const mesh = new THREE.Points(geo, mat);
+    scene.add(mesh);
+
+    let raf = 0;
+    const tick = () => {
+      raf = requestAnimationFrame(tick);
+      const pos = geo.attributes.position.array as Float32Array;
+      for (let i = 0; i < N; i++) {
+        pos[i * 3]     += velocities[i * 2];
+        pos[i * 3 + 1] += velocities[i * 2 + 1];
+        if (pos[i * 3]     >  7) pos[i * 3]     = -7;
+        if (pos[i * 3]     < -7) pos[i * 3]     =  7;
+        if (pos[i * 3 + 1] >  5) pos[i * 3 + 1] = -5;
+      }
+      geo.attributes.position.needsUpdate = true;
+      renderer.render(scene, camera);
+    };
+    tick();
+
+    const onResize = () => {
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+    };
+    window.addEventListener("resize", onResize);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("resize", onResize);
+      renderer.dispose();
+      geo.dispose();
+      mat.dispose();
+    };
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      aria-hidden
+      style={{
+        position: "absolute",
+        inset: 0,
+        width: "100%",
+        height: "100%",
+        pointerEvents: "none",
+        zIndex: 0,
+      }}
+    />
   );
 }
 
@@ -6107,8 +6628,8 @@ function CrossfadeStage({ sections }: { sections: ReactNode[] }) {
     >
       <div
         className="sticky top-0 h-[100svh] overflow-hidden"
-        style={{ background: "#f5efe5" }}
       >
+        <StageMeshBackground />
         {sections.map((node, i) => (
           <CrossfadeLayer
             key={i}
@@ -6126,6 +6647,32 @@ function CrossfadeStage({ sections }: { sections: ReactNode[] }) {
 }
 
 /* ============================================================================
+   SCROLL SECTION — simple wrapper that provides SectionVisibleCtx via
+   IntersectionObserver, replacing the CrossfadeLayer's wipe-based trigger.
+   ========================================================================== */
+function ScrollSection({ children }: { children: ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const visible = useMotionValue(0);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => { visible.set(entry.isIntersecting ? 1 : 0); },
+      { threshold: 0.15 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [visible]);
+  return (
+    <div ref={ref}>
+      <SectionVisibleCtx.Provider value={visible}>
+        {children}
+      </SectionVisibleCtx.Provider>
+    </div>
+  );
+}
+
+/* ============================================================================
    PAGE — root export
    ========================================================================== */
 
@@ -6134,15 +6681,15 @@ export default function Home() {
     <IntroProvider sidebar={<Sidebar />}>
       <main>
         <Hero />
-        <CrossfadeStage
-          sections={[
+        {/* Cream sections — pinned crossfade for first four, normal scroll for etymology */}
+        <div className="relative" style={{ background: "#f0e6d3" }}>
+          <CrossfadeStage sections={[
             <FluidSection key="fluid" />,
-            <WhatWeBuild key="build" />,
             <Pipeline key="pipeline" />,
             <Evidence key="evidence" />,
-            <EtymologyEntry key="etymology" />,
-          ]}
-        />
+          ]} />
+          <ScrollSection><EtymologyEntry /></ScrollSection>
+        </div>
         <div className="relative z-[60] bg-[#0f0e0d]">
           <SiteFooter />
         </div>
