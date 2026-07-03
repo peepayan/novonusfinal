@@ -33,7 +33,19 @@
       "Bash(echo \"started pid=$!\")",
       "Bash(cat \"C:\\\\\\\\Users\\\\\\\\deepa\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\claude\\\\\\\\C--Users-deepa-novonusfinal\\\\\\\\da39013d-a620-4415-8cbe-63bc6c5e617e\\\\\\\\tasks\\\\\\\\bjsfzb27h.output\")",
       "Bash(claude update *)",
-      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\deepa\\\\.claude\" -Recurse | Select-Object FullName | Where-Object { $_.FullName -match \"skill\" })"
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\deepa\\\\.claude\" -Recurse | Select-Object FullName | Where-Object { $_.FullName -match \"skill\" })",
+      "Bash(mkdir -p \"C:\\\\Users\\\\deepa\\\\novonusfinal\\\\components\\\\ui\")",
+      "Bash(mkdir -p \"C:\\\\Users\\\\deepa\\\\novonusfinal\\\\lib\")",
+      "Skill(run)",
+      "PowerShell($headroom = \"$env:LOCALAPPDATA\\\\Packages\\\\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\\\\LocalCache\\\\local-packages\\\\Python313\\\\Scripts\\\\headroom.exe\"; & $headroom wrap claude 2>&1)",
+      "Bash(gh repo *)",
+      "Bash(gh api *)",
+      "Bash(headroom --version)",
+      "Bash(pip show *)",
+      "Bash(headroom wrap *)",
+      "mcp__headroom__headroom_stats",
+      "Skill(update-config)",
+      "WebFetch"
     ]
   }
 }

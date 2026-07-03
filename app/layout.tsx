@@ -186,9 +186,13 @@ const ebGaramond = EB_Garamond({
 });
 
 export const metadata: Metadata = {
-  title: "Novonus — The training layer for industrial robotics",
+  title: "Novonus",
   description:
     "Novonus captures biological signals from human operators to train industrial robots on contact-rich assembly tasks vision-only systems plateau on. The layer foundation models cannot see.",
+  icons: {
+    icon: "/novonus-favicon.png",
+    apple: "/novonus-favicon.png",
+  },
 };
 
 export default function RootLayout({

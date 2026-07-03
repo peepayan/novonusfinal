@@ -50,6 +50,8 @@ All animations use **Framer Motion 11**. Patterns used throughout:
 
 TT Norms Pro (5 weights, self-hosted WOFF2 in `app/fonts/`) is loaded in `layout.tsx` via `next/font/local`. Kode Mono is loaded from Google Fonts. All font CSS variables are then overridden in `globals.css` to point to Kode Mono.
 
+**IMPORTANT — font rule**: NEVER use Kode Mono (`--font-kode-mono`, `var(--font-kode-mono)`, or `'Kode Mono'`) in any new or edited UI components. Use **Inter Tight** (`var(--font-inter-tight)`) for display headings and **Inter Tight** or **TT Norms Pro** for body text instead.
+
 ### No backend
 
 Pure static/client-side rendering. No API routes, no database, no server components doing data fetching.

@@ -54,15 +54,15 @@ type IntroPhase =
                   rounded-rectangle top bar appears around it, and the
                   site fades in.
      done       — site fully interactive. */
-const LOADING_BAR_MS = 2200;
-const LOADING_BAR_HOLD_MS = 250;
+const LOADING_BAR_MS = 850;
+const LOADING_BAR_HOLD_MS = 60;
 /* logoPop covers logo scale-in, wordmark wipe-in, and a hold for read
    time. The dock phase is the transition: wordmark and logo retract /
    fly to the top in one quick beat — no separate fade-out. */
-const LOGO_POP_MS = 2200;
-const DOCK_MS = 500;
-const MORPH_S = 0.75;
-const POP_S = 0.45;
+const LOGO_POP_MS = 650;
+const DOCK_MS = 360;
+const MORPH_S = 0.38;
+const POP_S = 0.28;
 const EASE_MORPH = [0.65, 0, 0.35, 1] as const;
 const EASE_POP = [0.34, 1.56, 0.64, 1] as const;
 const EASE_FADE = [0.22, 1, 0.36, 1] as const;
@@ -248,6 +248,7 @@ function Preloader() {
           style={{
             backgroundColor: "#0f0e0d",
             pointerEvents: overlayVisible ? "auto" : "none",
+            willChange: "opacity",
           }}
         >
           <div className="glow-accent absolute left-1/2 top-1/2 h-[700px] w-[700px] -translate-x-1/2 -translate-y-1/2" />
@@ -266,11 +267,12 @@ function Preloader() {
             opacity: phase === "logoPop" ? 1 : 0.7,
             scale: phase === "logoPop" ? 1.05 : 1,
           }}
-          exit={{ opacity: 0, scale: 1.9 }}
+          exit={{ opacity: 0, scale: 1.6 }}
           transition={{
-            duration: 0.7,
+            duration: 0.38,
             ease: EASE_FADE,
           }}
+          style={{ willChange: "transform, opacity" }}
         >
           <div
             style={{
@@ -320,7 +322,8 @@ function HeroLoadingBar() {
           initial={{ opacity: 0 }}
           animate={{ opacity: visible ? 1 : 0 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.55, ease: EASE_FADE }}
+          transition={{ duration: 0.3, ease: EASE_FADE }}
+          style={{ willChange: "opacity" }}
         >
           <div
             className="relative aspect-[16/10] mix-blend-screen select-none"
@@ -344,6 +347,7 @@ function HeroLoadingBar() {
                 src="/brain_outline.png"
                 alt=""
                 fill
+                priority
                 sizes="(min-width: 1300px) 760px, 62vw"
                 className="object-fill neon-reveal-cyan"
               />
@@ -402,6 +406,7 @@ function HeroLoadingBar() {
                 src="/hero-lines-overlay.png"
                 alt=""
                 fill
+                priority
                 sizes="(min-width: 1300px) 380px, 31vw"
                 className="object-fill neon-reveal"
               />
@@ -458,7 +463,8 @@ function BrandLockup() {
     <motion.div
       className="pointer-events-none fixed inset-0 z-[120]"
       animate={{ y: hidden && docked ? "-120px" : "0px" }}
-      transition={{ duration: 0.35, ease: "easeInOut" }}
+      transition={{ duration: 0.3, ease: "easeInOut" }}
+      style={{ willChange: "transform" }}
     >
       {/* Floating top bar — detached from edges with curved corners */}
       {docked && (
@@ -470,9 +476,9 @@ function BrandLockup() {
           }
           animate={{ opacity: 1, y: 0 }}
           transition={{
-            duration: skipIntroAnim ? 0 : 0.6,
+            duration: skipIntroAnim ? 0 : 0.42,
             ease: EASE_FADE,
-            delay: skipIntroAnim ? 0 : 0.3,
+            delay: skipIntroAnim ? 0 : 0.18,
           }}
           style={{ backgroundColor: "rgba(15, 14, 13, 0.75)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" }}
         />
@@ -486,6 +492,7 @@ function BrandLockup() {
       <motion.div
         key={skipIntroAnim ? "lockup-skip" : "lockup-normal"}
         className="pointer-events-none absolute left-1/2 z-[120] flex items-center"
+        style={{ willChange: "transform, opacity" }}
         initial={
           skipIntroAnim
             ? {
@@ -516,14 +523,14 @@ function BrandLockup() {
           skipIntroAnim
             ? { duration: 0 }
             : {
-                top: { duration: 0.5, ease: EASE_MORPH },
-                y: { duration: 0.5, ease: EASE_MORPH },
-                height: { duration: 0.55, ease: EASE_MORPH },
+                top: { duration: 0.36, ease: EASE_MORPH },
+                y: { duration: 0.36, ease: EASE_MORPH },
+                height: { duration: 0.38, ease: EASE_MORPH },
                 scale: {
-                  duration: centered ? 0.55 : 0.5,
+                  duration: centered ? 0.36 : 0.32,
                   ease: centered ? EASE_POP : EASE_MORPH,
                 },
-                opacity: { duration: 0.45, ease: EASE_FADE },
+                opacity: { duration: 0.26, ease: EASE_FADE },
               }
         }
       >
@@ -541,7 +548,7 @@ function BrandLockup() {
             height: centered ? 144 : 38,
           }}
           transition={{
-            duration: skipIntroAnim ? 0 : 0.55,
+            duration: skipIntroAnim ? 0 : 0.38,
             ease: EASE_MORPH,
           }}
         >
@@ -564,9 +571,9 @@ function BrandLockup() {
             opacity: centered || (phase === "done") ? 1 : 0,
           }}
           transition={{
-            duration: centered ? 0.6 : (phase === "done") ? 0.5 : 0.2,
+            duration: centered ? 0.42 : (phase === "done") ? 0.36 : 0.15,
             ease: centered ? EASE_MORPH : EASE_FADE,
-            delay: centered ? 0.55 : (phase === "done") ? 0.1 : 0,
+            delay: centered ? 0.28 : (phase === "done") ? 0.06 : 0,
           }}
         >
           {/* Large intro wordmark — visible only during logoPop */}
@@ -574,7 +581,7 @@ function BrandLockup() {
             className="block select-none"
             initial={{ opacity: skipIntroAnim ? 0 : 0 }}
             animate={{ opacity: centered ? 1 : 0 }}
-            transition={{ duration: centered ? 0.35 : 0.15, ease: EASE_FADE }}
+            transition={{ duration: centered ? 0.26 : 0.12, ease: EASE_FADE }}
             style={{
               fontFamily: "var(--font-inter-tight), Inter, ui-sans-serif, system-ui",
               fontWeight: 800,
@@ -2284,580 +2291,6 @@ function Manifesto() {
 
 
 /* ============================================================================
-   FLUID SECTION — declarative statement section. Asymmetric two-column:
-   massive left-aligned headline, body text as a quiet column on the right.
-   ========================================================================== */
-function FluidSection() {
-  const lineRef     = useRef<HTMLDivElement>(null);
-  const headlineRef = useRef<HTMLHeadingElement>(null);
-  const bodyRef     = useRef<HTMLDivElement>(null);
-  const tableRef    = useRef<HTMLDivElement>(null);
-  const visible     = useContext(SectionVisibleCtx);
-  const animated    = useRef(false);
-
-  useEffect(() => {
-    if (!visible) return;
-    const handler = (v: number) => {
-      if (v < 0.05 && animated.current) {
-        animated.current = false;
-        gsap.set(lineRef.current, { scaleX: 0, transformOrigin: "left center" });
-        if (headlineRef.current) gsap.set(headlineRef.current.querySelectorAll(".word-inner"), { y: "105%", opacity: 0 });
-        gsap.set(bodyRef.current, { opacity: 0, y: 22 });
-        gsap.set(tableRef.current, { opacity: 0, y: 22 });
-      }
-      if (v > 0.35 && !animated.current) {
-        animated.current = true;
-        const mm = gsap.matchMedia();
-        mm.add("(prefers-reduced-motion: no-preference)", () => {
-          const tl = gsap.timeline();
-          tl.fromTo(
-            lineRef.current,
-            { scaleX: 0, transformOrigin: "left center" },
-            { scaleX: 1, duration: 0.8, ease: "power2.inOut" }
-          );
-          tl.fromTo(
-            headlineRef.current!.querySelectorAll(".word-inner"),
-            { y: "105%", opacity: 0 },
-            { y: "0%", opacity: 1, stagger: 0.07, duration: 0.85, ease: "power3.out" },
-            "-=0.45"
-          );
-          tl.fromTo(
-            bodyRef.current,
-            { opacity: 0, y: 22 },
-            { opacity: 1, y: 0, duration: 0.75, ease: "power2.out" },
-            "-=0.55"
-          );
-          tl.fromTo(
-            tableRef.current,
-            { opacity: 0, y: 22 },
-            { opacity: 1, y: 0, duration: 0.75, ease: "power2.out" },
-            "-=0.45"
-          );
-        });
-        mm.add("(prefers-reduced-motion: reduce)", () => {
-          if (headlineRef.current) gsap.set(headlineRef.current.querySelectorAll(".word-inner"), { opacity: 1, y: 0 });
-          gsap.set([bodyRef.current, tableRef.current], { opacity: 1, y: 0 });
-        });
-      }
-    };
-    handler(visible.get());
-    return visible.on("change", handler);
-  }, [visible]);
-
-  const lines = [
-    { text: "Robot cells your",    ghost: false },
-    { text: "factory workers",     ghost: true  },
-    { text: "can teach.",          ghost: false },
-  ];
-
-  return (
-    <section
-      className="relative overflow-hidden"
-      style={{ color: "#0f0e0d" }}
-    >
-      <div className="relative mx-auto w-full max-w-[1400px] px-6 py-16 md:px-10 md:py-20">
-        {/* Animated header bar */}
-        <div style={{ marginBottom: "4.5rem" }}>
-          <div
-            ref={lineRef}
-            style={{
-              height: 1,
-              background: "rgba(15,14,13,0.10)",
-              transform: "scaleX(0)",
-              transformOrigin: "left",
-            }}
-          />
-          <div
-            style={{
-              paddingTop: "2rem",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
-          >
-            <span
-              className="font-mono text-[10px] uppercase tracking-[0.28em]"
-              style={{ color: "rgba(15,14,13,0.38)" }}
-            >
-              what we build
-            </span>
-            <span
-              className="font-mono text-[10px] uppercase tracking-[0.28em]"
-              style={{ color: "rgba(15,14,13,0.20)" }}
-            >
-              §&nbsp;01
-            </span>
-          </div>
-        </div>
-
-        {/* GSAP-animated headline */}
-        <h2
-          ref={headlineRef}
-          style={{
-            fontWeight: 600,
-            fontSize: "clamp(3.2rem, 7vw, 7rem)",
-            lineHeight: 0.91,
-            letterSpacing: "-0.035em",
-            color: "#0f0e0d",
-            marginBottom: "2.5rem",
-          }}
-        >
-          {lines.map((l, i) => (
-            <span key={i} style={{ display: "block", overflow: "hidden", paddingBottom: "0.06em" }}>
-              <span
-                className="word-inner"
-                style={{
-                  display: "block",
-                  color: l.ghost ? "rgba(15,14,13,0.20)" : "#0f0e0d",
-                  opacity: 0,
-                }}
-              >
-                {l.text}
-              </span>
-            </span>
-          ))}
-        </h2>
-
-        {/* Subhead */}
-        <div ref={bodyRef} style={{ opacity: 0, marginBottom: "4rem" }}>
-          <p
-            style={{
-              maxWidth: "54ch",
-              fontSize: "clamp(0.9375rem, 1.2vw, 1.1rem)",
-              lineHeight: 1.65,
-              color: "rgba(15,14,13,0.58)",
-              fontWeight: 400,
-            }}
-          >
-            We deploy autonomous manipulation onto the robots you already trust.
-            You bring the hardware. We bring the rig, the pipeline, the policy,
-            the safety supervisor, and the integration.
-          </p>
-        </div>
-
-        {/* Three pillars */}
-        <div ref={tableRef} style={{ opacity: 0 }}>
-          <div
-            className="grid grid-cols-1 md:grid-cols-3"
-            style={{ borderTop: "1px solid rgba(15,14,13,0.10)" }}
-          >
-            {([
-              {
-                n: "01",
-                title: "A multimodal data-capture rig.",
-                body: "A wearable system — EMG for muscle-level force, plus force, motion, and vision — that records how a human expert applies force during a real task, synchronized in real time. It captures the force intuition cameras and teleoperation miss.",
-              },
-              {
-                n: "02",
-                title: "A force-grounded training pipeline.",
-                body: null,
-              },
-              {
-                n: "03",
-                title: "The deepest force dataset in fragile assembly.",
-                body: "Everything compounds into a proprietary, force-grounded dataset — our core moat and the engine for every robot we train.",
-              },
-            ] as const).map((p, i) => (
-              <div
-                key={p.n}
-                style={{
-                  padding: "2.5rem 2rem 2.5rem 0",
-                  borderRight: i < 2 ? "1px solid rgba(15,14,13,0.10)" : "none",
-                  paddingLeft: i > 0 ? "2rem" : 0,
-                }}
-              >
-                <span
-                  className="font-mono text-[10px] uppercase tracking-[0.22em]"
-                  style={{ color: "rgba(15,14,13,0.30)", display: "block", marginBottom: "1rem" }}
-                >
-                  {p.n}
-                </span>
-                <p
-                  style={{
-                    fontSize: "clamp(0.9375rem, 1.1vw, 1.05rem)",
-                    fontWeight: 600,
-                    lineHeight: 1.35,
-                    color: "#0f0e0d",
-                    marginBottom: "0.9rem",
-                    letterSpacing: "-0.01em",
-                  }}
-                >
-                  {p.title}
-                </p>
-                {p.n === "02" ? (
-                  <p style={{ fontSize: "0.875rem", lineHeight: 1.7, color: "rgba(15,14,13,0.52)", fontWeight: 400 }}>
-                    It predicts grip force from muscle signals (validated against real sensors at{" "}
-                    <strong style={{ color: "#0f0e0d", fontWeight: 700 }}>R² = 0.96</strong>),
-                    turns a small set of real demonstrations into thousands of physics-simulated scenarios,
-                    verifies each against the real human force so only valid ones survive, and trains a
-                    force-aware policy that handles fragile parts the way a skilled human would.
-                  </p>
-                ) : (
-                  <p style={{ fontSize: "0.875rem", lineHeight: 1.7, color: "rgba(15,14,13,0.52)", fontWeight: 400 }}>
-                    {p.body}
-                  </p>
-                )}
-              </div>
-            ))}
-          </div>
-
-          {/* Closing line */}
-          <div
-            style={{
-              marginTop: "4rem",
-              paddingTop: "3rem",
-              borderTop: "1px solid rgba(15,14,13,0.10)",
-            }}
-          >
-            <p
-              style={{
-                fontSize: "clamp(1.1rem, 2vw, 1.6rem)",
-                fontWeight: 500,
-                lineHeight: 1.4,
-                color: "rgba(15,14,13,0.60)",
-                letterSpacing: "-0.02em",
-                maxWidth: "36ch",
-              }}
-            >
-              Customers bring the robots they already trust.{" "}
-              <span style={{ color: "#0f0e0d", fontWeight: 600 }}>
-                We make them able to feel.
-              </span>
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ============================================================================
-   PIPELINE — five-station production schematic. Lives directly under the
-   white FluidSection so the page hard-cuts back to ink-black for the
-   technical reveal: header rail with the Δ glyph and section index, a
-   split-tone headline, a horizontal connector diagram showing the flow
-   from station 01 → 05, and five framed cells with bracket corners,
-   gradient numerals, status dots and stage ticks. Mono throughout.
-   ========================================================================== */
-
-const PIPELINE_STEPS = [
-  {
-    n: "01",
-    title: "CAPTURE",
-    sub: "Signal acquisition",
-    body: "Operator wears rig. Sensors record everything.",
-  },
-  {
-    n: "02",
-    title: "PROCESS",
-    sub: "Data refinement",
-    body: "Raw signals become clean, labeled training data.",
-  },
-  {
-    n: "03",
-    title: "AUGMENT",
-    sub: "Synthetic expansion",
-    body: "Real demos become 100× synthetic variations.",
-  },
-  {
-    n: "04",
-    title: "TRAIN",
-    sub: "Force-aware learning",
-    body: "Multimodal AI learns force-aware control.",
-  },
-  {
-    n: "05",
-    title: "DEPLOY",
-    sub: "Edge inference",
-    body: "Edge inference with continuous retraining.",
-  },
-] as const;
-
-function PipelineArrow({ index }: { index: number }) {
-  // One dot travels across all 4 arrows in sequence, 1→2→3→4→5, then repeats.
-  const N = 4;
-  const SLOT = 1.1;              // seconds per arrow slot
-  const TRAVEL = 0.65;           // actual travel time
-  const FADE = 0.12;             // fade-out time at end
-  const TOTAL = N * SLOT;        // 4.4s full cycle
-
-  return (
-    <div className="flex shrink-0 items-center justify-center py-1 md:py-0">
-      <svg
-        viewBox="0 0 64 24"
-        className="h-7 w-16 rotate-90 md:h-8 md:w-20 md:rotate-0"
-      >
-        <motion.circle
-          r="2.6"
-          cy="12"
-          fill="#0f0e0d"
-          initial={{ cx: 4, opacity: 0 }}
-          animate={{
-            cx:      [4,   48,  48, 4],
-            opacity: [1,    1,   0, 0],
-          }}
-          transition={{
-            duration: TRAVEL + FADE,
-            times: [0, TRAVEL / (TRAVEL + FADE), 0.97, 1],
-            delay: index * SLOT,
-            repeat: Infinity,
-            repeatDelay: TOTAL - TRAVEL - FADE,
-            ease: "easeInOut",
-          }}
-        />
-        {/* Dashed track */}
-        <line
-          x1="4"
-          y1="12"
-          x2="48"
-          y2="12"
-          stroke="rgba(15, 14, 13, 0.28)"
-          strokeWidth="1.5"
-          strokeDasharray="4 3"
-        />
-        {/* Arrow head */}
-        <path
-          d="M 48 6 L 56 12 L 48 18"
-          stroke="rgba(15, 14, 13, 0.60)"
-          strokeWidth="2"
-          fill="none"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    </div>
-  );
-}
-
-function Pipeline() {
-  const stepsRef  = useRef<HTMLDivElement>(null);
-  const lineRef   = useRef<HTMLDivElement>(null);
-  const headerRef = useRef<HTMLDivElement>(null);
-  const h2Ref     = useRef<HTMLHeadingElement>(null);
-  const visible   = useContext(SectionVisibleCtx);
-  const animated  = useRef(false);
-
-  useEffect(() => {
-    if (!visible) return;
-    return visible.on("change", (v: number) => {
-      if (v > 0.35 && !animated.current) {
-        animated.current = true;
-        const mm = gsap.matchMedia();
-        mm.add("(prefers-reduced-motion: no-preference)", () => {
-          const tl = gsap.timeline();
-          tl.fromTo(
-            headerRef.current,
-            { opacity: 0, y: 12 },
-            { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }
-          );
-          tl.fromTo(
-            h2Ref.current,
-            { opacity: 0, y: 28 },
-            { opacity: 1, y: 0, duration: 0.75, ease: "power3.out" },
-            "-=0.3"
-          );
-          tl.fromTo(
-            lineRef.current,
-            { scaleY: 0, transformOrigin: "top center" },
-            { scaleY: 1, duration: 1.8, ease: "power2.inOut" },
-            "-=0.6"
-          );
-          if (stepsRef.current) {
-            tl.fromTo(
-              stepsRef.current.querySelectorAll(".pipeline-step"),
-              { opacity: 0, x: -24 },
-              { opacity: 1, x: 0, stagger: 0.1, duration: 0.65, ease: "power2.out" },
-              "-=1.5"
-            );
-          }
-        });
-        mm.add("(prefers-reduced-motion: reduce)", () => {
-          if (stepsRef.current)
-            gsap.set(stepsRef.current.querySelectorAll(".pipeline-step"), { opacity: 1, x: 0 });
-          gsap.set([headerRef.current, h2Ref.current], { opacity: 1, y: 0 });
-        });
-      }
-    });
-  }, [visible]);
-
-  return (
-    <section className="relative overflow-hidden" style={{ color: "#0f0e0d" }}>
-      <div className="relative mx-auto max-w-[1400px] px-6 pt-24 pb-24 md:px-10 md:pt-28 md:pb-36">
-
-        <div ref={headerRef} style={{ opacity: 0 }}>
-          <div
-            style={{
-              borderTop: "1px solid rgba(15,14,13,0.10)",
-              paddingTop: "2rem",
-              marginBottom: "4.5rem",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
-          >
-            <span className="font-mono text-[10px] uppercase tracking-[0.28em]" style={{ color: "rgba(15,14,13,0.38)" }}>
-              the pipeline
-            </span>
-            <span className="font-mono text-[10px] uppercase tracking-[0.28em]" style={{ color: "rgba(15,14,13,0.20)" }}>
-              01&nbsp;—&nbsp;05
-            </span>
-          </div>
-        </div>
-
-        <h2
-          ref={h2Ref}
-          style={{
-            fontWeight: 600,
-            fontSize: "clamp(2.2rem, 4.8vw, 4.5rem)",
-            lineHeight: 1.0,
-            letterSpacing: "-0.028em",
-            color: "#0f0e0d",
-            maxWidth: "20ch",
-            marginBottom: "5rem",
-            opacity: 0,
-          }}
-        >
-          Five steps from human demonstration to deployed robot.
-        </h2>
-
-        <div style={{ position: "relative" }}>
-          {/* Animated vertical connector line */}
-          <div
-            ref={lineRef}
-            aria-hidden
-            style={{
-              position: "absolute",
-              left: "calc(clamp(3rem, 5.5vw, 5.5rem) / 2)",
-              top: 0,
-              bottom: 0,
-              width: 1,
-              background: "linear-gradient(to bottom, rgba(15,14,13,0.18) 0%, rgba(15,14,13,0.06) 100%)",
-              transform: "scaleY(0)",
-              transformOrigin: "top",
-              zIndex: 0,
-            }}
-          />
-
-          <div ref={stepsRef}>
-            {PIPELINE_STEPS.map((s, i) => (
-              <div
-                key={s.n}
-                className="pipeline-step"
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "clamp(3rem, 5.5vw, 5.5rem) 1fr",
-                  gap: "clamp(1rem, 2.5vw, 3rem)",
-                  padding: "2.5rem 0",
-                  borderTop: "1px solid rgba(15,14,13,0.08)",
-                  alignItems: "start",
-                  position: "relative",
-                  zIndex: 1,
-                  opacity: 0,
-                }}
-              >
-                <span
-                  aria-hidden
-                  style={{
-                    fontWeight: 700,
-                    fontSize: "clamp(2.2rem, 4vw, 4rem)",
-                    lineHeight: 1,
-                    color: "rgba(15,14,13,0.09)",
-                    letterSpacing: "-0.04em",
-                    fontVariantNumeric: "tabular-nums",
-                    paddingTop: "0.15rem",
-                    userSelect: "none",
-                  }}
-                >
-                  {s.n}
-                </span>
-                <div>
-                  <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.6rem" }}>
-                    <span className="font-mono text-[9px] uppercase tracking-[0.26em]" style={{ color: "rgba(15,14,13,0.33)" }}>
-                      {s.sub}
-                    </span>
-                    <span aria-hidden style={{ display: "inline-block", width: 3, height: 3, borderRadius: "50%", background: "rgba(15,14,13,0.22)" }} />
-                    <span className="font-mono text-[9px] uppercase tracking-[0.26em]" style={{ color: "rgba(15,14,13,0.20)" }}>
-                      active
-                    </span>
-                  </div>
-                  <h3 style={{ fontWeight: 600, fontSize: "clamp(0.875rem, 1.2vw, 1.1rem)", letterSpacing: "0.08em", textTransform: "uppercase", color: "#0f0e0d", marginBottom: "0.5rem" }}>
-                    {s.title}
-                  </h3>
-                  <p style={{ fontSize: "0.875rem", lineHeight: 1.7, color: "rgba(15,14,13,0.55)" }}>
-                    {s.body}
-                  </p>
-                </div>
-              </div>
-            ))}
-            <div style={{ borderTop: "1px solid rgba(15,14,13,0.08)" }} />
-          </div>
-        </div>
-
-        <motion.p
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true, margin: "-40px" }}
-          transition={{ duration: 0.9, delay: 0.15, ease: "easeOut" }}
-          style={{
-            marginTop: "4rem",
-            maxWidth: "58ch",
-            fontSize: "clamp(0.9375rem, 1.2vw, 1.1rem)",
-            lineHeight: 1.7,
-            color: "rgba(15,14,13,0.58)",
-            fontWeight: 400,
-          }}
-        >
-          The capture step turns biology into data. The processing step
-          turns data into training samples. The augmentation step
-          multiplies samples through physics simulation. The training
-          step turns samples into policy. The deployment step runs
-          policy in production while feeding new data back to the start.{" "}
-          <span style={{ color: "#0f0e0d", fontWeight: 600 }}>
-            Robots inherit human force intuition. By us.
-          </span>
-        </motion.p>
-
-        {/* Footer metadata */}
-        <div
-          style={{
-            marginTop: "4rem",
-            paddingTop: "2rem",
-            borderTop: "1px solid rgba(15,14,13,0.08)",
-            display: "flex",
-            flexWrap: "wrap",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: "0.75rem 1.5rem",
-          }}
-        >
-          <span
-            className="font-mono text-[9px] uppercase tracking-[0.22em]"
-            style={{ color: "rgba(15,14,13,0.30)" }}
-          >
-            //&nbsp;the body knew before contact ever happened
-          </span>
-          <div
-            className="flex flex-wrap items-center gap-x-6 gap-y-1"
-            style={{ color: "rgba(15,14,13,0.30)" }}
-          >
-            {[
-              ["system", "novonus™"],
-              ["stages", "05"],
-              ["status", "operational"],
-            ].map(([k, v]) => (
-              <span key={k} className="font-mono text-[9px] uppercase tracking-[0.22em]">
-                <span style={{ color: "rgba(15,14,13,0.22)" }}>{k}:</span>
-                &nbsp;{v}
-              </span>
-            ))}
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ============================================================================
    HERO
    ========================================================================== */
 
@@ -3372,6 +2805,7 @@ function Hero() {
               fades the whole sentence out at 0.85 → 0.90 to make room
               for slide 3. aria-hidden flips off after full reveal so
               screen readers get the finished sentence as one unit. */}
+          {!deepDive && (
           <div
             className="pointer-events-none absolute inset-0 z-[6] flex items-center justify-center px-4 md:px-8"
             aria-hidden={stage < 3}
@@ -3401,6 +2835,7 @@ function Hero() {
               </h2>
             </div>
           </div>
+          )}
 
           {/* THREE PROBLEMS + LEARN MORE — short-path payoff. All three
               problem titles appear together with a Learn More button
@@ -3410,13 +2845,13 @@ function Hero() {
             <motion.div
               className="absolute inset-x-0 z-[7] hidden md:block"
               style={{
-                bottom: "clamp(5rem, 11vh, 8rem)",
+                bottom: "clamp(4rem, 8vh, 7rem)",
                 opacity: headlinesTogetherOpacity,
               }}
               aria-hidden={deepDive}
             >
-              <div className="mx-auto flex max-w-[1320px] items-end gap-8 px-10 lg:gap-12 lg:px-14">
-                <div className="pointer-events-none grid flex-1 grid-cols-3 gap-8 lg:gap-12">
+              <div className="mx-auto flex max-w-[1320px] flex-col items-center gap-8 px-10 lg:px-14">
+                <div className="pointer-events-none grid w-full grid-cols-3 gap-8 lg:gap-12">
                   {[
                     {
                       tokens: MODERN_TELEOP_TITLE_TOKENS,
@@ -3468,16 +2903,15 @@ function Hero() {
                   onClick={handleLearnMore}
                   style={{
                     pointerEvents: learnMorePointer,
-                    flexShrink: 0,
                     fontFamily:
                       "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
                     fontSize: "clamp(0.85rem, 0.95vw, 1rem)",
                     fontWeight: 500,
                     padding: "0.75rem 1.5rem",
-                    border: "1px solid rgba(245, 239, 229, 0.34)",
+                    border: "1px solid rgba(139, 92, 246, 0.45)",
                     borderRadius: "999px",
-                    backgroundColor: "rgba(245, 239, 229, 0.07)",
-                    color: "rgba(245, 239, 229, 0.96)",
+                    backgroundColor: "rgba(109, 40, 217, 0.15)",
+                    color: "rgba(221, 214, 254, 0.95)",
                     letterSpacing: "0.02em",
                     cursor: "pointer",
                     backdropFilter: "blur(8px) saturate(140%)",
@@ -3485,7 +2919,6 @@ function Hero() {
                     display: "inline-flex",
                     alignItems: "center",
                     gap: "0.6rem",
-                    marginBottom: "0.2rem",
                   }}
                 >
                   Learn more
@@ -4730,10 +4163,10 @@ function Hero() {
                       "contact-rich",
                       "assembly",
                       "tasks",
-                      "vision-only",
-                      "and",
                     ];
                     const accentTokens = [
+                      "vision-only",
+                      "and",
                       "teleoperation-based",
                       "systems",
                       "cannot",
@@ -4886,565 +4319,6 @@ function SectionTag({ label }: { label: string }) {
         {label}
       </span>
     </div>
-  );
-}
-
-/* ============================================================================
-   WHAT WE BUILD — concrete offering + a four-row comparison table
-   ========================================================================== */
-
-const WHAT_WE_BUILD_ROWS = [
-  {
-    label: "Deployment time",
-    trad: "8-16 weeks",
-    novonus: "2-4 weeks",
-    adv: "4× faster",
-  },
-  {
-    label: "Programming labor",
-    trad: "40-200 hours expert work",
-    novonus: "1-3 days operator demos",
-    adv: "Removes engineers",
-  },
-  {
-    label: "Reprogramming cost",
-    trad: "$20K-$40K per change",
-    novonus: "Operator's time",
-    adv: "Near-zero",
-  },
-  {
-    label: "Contact-rich tasks",
-    trad: "Often fail outright",
-    novonus: "Designed for",
-    adv: "Solves the gap",
-  },
-] as const;
-
-function WhatWeBuild() {
-  return (
-    <section className="relative flex min-h-screen items-center overflow-hidden" style={{ color: "#0f0e0d" }}>
-      <PaperBackground />
-      <div className="relative mx-auto w-full max-w-[1400px] px-6 py-16 md:px-10 md:py-20">
-
-        {/* Section header bar */}
-        <div
-          style={{
-            borderTop: "1px solid rgba(15,14,13,0.10)",
-            paddingTop: "2rem",
-            marginBottom: "4.5rem",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <span
-            className="font-mono text-[10px] uppercase tracking-[0.28em]"
-            style={{ color: "rgba(15,14,13,0.38)" }}
-          >
-            what we build
-          </span>
-          <span
-            className="font-mono text-[10px] uppercase tracking-[0.28em]"
-            style={{ color: "rgba(15,14,13,0.20)" }}
-          >
-            §&nbsp;01
-          </span>
-        </div>
-
-        {/* Headline — large with tonal hierarchy */}
-        <motion.h2
-          initial={{ opacity: 0, y: 36 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-          style={{
-            fontWeight: 600,
-            fontSize: "clamp(2.8rem, 5.8vw, 5.8rem)",
-            lineHeight: 0.93,
-            letterSpacing: "-0.032em",
-            color: "#0f0e0d",
-            marginBottom: "2.5rem",
-          }}
-        >
-          Robot cells your{" "}
-          <span style={{ color: "rgba(15,14,13,0.22)" }}>factory workers</span>{" "}
-          can teach.
-        </motion.h2>
-
-        {/* Body text */}
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-60px" }}
-          transition={{ duration: 0.75, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
-          style={{
-            maxWidth: "54ch",
-            fontSize: "clamp(0.9375rem, 1.2vw, 1.1rem)",
-            lineHeight: 1.65,
-            color: "rgba(15,14,13,0.58)",
-            fontWeight: 400,
-            marginBottom: "5rem",
-          }}
-        >
-          We deploy autonomous manipulation systems onto our customers&apos;
-          existing robot infrastructure. We bring the biological-signal
-          capture rig, the training pipeline, the deployed policy, the safety
-          supervisor, and the integration software. Customers bring the
-          robots they already trust.
-        </motion.p>
-
-        {/* Editorial comparison — no box, just hairline rules */}
-        <div>
-          {/* Desktop column headers */}
-          <div
-            className="hidden md:grid"
-            style={{
-              gridTemplateColumns: "1.5fr 1fr 1.1fr 0.65fr",
-              gap: "0 2rem",
-              paddingBottom: "1.25rem",
-              borderBottom: "1px solid rgba(15,14,13,0.14)",
-            }}
-          >
-            <div />
-            <span
-              className="font-mono text-[9px] uppercase tracking-[0.26em]"
-              style={{ color: "rgba(15,14,13,0.35)" }}
-            >
-              Traditional integrator
-            </span>
-            <span
-              className="font-mono text-[9px] uppercase tracking-[0.26em]"
-              style={{
-                color: "#0f0e0d",
-                borderLeft: "2px solid #0f0e0d",
-                paddingLeft: "1.25rem",
-              }}
-            >
-              Novonus
-            </span>
-            <span
-              className="font-mono text-[9px] uppercase tracking-[0.26em]"
-              style={{ color: "rgba(15,14,13,0.35)" }}
-            >
-              Advantage
-            </span>
-          </div>
-
-          {/* Data rows */}
-          {WHAT_WE_BUILD_ROWS.map((r, i) => (
-            <motion.div
-              key={r.label}
-              initial={{ opacity: 0, y: 14 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-30px" }}
-              transition={{
-                duration: 0.6,
-                delay: i * 0.07,
-                ease: [0.22, 1, 0.36, 1],
-              }}
-              className="grid grid-cols-1 md:grid-cols-[1.5fr_1fr_1.1fr_0.65fr]"
-              style={{
-                gap: "0.5rem 2rem",
-                padding: "2rem 0",
-                borderBottom: "1px solid rgba(15,14,13,0.08)",
-                alignItems: "center",
-              }}
-            >
-              {/* Row label */}
-              <div>
-                <span
-                  className="font-mono text-[9px] uppercase tracking-[0.22em]"
-                  style={{ color: "rgba(15,14,13,0.28)" }}
-                >
-                  // {String(i + 1).padStart(2, "0")}
-                </span>
-                <p
-                  style={{
-                    marginTop: "0.3rem",
-                    fontSize: "0.9375rem",
-                    fontWeight: 500,
-                    color: "#0f0e0d",
-                  }}
-                >
-                  {r.label}
-                </p>
-              </div>
-
-              {/* Traditional */}
-              <div>
-                <span
-                  className="font-mono text-[9px] uppercase tracking-[0.22em] md:hidden"
-                  style={{ color: "rgba(15,14,13,0.35)", display: "block", marginBottom: "0.2rem" }}
-                >
-                  Traditional
-                </span>
-                <p
-                  style={{
-                    fontSize: "0.875rem",
-                    lineHeight: 1.5,
-                    color: "rgba(15,14,13,0.48)",
-                  }}
-                >
-                  {r.trad}
-                </p>
-              </div>
-
-              {/* Novonus — accent column */}
-              <div
-                style={{
-                  borderLeft: "2px solid #0f0e0d",
-                  paddingLeft: "1.25rem",
-                }}
-              >
-                <span
-                  className="font-mono text-[9px] uppercase tracking-[0.22em] md:hidden"
-                  style={{ color: "#0f0e0d", display: "block", marginBottom: "0.2rem" }}
-                >
-                  Novonus
-                </span>
-                <p
-                  style={{
-                    fontSize: "0.875rem",
-                    lineHeight: 1.5,
-                    fontWeight: 600,
-                    color: "#0f0e0d",
-                  }}
-                >
-                  {r.novonus}
-                </p>
-              </div>
-
-              {/* Advantage */}
-              <div>
-                <span
-                  className="font-mono text-[9px] uppercase tracking-[0.22em] md:hidden"
-                  style={{ color: "rgba(15,14,13,0.35)", display: "block", marginBottom: "0.2rem" }}
-                >
-                  Advantage
-                </span>
-                <p
-                  className="font-mono text-[10px] uppercase tracking-[0.18em]"
-                  style={{ color: "#0f0e0d", fontWeight: 600 }}
-                >
-                  {r.adv}
-                </p>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-
-/* ============================================================================
-   EVIDENCE — research-backed stats with intersection-observer count-up
-   ========================================================================== */
-
-function StatCounter({
-  target,
-  suffix = "",
-  duration = 800,
-}: {
-  target: number;
-  suffix?: string;
-  duration?: number;
-}) {
-  const ref = useRef<HTMLSpanElement | null>(null);
-  const [display, setDisplay] = useState<string>(() =>
-    Number.isInteger(target) ? "0" : "0.0",
-  );
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const node = ref.current;
-    if (!node) return;
-    let started = false;
-    let rafId = 0;
-    const isFloat = !Number.isInteger(target);
-
-    const obs = new IntersectionObserver(
-      (entries) => {
-        if (!started && entries.some((e) => e.isIntersecting)) {
-          started = true;
-          const start = performance.now();
-          const tick = (now: number) => {
-            const t = Math.min(1, (now - start) / duration);
-            const eased = 1 - Math.pow(1 - t, 3);
-            const current = target * eased;
-            setDisplay(isFloat ? current.toFixed(1) : String(Math.round(current)));
-            if (t < 1) rafId = requestAnimationFrame(tick);
-          };
-          rafId = requestAnimationFrame(tick);
-          obs.disconnect();
-        }
-      },
-      { threshold: 0.35 },
-    );
-    obs.observe(node);
-    return () => {
-      obs.disconnect();
-      if (rafId) cancelAnimationFrame(rafId);
-    };
-  }, [target, duration]);
-
-  return (
-    <span ref={ref} className="tabular-nums">
-      {display}
-      {suffix}
-    </span>
-  );
-}
-
-const EVIDENCE_STATS = [
-  {
-    num: 54.5,
-    suffix: "%",
-    label: "Success rate improvement",
-    caption:
-      "Force-aware imitation learning over vision-only on contact-rich tasks.",
-    source: "ForceMimic, IROS 2024",
-  },
-  {
-    num: 89,
-    suffix: "%",
-    label: "Faster execution",
-    caption:
-      "Bio-signal augmented teleoperation over traditional methods.",
-    source: "Intelligence & Robotics, 2026",
-  },
-  {
-    num: 91.4,
-    suffix: "%",
-    label: "Intent recognition",
-    caption:
-      "LSTM-based motion intention recognition accuracy under 10ms latency.",
-    source: "Intelligence & Robotics, 2026",
-  },
-  {
-    num: 542,
-    suffix: "K",
-    label: "Robots installed",
-    caption:
-      "Industrial robots installed globally in 2024. Demand growing.",
-    source: "World Robotics 2025 Report, IFR",
-  },
-  {
-    num: 79,
-    suffix: "%",
-    label: "Cite labor shortage",
-    caption:
-      "Manufacturing executives identify skilled-labor shortage as top challenge in 2026.",
-    source: "CADDi 2026 Manufacturing Outlook Study",
-  },
-  {
-    num: 60,
-    suffix: "%",
-    label: "Better precision",
-    caption:
-      "Improvement in placement accuracy on contact-rich assembly.",
-    source: "Intelligence & Robotics, 2026",
-  },
-] as const;
-
-function GSAPCounter({ target, suffix = "", decimals = 0 }: { target: number; suffix?: string; decimals?: number }) {
-  const ref     = useRef<HTMLSpanElement>(null);
-  const visible = useContext(SectionVisibleCtx);
-  const started = useRef(false);
-
-  useEffect(() => {
-    if (!visible) return;
-    return visible.on("change", (v: number) => {
-      if (v > 0.3 && !started.current && ref.current) {
-        started.current = true;
-        const obj = { val: 0 };
-        gsap.to(obj, {
-          val: target,
-          duration: 2.4,
-          ease: "power3.out",
-          onUpdate() {
-            if (ref.current) {
-              const display = decimals > 0 ? obj.val.toFixed(decimals) : Math.round(obj.val).toString();
-              ref.current.textContent = display + suffix;
-            }
-          },
-        });
-      }
-    });
-  }, [visible, target, suffix, decimals]);
-
-  return (
-    <span ref={ref} className="tabular-nums">
-      {decimals > 0 ? (0).toFixed(decimals) : "0"}{suffix}
-    </span>
-  );
-}
-
-function Evidence() {
-  return (
-    <section className="relative overflow-hidden" style={{ color: "#0f0e0d" }}>
-      <div className="relative mx-auto max-w-[1400px] px-6 pt-24 pb-24 md:px-10 md:pt-28 md:pb-36">
-
-        {/* Section header bar */}
-        <div
-          style={{
-            borderTop: "1px solid rgba(15,14,13,0.10)",
-            paddingTop: "2rem",
-            marginBottom: "4.5rem",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <span
-            className="font-mono text-[10px] uppercase tracking-[0.28em]"
-            style={{ color: "rgba(15,14,13,0.38)" }}
-          >
-            the evidence
-          </span>
-          <span
-            className="font-mono text-[10px] uppercase tracking-[0.28em]"
-            style={{ color: "rgba(15,14,13,0.20)" }}
-          >
-            §&nbsp;03
-          </span>
-        </div>
-
-        {/* Headline + intro */}
-        <div className="mb-16">
-          <motion.h2
-            initial={{ opacity: 0, y: 28 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-60px" }}
-            transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
-            style={{
-              fontWeight: 600,
-              fontSize: "clamp(2.2rem, 4.8vw, 4.5rem)",
-              lineHeight: 1.0,
-              letterSpacing: "-0.028em",
-              color: "#0f0e0d",
-              maxWidth: "22ch",
-              marginBottom: "1.5rem",
-            }}
-          >
-            Peer-reviewed. Quantified. Settled.
-          </motion.h2>
-          <motion.p
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true, margin: "-60px" }}
-            transition={{ duration: 0.75, delay: 0.15 }}
-            style={{
-              maxWidth: "48ch",
-              fontSize: "0.9375rem",
-              lineHeight: 1.65,
-              color: "rgba(15,14,13,0.52)",
-            }}
-          >
-            Every claim we make about contact-rich manipulation is backed
-            by published research. The science is settled. The remaining
-            question is who builds the deployed product.
-          </motion.p>
-        </div>
-
-        {/* Open stat grid — no cards, only hairline rules */}
-        <div
-          className="grid grid-cols-2 overflow-hidden md:grid-cols-3"
-          style={{ borderTop: "1px solid rgba(15,14,13,0.10)" }}
-        >
-          {EVIDENCE_STATS.map((s, i) => (
-            <motion.div
-              key={s.label}
-              initial={{ opacity: 0, y: 14 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-30px" }}
-              transition={{
-                duration: 0.6,
-                delay: (i % 3) * 0.06,
-                ease: [0.22, 1, 0.36, 1],
-              }}
-              style={{
-                padding: "2.5rem 2rem",
-                borderBottom: "1px solid rgba(15,14,13,0.08)",
-                borderRight: "1px solid rgba(15,14,13,0.08)",
-                transition: "box-shadow 0.25s ease, transform 0.25s ease",
-              }}
-              whileHover={{
-                boxShadow: "inset 0 0 0 1px rgba(15,14,13,0.10)",
-              }}
-            >
-              {/* Dominant number */}
-              <div
-                style={{
-                  fontSize: "clamp(2.8rem, 4.2vw, 4.2rem)",
-                  fontWeight: 700,
-                  letterSpacing: "-0.04em",
-                  lineHeight: 1,
-                  color: "#0f0e0d",
-                  marginBottom: "0.75rem",
-                }}
-              >
-                <GSAPCounter target={s.num} suffix={s.suffix} decimals={Number.isInteger(s.num) ? 0 : 1} />
-              </div>
-
-              {/* Fill bar */}
-              <div
-                style={{
-                  height: 2,
-                  background: "rgba(15,14,13,0.06)",
-                  borderRadius: 1,
-                  marginBottom: "0.75rem",
-                  overflow: "hidden",
-                }}
-              >
-                <motion.div
-                  initial={{ scaleX: 0 }}
-                  whileInView={{ scaleX: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 1.6, delay: 0.3 + (i % 3) * 0.15, ease: [0.22, 1, 0.36, 1] }}
-                  style={{
-                    height: "100%",
-                    background: "#0f0e0d",
-                    borderRadius: 1,
-                    transformOrigin: "left",
-                    width: "100%",
-                    opacity: 0.45,
-                  }}
-                />
-              </div>
-
-              {/* Label */}
-              <p
-                className="font-mono text-[10px] uppercase tracking-[0.22em]"
-                style={{ color: "rgba(15,14,13,0.70)", marginBottom: "0.55rem" }}
-              >
-                {s.label}
-              </p>
-
-              {/* Caption */}
-              <p
-                style={{
-                  fontSize: "0.8125rem",
-                  lineHeight: 1.6,
-                  color: "rgba(15,14,13,0.48)",
-                }}
-              >
-                {s.caption}
-              </p>
-
-              {/* Source citation */}
-              <p
-                className="font-mono text-[8.5px] uppercase tracking-[0.18em]"
-                style={{ color: "rgba(15,14,13,0.26)", marginTop: "1.25rem" }}
-              >
-                {s.source}
-              </p>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </section>
   );
 }
 
@@ -6672,6 +5546,723 @@ function ScrollSection({ children }: { children: ReactNode }) {
   );
 }
 
+/* ── Count-up hook — animates 0→target once when `active` fires ── */
+function useCountUp(target: number, active: boolean, duration = 1400): number {
+  const [count, setCount] = useState(0);
+  const fired = useRef(false);
+  useEffect(() => {
+    if (!active || fired.current) return;
+    fired.current = true;
+    const start = performance.now();
+    const tick = (now: number) => {
+      const t = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - t, 3);
+      setCount(Math.round(eased * target));
+      if (t < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }, [active, target, duration]);
+  return count;
+}
+
+/* ── Typewriter hook — types once when `active` first fires ── */
+function useTypewriter(text: string, active: boolean, charDelay = 16): string {
+  const [count, setCount] = useState(0);
+  const fired = useRef(false);
+  useEffect(() => {
+    if (!active || fired.current) return;
+    fired.current = true;
+    let i = 0;
+    const id = setInterval(() => { i++; setCount(i); if (i >= text.length) clearInterval(id); }, charDelay);
+    return () => clearInterval(id);
+  }, [active, text, charDelay]);
+  return text.slice(0, count);
+}
+
+/* ── Step card with typewriter animation ── */
+function StepCard({ step, revealed, isLast, s }: {
+  step: { num: string; title: string; tagline: string; body: string };
+  revealed: boolean;
+  isLast: boolean;
+  s: { tight: string; ink: string; inkMuted: string; inkGhost: string; divider: string; pad: string };
+}) {
+  const [ever, setEver] = useState(false);
+  useEffect(() => { if (revealed) setEver(true); }, [revealed]);
+  const title = useTypewriter(step.title, ever, 28);
+  const typing = ever && title.length < step.title.length;
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 22 }}
+      animate={{ opacity: ever ? 1 : 0, y: ever ? 0 : 22 }}
+      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+      style={{ padding: s.pad, flex: 1, borderBottom: isLast ? "none" : s.divider }}
+    >
+      <span style={{ fontFamily: s.tight, fontSize: "0.75rem", fontWeight: 500, letterSpacing: "0.18em", color: s.inkGhost, textTransform: "uppercase", display: "block", marginBottom: "0.75rem" }}>
+        {step.num}
+      </span>
+      <h3 style={{ fontFamily: s.tight, fontSize: "clamp(1.15rem, 1.45vw, 1.45rem)", fontWeight: 700, letterSpacing: "-0.02em", color: s.ink, margin: 0, marginBottom: "0.35rem" }}>
+        {title}{typing && <span style={{ opacity: 0.35 }}>|</span>}
+      </h3>
+      <p style={{ fontFamily: s.tight, fontSize: "clamp(0.92rem, 1.05vw, 1.05rem)", fontWeight: 600, color: s.inkMuted, margin: 0, marginBottom: "0.65rem", letterSpacing: "-0.01em" }}>
+        {ever ? step.tagline : ""}
+      </p>
+      <p style={{ fontFamily: s.tight, fontSize: "clamp(0.9rem, 1vw, 1rem)", fontWeight: 400, lineHeight: 1.72, color: "rgba(15,14,13,0.52)", margin: 0 }}>
+        {ever ? step.body : ""}
+      </p>
+    </motion.div>
+  );
+}
+
+/* ============================================================================
+   FORCE-GROUNDED SECTION — editorial cream section between the dark Hero
+   and Etymology. Establishes the platform pitch with a massive display
+   headline and a two-column body layout.
+   ========================================================================== */
+function ForceGroundedSection() {
+  const tight =
+    "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif";
+  const ink = "rgba(15, 14, 13, 0.96)";
+  const inkMuted = "rgba(15, 14, 13, 0.6)";
+  const inkGhost = "rgba(15, 14, 13, 0.32)";
+
+  const vp = { once: true, margin: "-8%" as const };
+  const ease = [0.22, 1, 0.36, 1] as const;
+
+  const divider = "1px solid rgba(15, 14, 13, 0.1)";
+  const pad = "clamp(2rem, 3vw, 3rem)";
+
+  const steps = [
+    {
+      num: "01",
+      title: "Capture",
+      tagline: "Record the force a human already knows.",
+      body: "An expert performs the task wearing our rig — EMG for muscle-level force, plus force, motion, and vision, synchronized in real time. We capture the force intuition that cameras and teleoperation can't see.",
+    },
+    {
+      num: "02",
+      title: "Ground",
+      tagline: "Turn a handful of demonstrations into a verified dataset.",
+      body: "Our pipeline predicts grip force from muscle signals, validated against real sensors at R² = 0.96, then augments each demonstration into thousands of physics-simulated scenarios, keeping only the ones that match real human force. Reality is the filter.",
+    },
+    {
+      num: "03",
+      title: "Deploy",
+      tagline: "Put force-aware policies on the robots you already trust.",
+      body: "The verified data trains a force-aware policy that we deploy onto your existing robot infrastructure, with the safety supervisor and integration included. Every deployment compounds into the deepest force dataset in fragile assembly — our core moat.",
+    },
+  ];
+
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: scrollRef,
+    offset: ["start start", "end end"],
+  });
+  const [headerVisible, setHeaderVisible] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(0);
+  useMotionValueEvent(scrollYProgress, "change", (v) => {
+    if (v >= 0.04) setHeaderVisible(true);
+    if (v >= 0.78) setVisibleCount(c => Math.max(c, 3));
+    else if (v >= 0.50) setVisibleCount(c => Math.max(c, 2));
+    else if (v >= 0.22) setVisibleCount(c => Math.max(c, 1));
+  });
+
+  const styleProps = { tight, ink, inkMuted, inkGhost, divider, pad };
+
+  return (
+    <div style={{ position: "relative" }}>
+      {/* ── SINGLE BACKGROUND covering both sections ── */}
+      <MeshGradient
+        className="absolute inset-0 w-full h-full"
+        colors={["#f5efe5", "#c9b8d4", "#f5efe5", "#dfc4aa", "#f5efe5"]}
+        speed={0.5}
+      />
+
+    {/* ── STICKY SCROLL — what we build + steps ── */}
+    <div ref={scrollRef} style={{ height: "250vh", position: "relative" }}>
+      <section className="relative overflow-hidden" style={{ position: "sticky", top: 0, height: "100vh" }}>
+
+        <div className="relative mx-auto flex flex-col h-full" style={{ width: "80%" }}>
+
+          {/* ── WHAT WE BUILD STRIP ── */}
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: headerVisible ? 1 : 0, y: headerVisible ? 0 : 12 }}
+            transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+            style={{ paddingTop: "2rem", borderBottom: "1px solid rgba(15, 14, 13, 0.06)", display: "flex", alignItems: "flex-end", flexShrink: 0 }}
+          >
+            <div style={{
+              backgroundColor: "rgba(255, 255, 255, 0.48)",
+              backdropFilter: "blur(20px) saturate(150%)",
+              WebkitBackdropFilter: "blur(20px) saturate(150%)",
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "0.55rem 1.5rem",
+              border: divider,
+            }}>
+              <span style={{ fontFamily: tight, fontSize: "clamp(1.2rem, 2vw, 2rem)", fontWeight: 700, letterSpacing: "-0.02em", color: ink }}>
+                What we build
+              </span>
+            </div>
+          </motion.div>
+
+          {/* ── WHITE BG FRAME ── */}
+          <div className="flex flex-col flex-1 overflow-hidden" style={{
+            backgroundColor: "rgba(255, 255, 255, 0.48)",
+            backdropFilter: "blur(20px) saturate(150%)",
+            WebkitBackdropFilter: "blur(20px) saturate(150%)",
+          }}>
+
+            {/* ── TOP HEADER ROW ── */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", borderBottom: divider, flexShrink: 0 }}>
+              <motion.div
+                initial={{ opacity: 0, y: 18 }}
+                animate={{ opacity: headerVisible ? 1 : 0, y: headerVisible ? 0 : 18 }}
+                transition={{ duration: 0.65, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
+                style={{ padding: pad }}
+              >
+                <h2 style={{ fontFamily: tight, fontSize: "clamp(1.8rem, 2.6vw, 3rem)", fontWeight: 700, lineHeight: 1.08, letterSpacing: "-0.025em", color: ink, margin: 0 }}>
+                  Force-Grounded Intelligence for Precision Manufacturing
+                </h2>
+              </motion.div>
+              <motion.div
+                initial={{ opacity: 0, y: 18 }}
+                animate={{ opacity: headerVisible ? 1 : 0, y: headerVisible ? 0 : 18 }}
+                transition={{ duration: 0.65, delay: 0.16, ease: [0.22, 1, 0.36, 1] }}
+                style={{ padding: pad }}
+              >
+                <p style={{ fontFamily: tight, fontSize: "clamp(0.95rem, 1.1vw, 1.08rem)", fontWeight: 400, lineHeight: 1.74, letterSpacing: "-0.005em", color: inkMuted, margin: 0 }}>
+                  Novonus provides an end-to-end imitation learning pipeline for capturing human force
+                  expertise, training force-aware policies, and deploying them onto
+                  existing industrial robots. It records how skilled operators apply
+                  force during contact-rich tasks, through muscle signals, force,
+                  motion, and vision, and grounds policy training in that real human
+                  data to close the sim-to-real gap that breaks vision-only systems.
+                  Novonus delivers production-ready automation for the
+                  fragile, high-precision assembly that current systems can&apos;t
+                  reliably handle, turning expert human touch into robots that keep it.
+                </p>
+              </motion.div>
+            </div>
+
+            {/* ── STEPS ── */}
+            <div className="flex flex-1">
+              <div className="flex flex-col flex-1" style={{ borderRight: divider }}>
+                {steps.map((step, i) => (
+                  <StepCard
+                    key={step.num}
+                    step={step}
+                    revealed={visibleCount > i}
+                    isLast={i === steps.length - 1}
+                    s={styleProps}
+                  />
+                ))}
+              </div>
+              <div style={{ flex: 1 }} />
+            </div>
+
+          </div>
+        </div>
+      </section>
+    </div>
+
+    {/* ── FULL STACK APPROACH — normal flow after sticky ── */}
+    <div style={{ position: "relative" }}>
+      <div className="relative mx-auto flex flex-col" style={{ width: "80%" }}>
+
+        {/* ── GAP ── */}
+        <div style={{ height: "3rem" }} />
+
+        {/* ── FULL STACK APPROACH STRIP ── */}
+        <div style={{ paddingTop: "2rem", borderBottom: "1px solid rgba(15, 14, 13, 0.06)", display: "flex", alignItems: "flex-end" }}>
+          <div style={{
+            backgroundColor: "rgba(255, 255, 255, 0.48)",
+            backdropFilter: "blur(20px) saturate(150%)",
+            WebkitBackdropFilter: "blur(20px) saturate(150%)",
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "0.55rem 1.5rem",
+            border: divider,
+          }}>
+            <span style={{ fontFamily: tight, fontSize: "clamp(1.2rem, 2vw, 2rem)", fontWeight: 700, letterSpacing: "-0.02em", color: ink }}>
+              Full Stack Approach
+            </span>
+          </div>
+        </div>
+
+        {/* ── FULL STACK APPROACH ROW ── */}
+        <div style={{
+          position: "relative",
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          minHeight: "18rem",
+          backgroundColor: "rgba(255, 255, 255, 0.48)",
+          backdropFilter: "blur(20px) saturate(150%)",
+          WebkitBackdropFilter: "blur(20px) saturate(150%)",
+        }}>
+          <motion.div
+            initial={{ opacity: 0, x: -12 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={vp}
+            transition={{ duration: 0.7, ease }}
+            style={{ padding: pad, borderRight: divider, display: "flex", flexDirection: "column", justifyContent: "flex-start", gap: "1.25rem" }}
+          >
+            <p style={{ fontFamily: tight, fontSize: "clamp(1.5rem, 2.2vw, 2.2rem)", fontWeight: 700, letterSpacing: "-0.03em", color: ink, margin: 0, lineHeight: 1.1 }}>
+              Hardware<br />Sensor Rig Stack
+            </p>
+            <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: "0.55rem" }}>
+              {[
+                ["EMG sensors", "capture muscle-level force intent"],
+                ["Force sensors", "measure real grip and contact force (ground truth)"],
+                ["IMUs", "track hand and arm motion and orientation"],
+                ["Flex sensors", "capture grasp shape and finger aperture"],
+                ["Vision (RGB-D camera)", "capture the scene and spatial context"],
+              ].map(([label, desc]) => (
+                <li key={label} style={{ fontFamily: tight, fontSize: "clamp(1rem, 1.15vw, 1.15rem)", fontWeight: 400, lineHeight: 1.68, color: "rgba(15,14,13,0.6)", margin: 0 }}>
+                  <span style={{ fontWeight: 600, color: ink }}>{label}</span>{" — "}{desc}
+                </li>
+              ))}
+            </ul>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, x: 12 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={vp}
+            transition={{ duration: 0.7, delay: 0.08, ease }}
+            style={{ padding: pad, display: "flex", flexDirection: "column", justifyContent: "flex-start", gap: "1.25rem" }}
+          >
+            <p style={{ fontFamily: tight, fontSize: "clamp(1.5rem, 2.2vw, 2.2rem)", fontWeight: 700, letterSpacing: "-0.03em", color: ink, margin: 0, lineHeight: 1.1 }}>
+              Software<br />Pipeline Stack
+            </p>
+            <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: "0.55rem" }}>
+              {[
+                ["Sensor synchronization (LSL)", "lock all sensor streams to a common clock so every modality aligns to the same instant"],
+                ["Signal processing", "clean and normalize every stream: filter muscle signals, calibrate force to real units, fuse motion data, process grasp-shape signals, and encode vision into scene features"],
+                ["Intent + force model", "predict grip force and intent from muscle signals, grounded against real force sensors"],
+                ["Multimodal fusion", "combine vision, force, motion, and grasp shape into a unified representation of the task"],
+                ["Physics-based augmentation", "expand real demonstrations into thousands of simulated scenarios"],
+                ["Force verification", "validate every scenario against real human force, discarding anything that doesn't match reality"],
+                ["Policy training", "train a force-aware imitation learning policy on the verified, multimodal data"],
+                ["Edge deployment", "run the policy on-device to drive the robot, with a real-time safety supervisor"],
+              ].map(([label, desc]) => (
+                <li key={label} style={{ fontFamily: tight, fontSize: "clamp(1rem, 1.15vw, 1.15rem)", fontWeight: 400, lineHeight: 1.68, color: "rgba(15,14,13,0.6)", margin: 0 }}>
+                  <span style={{ fontWeight: 600, color: ink }}>{label}</span>{" — "}{desc}
+                </li>
+              ))}
+            </ul>
+          </motion.div>
+        </div>
+
+        <div style={{ height: "3rem" }} />
+      </div>
+    </div>
+    </div>
+  );
+}
+
+/* ============================================================================
+   CONTENT SECTIONS — Proof, Applications, Why Different, Moat, Traction, CTA
+   ========================================================================== */
+function ContentSections() {
+  const tight = "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif";
+  const ink = "rgba(15, 14, 13, 0.96)";
+  const inkMuted = "rgba(15, 14, 13, 0.6)";
+  const inkGhost = "rgba(15, 14, 13, 0.32)";
+  const divider = "1px solid rgba(15, 14, 13, 0.1)";
+  const dividerLight = "1px solid rgba(15, 14, 13, 0.06)";
+  const pad = "clamp(2rem, 3vw, 3rem)";
+  const accent = "#6d28d9";
+  const vp = { once: true, margin: "-5%" as const };
+  const ease = [0.22, 1, 0.36, 1] as const;
+  const wb = {
+    backgroundColor: "rgba(255, 255, 255, 0.48)" as const,
+    backdropFilter: "blur(20px) saturate(150%)" as const,
+    WebkitBackdropFilter: "blur(20px) saturate(150%)" as const,
+  };
+  const strip = (label: string) => (
+    <div style={{ paddingTop: "2rem", borderBottom: dividerLight, display: "flex", alignItems: "flex-end" }}>
+      <div style={{ ...wb, display: "inline-flex", alignItems: "center", padding: "0.55rem 1.5rem", border: divider }}>
+        <span style={{ fontFamily: tight, fontSize: "clamp(1.2rem, 2vw, 2rem)", fontWeight: 700, letterSpacing: "-0.02em", color: ink }}>{label}</span>
+      </div>
+    </div>
+  );
+
+  return (
+    <div style={{ position: "relative" }}>
+      <MeshGradient
+        className="absolute inset-0 w-full h-full"
+        colors={["#f5efe5", "#c9b8d4", "#f5efe5", "#dfc4aa", "#f5efe5"]}
+        speed={0.5}
+      />
+      <div className="relative mx-auto" style={{ width: "80%" }}>
+
+        {/* ══ ROBOT CELLS STATEMENT ══════════════════════════════════════ */}
+        <motion.div
+          initial={{ opacity: 0, y: 36 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={vp}
+          transition={{ duration: 0.9, ease }}
+          style={{ padding: "clamp(5rem, 8vw, 9rem) 0 clamp(4rem, 6vw, 7rem)", borderBottom: dividerLight }}
+        >
+          <p style={{ fontFamily: tight, fontSize: "0.63rem", fontWeight: 600, letterSpacing: "0.24em", color: inkGhost, textTransform: "uppercase", margin: "0 0 2rem" }}>
+            Novonus — Force-Grounded Intelligence
+          </p>
+          <h2 style={{ fontFamily: tight, fontSize: "clamp(3rem, 6.5vw, 7rem)", fontWeight: 700, lineHeight: 0.96, letterSpacing: "-0.036em", color: ink, margin: 0, maxWidth: "18ch" }}>
+            Robot cells your factory workers can teach.
+          </h2>
+        </motion.div>
+
+        {/* ══ THE PROOF ══════════════════════════════════════════════════ */}
+        {strip("The Proof")}
+        <div style={{ ...wb, display: "grid", gridTemplateColumns: "1fr 1fr", borderBottom: divider, marginBottom: "3rem" }}>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={vp}
+            transition={{ duration: 0.7, ease }}
+            style={{ padding: pad, borderRight: divider, display: "flex", flexDirection: "column", justifyContent: "center", gap: "1rem" }}
+          >
+            <div style={{ fontFamily: tight, fontSize: "clamp(4.5rem, 8vw, 8.5rem)", fontWeight: 700, lineHeight: 0.88, letterSpacing: "-0.04em", color: ink }}>
+              0.96<span style={{ fontSize: "0.28em", color: accent, verticalAlign: "super", fontWeight: 700, letterSpacing: "-0.01em" }}>R²</span>
+            </div>
+            <p style={{ fontFamily: tight, fontSize: "0.63rem", fontWeight: 600, letterSpacing: "0.22em", color: inkGhost, textTransform: "uppercase", margin: 0 }}>
+              Force prediction accuracy
+            </p>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={vp}
+            transition={{ duration: 0.7, delay: 0.1, ease }}
+            style={{ padding: pad, display: "flex", flexDirection: "column", justifyContent: "center", gap: "1.5rem" }}
+          >
+            <p style={{ fontFamily: tight, fontSize: "clamp(0.95rem, 1.1vw, 1.1rem)", fontWeight: 400, lineHeight: 1.78, color: inkMuted, margin: 0 }}>
+              That&apos;s how accurately Novonus predicts real grip force from nothing but human muscle signals, measured against a calibrated force sensor, on data it had never seen.
+            </p>
+            <p style={{ fontFamily: tight, fontSize: "clamp(0.95rem, 1.1vw, 1.1rem)", fontWeight: 400, lineHeight: 1.78, color: inkMuted, margin: 0 }}>
+              The single hardest question in this field — can you actually read force from the body? — already has an answer. The rest is execution.
+            </p>
+          </motion.div>
+        </div>
+
+        {/* ══ THE APPLICATIONS ══════════════════════════════════════════ */}
+        {strip("The Applications")}
+        <div style={{ ...wb, borderBottom: divider, marginBottom: "3rem" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", borderBottom: divider }}>
+            <motion.div
+              initial={{ opacity: 0, y: 18 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={vp}
+              transition={{ duration: 0.7, ease }}
+              style={{ padding: pad, borderRight: divider }}
+            >
+              <h2 style={{ fontFamily: tight, fontSize: "clamp(1.8rem, 2.6vw, 3rem)", fontWeight: 700, lineHeight: 1.06, letterSpacing: "-0.025em", color: ink, margin: 0 }}>
+                We go where robots break.
+              </h2>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 18 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={vp}
+              transition={{ duration: 0.7, delay: 0.1, ease }}
+              style={{ padding: pad }}
+            >
+              <p style={{ fontFamily: tight, fontSize: "clamp(0.95rem, 1.1vw, 1.08rem)", fontWeight: 400, lineHeight: 1.76, color: inkMuted, margin: 0 }}>
+                Not the easy, repetitive work that&apos;s already automated — the delicate tasks that still run on human hands because one wrong squeeze ruins the part.
+              </p>
+            </motion.div>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", borderBottom: divider }}>
+            {[
+              { n: "01", title: "Seating and mating fragile connectors", body: "Sub-millimeter positioning with controlled insertion force. No crushing, no missed engagement, no rework." },
+              { n: "02", title: "Placing components too delicate to crush", body: "Force-limited handling from pick to place. The grip adjusts to the part, not the other way around." },
+              { n: "03", title: "Fastening judged by feel, not position", body: "Torque-aware tightening that stops when the joint is right — not when the angle says so." },
+              { n: "04", title: "Handling parts where too much force destroys", body: "Brittle assemblies and pressure-sensitive materials where a human hand wouldn&apos;t be forgiven for guessing." },
+            ].map((item, i) => (
+              <motion.div
+                key={item.n}
+                initial={{ opacity: 0, y: 14 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={vp}
+                transition={{ duration: 0.6, delay: i * 0.07, ease }}
+                style={{
+                  padding: pad,
+                  borderRight: i % 2 === 0 ? divider : "none",
+                  borderBottom: i < 2 ? divider : "none",
+                }}
+              >
+                <span style={{ fontFamily: tight, fontSize: "0.63rem", fontWeight: 600, letterSpacing: "0.2em", color: inkGhost, textTransform: "uppercase", display: "block", marginBottom: "0.75rem" }}>{item.n}</span>
+                <h3 style={{ fontFamily: tight, fontSize: "clamp(1rem, 1.2vw, 1.22rem)", fontWeight: 700, letterSpacing: "-0.018em", color: ink, margin: "0 0 0.65rem", lineHeight: 1.28 }}>{item.title}</h3>
+                <p style={{ fontFamily: tight, fontSize: "clamp(0.88rem, 0.95vw, 0.96rem)", fontWeight: 400, lineHeight: 1.72, color: "rgba(15,14,13,0.52)", margin: 0 }}>{item.body}</p>
+              </motion.div>
+            ))}
+          </div>
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={vp}
+            transition={{ duration: 0.6, ease }}
+            style={{ padding: pad, display: "flex", alignItems: "center", gap: "clamp(1.5rem, 3vw, 3rem)", flexWrap: "wrap" as const }}
+          >
+            <span style={{ fontFamily: tight, fontSize: "0.63rem", fontWeight: 600, letterSpacing: "0.2em", color: inkGhost, textTransform: "uppercase", flexShrink: 0 }}>Industries</span>
+            {["Aerospace", "Electronics & Semiconductors", "Medical Devices", "EV & Batteries"].map((ind) => (
+              <span key={ind} style={{ fontFamily: tight, fontSize: "clamp(0.88rem, 1vw, 1rem)", fontWeight: 500, color: inkMuted }}>{ind}</span>
+            ))}
+          </motion.div>
+        </div>
+
+        {/* ══ WHY NOVONUS IS DIFFERENT ═══════════════════════════════════ */}
+        {strip("Why Novonus Is Different")}
+        <div style={{ ...wb, borderBottom: divider, marginBottom: "3rem" }}>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={vp}
+            transition={{ duration: 0.75, ease }}
+            style={{ padding: pad, borderBottom: divider }}
+          >
+            <h2 style={{ fontFamily: tight, fontSize: "clamp(1.8rem, 3vw, 3.5rem)", fontWeight: 700, lineHeight: 1.06, letterSpacing: "-0.03em", color: ink, margin: 0, maxWidth: "28ch" }}>
+              Everyone else is looking in the wrong place.
+            </h2>
+          </motion.div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr" }}>
+            <motion.div
+              initial={{ opacity: 0, x: -14 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={vp}
+              transition={{ duration: 0.7, ease }}
+              style={{ padding: pad, borderRight: divider }}
+            >
+              <p style={{ fontFamily: tight, fontSize: "0.63rem", fontWeight: 600, letterSpacing: "0.2em", color: inkGhost, textTransform: "uppercase", margin: "0 0 1rem" }}>The industry</p>
+              <p style={{ fontFamily: tight, fontSize: "clamp(0.95rem, 1.1vw, 1.08rem)", fontWeight: 400, lineHeight: 1.78, color: inkMuted, margin: 0 }}>
+                Billions into better cameras. But a camera has never felt anything — it can watch a hand grip a wire and have no idea whether it&apos;s holding gently or crushing. Teleoperation isn&apos;t the answer either: puppeting a robot from across the room is slow, expensive, and discards the exact signal that matters.
+              </p>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, x: 14 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={vp}
+              transition={{ duration: 0.7, delay: 0.1, ease }}
+              style={{ padding: pad, display: "flex", flexDirection: "column", gap: "1.5rem" }}
+            >
+              <p style={{ fontFamily: tight, fontSize: "0.63rem", fontWeight: 600, letterSpacing: "0.2em", color: inkGhost, textTransform: "uppercase", margin: 0 }}>We went to the source</p>
+              <p style={{ fontFamily: tight, fontSize: "clamp(0.95rem, 1.1vw, 1.08rem)", fontWeight: 400, lineHeight: 1.78, color: inkMuted, margin: 0 }}>
+                Force captured straight from the muscles of a skilled human, working naturally, before contact even happens. Every step of training grounded in that real human force.
+              </p>
+              <p style={{ fontFamily: tight, fontSize: "clamp(0.95rem, 1.1vw, 1.08rem)", fontWeight: 600, lineHeight: 1.6, color: ink, margin: 0, borderLeft: `3px solid ${accent}`, paddingLeft: "1rem" }}>
+                Force-aware robots outperform vision-only systems by over 50% on contact-rich tasks. Force was never a feature to add later — it&apos;s the whole game.
+              </p>
+            </motion.div>
+          </div>
+        </div>
+
+        {/* ══ THE MOAT ═══════════════════════════════════════════════════ */}
+        {strip("The Moat")}
+        <div style={{ ...wb, display: "grid", gridTemplateColumns: "1fr 1fr", borderBottom: divider, marginBottom: "3rem" }}>
+          <motion.div
+            initial={{ opacity: 0, y: 18 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={vp}
+            transition={{ duration: 0.75, ease }}
+            style={{ padding: pad, borderRight: divider, display: "flex", alignItems: "center" }}
+          >
+            <h2 style={{ fontFamily: tight, fontSize: "clamp(1.8rem, 2.8vw, 3.2rem)", fontWeight: 700, lineHeight: 1.08, letterSpacing: "-0.03em", color: ink, margin: 0 }}>
+              The dataset is the company.
+            </h2>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 18 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={vp}
+            transition={{ duration: 0.75, delay: 0.1, ease }}
+            style={{ padding: pad, display: "flex", flexDirection: "column", justifyContent: "center", gap: "1.25rem" }}
+          >
+            <p style={{ fontFamily: tight, fontSize: "clamp(0.95rem, 1.1vw, 1.08rem)", fontWeight: 400, lineHeight: 1.78, color: inkMuted, margin: 0 }}>
+              The pipeline is how we start. What makes us impossible to catch is what accumulates behind it — a proprietary, force-grounded dataset in the hardest corner of manufacturing, deepening with every deployment.
+            </p>
+            <p style={{ fontFamily: tight, fontSize: "clamp(0.95rem, 1.1vw, 1.08rem)", fontWeight: 400, lineHeight: 1.78, color: inkMuted, margin: 0 }}>
+              Models get commoditized. A dataset that everyone needs and no one else has — that you can only build by going out and collecting it, part by part — doesn&apos;t.
+            </p>
+          </motion.div>
+        </div>
+
+        {/* ══ TRACTION ═══════════════════════════════════════════════════ */}
+        {strip("Traction")}
+        <div style={{ ...wb, display: "grid", gridTemplateColumns: "1fr 1fr", borderBottom: divider, marginBottom: "3rem" }}>
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={vp}
+            transition={{ duration: 0.7, ease }}
+            style={{ padding: pad, borderRight: divider, display: "flex", alignItems: "center" }}
+          >
+            <h2 style={{ fontFamily: tight, fontSize: "clamp(1.6rem, 2.4vw, 2.8rem)", fontWeight: 700, lineHeight: 1.1, letterSpacing: "-0.025em", color: ink, margin: 0 }}>
+              Momentum.
+            </h2>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={vp}
+            transition={{ duration: 0.7, delay: 0.1, ease }}
+            style={{ padding: pad }}
+          >
+            <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+              {[
+                "Building inside Founders Inc's current cohort",
+                "In conversation with the robotics platforms whose arms we deploy on",
+                "In conversation with the manufacturing teams who live this problem every day",
+              ].map((item, i) => (
+                <li key={i} style={{ display: "flex", gap: "0.875rem", alignItems: "flex-start" }}>
+                  <span style={{ width: "5px", height: "5px", borderRadius: "50%", backgroundColor: accent, marginTop: "0.5em", flexShrink: 0, display: "block" }} />
+                  <span style={{ fontFamily: tight, fontSize: "clamp(0.95rem, 1.1vw, 1.08rem)", fontWeight: 400, lineHeight: 1.72, color: inkMuted }}>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </motion.div>
+        </div>
+
+        {/* ══ CALL TO ACTION ══════════════════════════════════════════════ */}
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={vp}
+          transition={{ duration: 0.8, ease }}
+          style={{ ...wb, display: "grid", gridTemplateColumns: "1fr 1fr" }}
+        >
+          <div style={{ padding: pad, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+            <h2 style={{ fontFamily: tight, fontSize: "clamp(1.5rem, 2.2vw, 2.6rem)", fontWeight: 700, lineHeight: 1.12, letterSpacing: "-0.025em", color: ink, margin: 0 }}>
+              Let&apos;s put force-aware robots on your line.
+            </h2>
+          </div>
+          <div style={{ padding: pad, display: "flex", flexDirection: "column", justifyContent: "center", gap: "1.5rem" }}>
+            <p style={{ fontFamily: tight, fontSize: "clamp(0.95rem, 1.1vw, 1.08rem)", fontWeight: 400, lineHeight: 1.78, color: inkMuted, margin: 0 }}>
+              A manufacturer working through delicate assembly you can&apos;t automate. An investor. A builder who wants in. We want to hear from you.
+            </p>
+            <a
+              href="mailto:deepayanc10@gmail.com"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.5rem",
+                fontFamily: tight,
+                fontSize: "clamp(0.88rem, 1vw, 1rem)",
+                fontWeight: 600,
+                color: ink,
+                textDecoration: "none",
+                letterSpacing: "-0.01em",
+                borderBottom: `1.5px solid ${ink}`,
+                paddingBottom: "0.15rem",
+                alignSelf: "flex-start",
+              }}
+            >
+              deepayanc10@gmail.com →
+            </a>
+          </div>
+        </motion.div>
+
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================================
+   EVIDENCE SECTION — stat cards with count-up animations
+   ========================================================================== */
+function EvidenceStatCard({
+  value, display, unit, label, index,
+  tight, ink, inkMuted, inkGhost, accent, divider,
+}: {
+  value: number; display?: string; unit: string; label: string; index: number;
+  tight: string; ink: string; inkMuted: string; inkGhost: string; accent: string; divider: string;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [active, setActive] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([e]) => { if (e.isIntersecting) { setActive(true); obs.disconnect(); } },
+      { threshold: 0.3 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+  const count = useCountUp(value, active, 1500);
+  const shown = display ? (active ? display : "—") : String(count) + unit;
+
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 20 }}
+      animate={active ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.65, delay: index * 0.1, ease: [0.22, 1, 0.36, 1] }}
+      style={{
+        padding: "clamp(2rem, 3vw, 3rem)",
+        borderRight: index < 3 ? divider : "none",
+        display: "flex",
+        flexDirection: "column",
+        gap: "0.75rem",
+      }}
+    >
+      <div style={{
+        fontFamily: tight,
+        fontSize: "clamp(3rem, 5.5vw, 5.5rem)",
+        fontWeight: 700,
+        lineHeight: 0.9,
+        letterSpacing: "-0.04em",
+        color: ink,
+      }}>
+        {shown}
+      </div>
+      <p style={{ fontFamily: tight, fontSize: "clamp(0.88rem, 1vw, 1rem)", fontWeight: 400, lineHeight: 1.65, color: inkMuted, margin: 0 }}>{label}</p>
+    </motion.div>
+  );
+}
+
+function EvidenceSection() {
+  const tight = "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif";
+  const ink = "rgba(15, 14, 13, 0.96)";
+  const inkMuted = "rgba(15, 14, 13, 0.6)";
+  const inkGhost = "rgba(15, 14, 13, 0.32)";
+  const divider = "1px solid rgba(15, 14, 13, 0.1)";
+  const accent = "#6d28d9";
+
+  const stats = [
+    { value: 96, display: "0.96", unit: "", label: "R² accuracy predicting grip force from muscle signals alone — validated against a calibrated sensor on unseen data." },
+    { value: 50, display: undefined, unit: "%+", label: "Performance advantage force-aware policies hold over vision-only systems on contact-rich industrial tasks." },
+    { value: 4,  display: undefined, unit: "",   label: "Sensor modalities synchronized in real time: EMG, force, motion, and vision." },
+    { value: 0,  display: "Zero",   unit: "",    label: "Changes needed to your existing robot fleet. We deploy on the arms you already trust." },
+  ];
+
+  return (
+    <section style={{ position: "relative", background: "#f0e6d3" }}>
+      <div className="relative mx-auto" style={{ width: "80%" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)" }}>
+          {stats.map((s, i) => (
+            <EvidenceStatCard
+              key={i}
+              index={i}
+              value={s.value}
+              display={s.display}
+              unit={s.unit}
+              label={s.label}
+              tight={tight}
+              ink={ink}
+              inkMuted={inkMuted}
+              inkGhost={inkGhost}
+              accent={accent}
+              divider={divider}
+            />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 /* ============================================================================
    PAGE — root export
    ========================================================================== */
@@ -6681,13 +6272,10 @@ export default function Home() {
     <IntroProvider sidebar={<Sidebar />}>
       <main>
         <Hero />
-        {/* Cream sections — pinned crossfade for first four, normal scroll for etymology */}
+        <ForceGroundedSection />
+        <ContentSections />
+        <EvidenceSection />
         <div className="relative" style={{ background: "#f0e6d3" }}>
-          <CrossfadeStage sections={[
-            <FluidSection key="fluid" />,
-            <Pipeline key="pipeline" />,
-            <Evidence key="evidence" />,
-          ]} />
           <ScrollSection><EtymologyEntry /></ScrollSection>
         </div>
         <div className="relative z-[60] bg-[#0f0e0d]">
