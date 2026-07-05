@@ -1,5 +1,12 @@
 @import "tailwindcss";
 
+* {
+  scrollbar-width: none;
+}
+*::-webkit-scrollbar {
+  display: none;
+}
+
 :root {
   /* Neural-interface palette — strict five-hue system */
   --ink: #000000;          /* deep black: backgrounds */

@@ -18,6 +18,7 @@ import {
   cubicBezier,
   motion,
   motionValue,
+  useInView,
   useMotionValue,
   useMotionValueEvent,
   useScroll,
@@ -59,9 +60,9 @@ const LOADING_BAR_HOLD_MS = 60;
 /* logoPop covers logo scale-in, wordmark wipe-in, and a hold for read
    time. The dock phase is the transition: wordmark and logo retract /
    fly to the top in one quick beat — no separate fade-out. */
-const LOGO_POP_MS = 650;
-const DOCK_MS = 360;
-const MORPH_S = 0.38;
+const LOGO_POP_MS = 1200;
+const DOCK_MS = 180;
+const MORPH_S = 0.18;
 const POP_S = 0.28;
 const EASE_MORPH = [0.65, 0, 0.35, 1] as const;
 const EASE_POP = [0.34, 1.56, 0.64, 1] as const;
@@ -114,8 +115,15 @@ function IntroProvider({
     return () => timers.forEach(window.clearTimeout);
   }, []);
 
-  /* Website content fades in during the dock phase */
+  /* Website content fades in during the dock phase.
+     Children are NOT mounted until siteVisible to prevent the Hero
+     canvas, MeshGradient shader, and Three.js from competing with the
+     preloader animations for GPU time. */
   const siteVisible = phase === "dock" || phase === "done";
+  const [mountSite, setMountSite] = useState(skipIntroAnim);
+  useEffect(() => {
+    if (siteVisible && !mountSite) setMountSite(true);
+  }, [siteVisible, mountSite]);
 
   return (
     <IntroContext.Provider value={{ phase, skipIntroAnim }}>
@@ -130,9 +138,10 @@ function IntroProvider({
           duration: skipIntroAnim ? 0 : MORPH_S * 0.9,
           ease: EASE_FADE,
         }}
+        style={{ willChange: "opacity" }}
         aria-hidden={!siteVisible}
       >
-        {children}
+        {mountSite ? children : null}
       </motion.div>
     </IntroContext.Provider>
   );
@@ -281,7 +290,7 @@ function Preloader() {
               borderRadius: "50%",
               background:
                 "radial-gradient(circle, rgba(109,40,217,0.7), rgba(124,58,237,0.3) 45%, transparent 72%)",
-              filter: "blur(24px)",
+              filter: "blur(8px)",
             }}
           />
         </motion.div>
@@ -433,6 +442,13 @@ function BrandLockup() {
   const { phase, skipIntroAnim } = useIntro();
   const { scrollY } = useScroll();
   const [hidden, setHidden] = useState(false);
+  const [centeredY, setCenteredY] = useState(0);
+  useEffect(() => {
+    const calc = () => setCenteredY(window.innerHeight / 2 - 20 - 72);
+    calc();
+    window.addEventListener("resize", calc);
+    return () => window.removeEventListener("resize", calc);
+  }, []);
 
   useMotionValueEvent(scrollY, "change", (latest) => {
     const previous = scrollY.getPrevious() || 0;
@@ -492,30 +508,15 @@ function BrandLockup() {
       <motion.div
         key={skipIntroAnim ? "lockup-skip" : "lockup-normal"}
         className="pointer-events-none absolute left-1/2 z-[120] flex items-center"
-        style={{ willChange: "transform, opacity" }}
+        style={{ top: "20px", willChange: "transform, opacity" }}
         initial={
           skipIntroAnim
-            ? {
-                top: "44px",
-                x: "-50%",
-                y: "-50%",
-                scale: 1,
-                opacity: 1,
-                height: 38,
-              }
-            : {
-                top: "50%",
-                x: "-50%",
-                y: "-50%",
-                scale: 0,
-                opacity: 0,
-              }
+            ? { x: "-50%", y: 0, scale: 1, opacity: 1 }
+            : { x: "-50%", y: centeredY, scale: 0, opacity: 0 }
         }
         animate={{
-          top: docked ? "44px" : "50%",
           x: "-50%",
-          y: "-50%",
-          height: centered ? 144 : 38,
+          y: docked ? 0 : centeredY,
           scale: visible ? 1 : 0,
           opacity: visible ? 1 : 0,
         }}
@@ -523,21 +524,19 @@ function BrandLockup() {
           skipIntroAnim
             ? { duration: 0 }
             : {
-                top: { duration: 0.36, ease: EASE_MORPH },
-                y: { duration: 0.36, ease: EASE_MORPH },
-                height: { duration: 0.38, ease: EASE_MORPH },
+                y: { duration: centered ? 0.62 : 0.36, ease: EASE_MORPH },
                 scale: {
-                  duration: centered ? 0.36 : 0.32,
+                  duration: centered ? 0.62 : 0.32,
                   ease: centered ? EASE_POP : EASE_MORPH,
                 },
-                opacity: { duration: 0.26, ease: EASE_FADE },
+                opacity: { duration: centered ? 0.42 : 0.26, ease: EASE_FADE },
               }
         }
       >
         {/* Logo */}
         <motion.div
           className="relative shrink-0"
-          style={{ zIndex: 2 }}
+          style={{ zIndex: 2, willChange: "transform" }}
           initial={
             skipIntroAnim
               ? { width: 38, height: 38 }
@@ -548,7 +547,7 @@ function BrandLockup() {
             height: centered ? 144 : 38,
           }}
           transition={{
-            duration: skipIntroAnim ? 0 : 0.38,
+            duration: skipIntroAnim ? 0 : (centered ? 0.58 : 0.38),
             ease: EASE_MORPH,
           }}
         >
@@ -559,29 +558,39 @@ function BrandLockup() {
             then stays visible at a smaller size when docked in the top bar. 
             Two layers crossfade: the large intro text fades out while the
             small docked text fades in, avoiding ugly font-size interpolation. */}
-        <motion.div
-          style={{ overflow: "hidden", flexShrink: 0, zIndex: 1, position: "relative" }}
-          initial={
-            skipIntroAnim
-              ? { width: 120, opacity: 1 }
-              : { width: 0, opacity: 0 }
-          }
-          animate={{
-            width: centered ? 240 : (phase === "done") ? 120 : 0,
-            opacity: centered || (phase === "done") ? 1 : 0,
-          }}
-          transition={{
-            duration: centered ? 0.42 : (phase === "done") ? 0.36 : 0.15,
-            ease: centered ? EASE_MORPH : EASE_FADE,
-            delay: centered ? 0.28 : (phase === "done") ? 0.06 : 0,
+        <div
+          style={{
+            overflow: "hidden",
+            flexShrink: 0,
+            zIndex: 1,
+            position: "relative",
+            width: centered ? 240 : 120,
+            transition: `width ${centered ? 0 : 0.32}s`,
           }}
         >
+          <motion.div
+            style={{ willChange: "transform, opacity" }}
+            initial={
+              skipIntroAnim
+                ? { clipPath: "inset(0 0% 0 0)", opacity: 1 }
+                : { clipPath: "inset(0 100% 0 0)", opacity: 0 }
+            }
+            animate={{
+              clipPath: centered || (phase === "done") ? "inset(0 0% 0 0)" : "inset(0 100% 0 0)",
+              opacity: centered || (phase === "done") ? 1 : 0,
+            }}
+            transition={{
+              duration: centered ? 0.65 : (phase === "done") ? 0.36 : 0.15,
+              ease: centered ? EASE_MORPH : EASE_FADE,
+              delay: centered ? 0.38 : (phase === "done") ? 0.06 : 0,
+            }}
+          >
           {/* Large intro wordmark — visible only during logoPop */}
           <motion.span
             className="block select-none"
             initial={{ opacity: skipIntroAnim ? 0 : 0 }}
             animate={{ opacity: centered ? 1 : 0 }}
-            transition={{ duration: centered ? 0.26 : 0.12, ease: EASE_FADE }}
+            transition={{ duration: centered ? 0.42 : 0.12, ease: EASE_FADE, delay: centered ? 0.38 : 0 }}
             style={{
               fontFamily: "var(--font-inter-tight), Inter, ui-sans-serif, system-ui",
               fontWeight: 800,
@@ -622,7 +631,8 @@ function BrandLockup() {
           >
             Novonus
           </motion.span>
-        </motion.div>
+          </motion.div>
+        </div>
       </motion.div>
     </motion.div>
   );
@@ -1831,20 +1841,7 @@ function TopographicalDots({
         Math.abs(earthOffset - prevEarthOffset) +
         Math.abs(cliffMorph - prevCliffMorph) +
         Math.abs(cliffPhase - prevCliffPhase);
-      const transitioning = morphDelta > 0.0008;
-      if (transitioning) {
-        /* Lower FADE → each frame erases LESS of the previous frame,
-           so trails persist many more frames before they're gone.
-           0.06 lets a trail last roughly 60+ frames (~1 s) at full
-           visibility before fading. */
-        const FADE = 0.06;
-        ctx.globalCompositeOperation = "destination-out";
-        ctx.fillStyle = `rgba(0, 0, 0, ${FADE})`;
-        ctx.fillRect(0, 0, width, height);
-        ctx.globalCompositeOperation = "source-over";
-      } else {
-        ctx.clearRect(0, 0, width, height);
-      }
+      ctx.clearRect(0, 0, width, height);
       prevMorph = morph;
       prevEyeMorph = eyeMorph;
       prevEyeOffset = eyeOffset;
@@ -1892,7 +1889,7 @@ function TopographicalDots({
          poses — each tracks the cursor with a card-like swivel.
          Only the cliffs pose disables it (two separate cliff
          shapes shouldn't tilt as one unit). */
-      const tiltFade = morph * (1 - cliffPhase);
+      const tiltFade = morph * (1 - eyeMorph) * (1 - cliffPhase);
       const effTiltX = smoothTiltX * tiltFade;
       const effTiltY = smoothTiltY * tiltFade;
 
@@ -2515,12 +2512,10 @@ function Hero() {
     });
   };
 
-  /* Exit handler for the "Back to main page" button. Always lands the
-     user on the short-path "three problems together" view — the
-     moment in short mode where the brain holds and Current Teleop /
-     Skilled labor / Sim-to-real titles are all on screen at once.
-     That maps to ~scrollYProgress 0.70 of the 370svh short-mode
-     pinRef → ≈189svh past sectionTop → 1.9 viewports. */
+  /* Exit handler — scrolls to scrollYProgress 0.50 of the 230svh
+     short-mode section (scroll range 130svh → 0.50 × 1.3 = 0.65 vh).
+     That lands with "Modern robotics has been training on the wrong
+     data." fully revealed and the three-headline overlay not yet shown. */
   const handleBackToMain = () => {
     setDeepDive(false);
     requestAnimationFrame(() => {
@@ -2529,7 +2524,7 @@ function Hero() {
         if (!sec) return;
         const rect = sec.getBoundingClientRect();
         const sectionTop = rect.top + window.scrollY;
-        const targetY = sectionTop + window.innerHeight * 1.9;
+        const targetY = sectionTop + window.innerHeight * 0.65;
         window.scrollTo({ top: targetY, behavior: "instant" as ScrollBehavior });
       });
     });
@@ -2553,7 +2548,7 @@ function Hero() {
     const updateBounds = () => {
       const sectionTop = sec.getBoundingClientRect().top + window.scrollY;
       startY = sectionTop + window.innerHeight * 3.9;
-      endY = sectionTop + window.innerHeight * 7.8;
+      endY = sectionTop + window.innerHeight * 6.4;
     };
     updateBounds();
 
@@ -2615,22 +2610,23 @@ function Hero() {
   const HERO_DISAPPEAR_END = 0.113;
   const HERO_WORD_DURATION = 0.064;
   const invertProgress = useTransform(scrollYProgress, [0, 1], [1, 1]);
-  const morphProgress = useTransform(scrollYProgress, [0.177, 0.306], [0, 1]);
-  const boxAlphaProgress = useTransform(scrollYProgress, [0.113, 0.161], [1, 0]);
+  const morphProgress = useTransform(scrollYProgress, [0.177, 0.400], [0, 1]);
   const dotEnterProgress = useTransform(scrollYProgress, [0.080, 0.161], [0, 1]);
+  const boxAlphaProgress = useTransform(scrollYProgress, [0.113, 0.161], [1, 0]);
+
   const dotFillProgress = useTransform(scrollYProgress, [0.113, 0.177], [0, 1]);
   const heroBg = useTransform(invertProgress, [0, 1], ["#f5efe5", "#0f0e0d"]);
   const revealHead = useTransform(
     scrollYProgress,
-    [0.306, 0.483],
+    [0.400, 0.577],
     [0, SLIDE2_TEXT.length + 7],
   );
   /* All deep-dive morphs (brain → clock → earth → cliffs) are gated
      on `deepDive`. In default (short) mode each raw transform is
      wrapped through a gate that forces 0, so the dots stay locked
      in the brain layout while the three headlines appear together. */
-  const eyeMorphRaw = useTransform(scrollYProgress, [0.37, 0.50], [0, 1]);
-  const eyeOffsetRaw = useTransform(scrollYProgress, [0.37, 0.50], [0, 1]);
+  const eyeMorphRaw = useTransform(scrollYProgress, [0.464, 0.594], [0, 1]);
+  const eyeOffsetRaw = useTransform(scrollYProgress, [0.464, 0.594], [0, 1]);
   const eyeMorphProgress = useTransform(eyeMorphRaw, (v) => (deepDive ? v : 0));
   const eyeOffsetProgress = useTransform(eyeOffsetRaw, (v) => (deepDive ? v : 0));
   /* Earth morph + earth offset run concurrently. The offset eases
@@ -2638,8 +2634,11 @@ function Hero() {
      the earth ends up on the OPPOSITE side from the clock. The
      long sweep automatically pulls velocity trails out of every
      dot via the existing partial-fade clear. */
-  const earthMorphRaw = useTransform(scrollYProgress, [0.67, 0.82], [0, 1]);
-  const earthOffsetRaw = useTransform(scrollYProgress, [0.67, 0.82], [0, 1]);
+  const earthMorphRaw = useTransform(scrollYProgress, [0.664, 0.744], [0, 1]);
+  const earthOffsetRaw = useTransform(scrollYProgress, [0.664, 0.744], [0, 1]);
+  /* Fade the Current Teleop text out the instant earth morph begins */
+  const visionTextExit = useTransform(scrollYProgress, [0.649, 0.669], [1, 0]);
+  const erodingTextExit = useTransform(scrollYProgress, [0.799, 0.819], [1, 0]);
   const earthMorphProgress = useTransform(earthMorphRaw, (v) => (deepDive ? v : 0));
   const earthOffsetProgress = useTransform(earthOffsetRaw, (v) => (deepDive ? v : 0));
   /* Cliffs morph + phase. cliffMorph drives the dot positions from
@@ -2647,8 +2646,8 @@ function Hero() {
      the canvas back to centered+full-scale (lerps the eyeOffset/
      earthOffset translate and scale back to neutral) so the cliffs
      read at full size with the gap centered on the viewport. */
-  const cliffMorphRaw = useTransform(scrollYProgress, [0.91, 0.97], [0, 1]);
-  const cliffPhaseRaw = useTransform(scrollYProgress, [0.91, 0.97], [0, 1]);
+  const cliffMorphRaw = useTransform(scrollYProgress, [0.814, 0.894], [0, 1]);
+  const cliffPhaseRaw = useTransform(scrollYProgress, [0.814, 0.894], [0, 1]);
   const cliffMorphProgress = useTransform(cliffMorphRaw, (v) => (deepDive ? v : 0));
   const cliffPhaseProgress = useTransform(cliffPhaseRaw, (v) => (deepDive ? v : 0));
 
@@ -2665,24 +2664,24 @@ function Hero() {
      with zero entrance animation. */
   const [hydrated, setHydrated] = useState(false);
   useMotionValueEvent(scrollYProgress, "change", (v) => {
-    setStage(v > 0.483 && v < 0.531 ? 3 : 0);
+    setStage(v > 0.577 && v < 0.625 ? 3 : 0);
     /* visionReady / erodingReady / cliffReady trigger the entrance
        of the per-stage cliff overlays (Current Teleop / Skilled
        labor / Sim-to-real gap). They are gated on `deepDive` so the
        short path never reveals them — instead the `HeadlinesTogether`
        overlay shows all three titles simultaneously over the brain. */
-    setVisionReady(deepDive && v > 0.50);
-    setErodingReady(deepDive && v > 0.82);
-    setCliffReady(deepDive && v > 0.96);
+    setVisionReady(deepDive && v > 0.594);
+    setErodingReady(deepDive && v > 0.744);
+    setCliffReady(deepDive && v > 0.894);
   });
   useLayoutEffect(() => {
     /* Initial scroll-based sync runs once, BEFORE first paint, so
        motion components mount with the correct ready-flag state
        (and `initial` matches `animate` → no entrance animation). */
     const v = scrollYProgress.get();
-    if (deepDive && v > 0.50) setVisionReady(true);
-    if (deepDive && v > 0.82) setErodingReady(true);
-    if (deepDive && v > 0.96) setCliffReady(true);
+    if (deepDive && v > 0.594) setVisionReady(true);
+    if (deepDive && v > 0.744) setErodingReady(true);
+    if (deepDive && v > 0.894) setCliffReady(true);
     setHydrated(true);
   }, [scrollYProgress, deepDive]);
 
@@ -2692,7 +2691,7 @@ function Hero() {
      fading as the section exits. Forced to 0 in deep-dive mode. */
   const headlinesTogetherRaw = useTransform(
     scrollYProgress,
-    [0.531, 0.644],
+    [0.625, 0.738],
     [0, 1],
   );
   const headlinesTogetherOpacity = useTransform(
@@ -2855,15 +2854,15 @@ function Hero() {
                   {[
                     {
                       tokens: MODERN_TELEOP_TITLE_TOKENS,
-                      note: "vision-only stacks plateau on contact-rich tasks.",
+                      note: "Vision-only stacks plateau on contact-rich tasks. Tactile force sensors aren't accurate enough for precise manufacturing.",
                     },
                     {
                       tokens: ERODING_TITLE_TOKENS,
-                      note: "50M manufacturing roles projected unfilled by 2030.",
+                      note: "Skilled labor is really expensive now. 50M manufacturing roles projected unfilled by 2030.",
                     },
                     {
                       tokens: GAP_TITLE_TOKENS,
-                      note: "no simulator yet models friction, deformation, multi-point contact.",
+                      note: "No simulator yet models friction, deformation, or multi-point contact.",
                     },
                   ].map((col, idx) => (
                     <div key={idx} className="flex flex-col">
@@ -2938,9 +2937,10 @@ function Hero() {
               initial scroll-flag sync — no on-mount animation runs
               on a scrolled-refresh. */}
           {hydrated && (
-          <div
+          <motion.div
             className="pointer-events-none absolute inset-0 z-[7] hidden items-center md:flex"
             aria-hidden={!visionReady}
+            style={{ opacity: visionTextExit }}
           >
             <div
               className="pointer-events-none w-full"
@@ -3241,7 +3241,7 @@ function Hero() {
                 </motion.p>
               </div>
             </div>
-          </div>
+          </motion.div>
           )}
 
           {/* "The skilled labor base is eroding" — appears on the
@@ -3251,9 +3251,10 @@ function Hero() {
               `erodingReady`. Mirrors the modern-teleop block's
               layout but anchored to the right edge. */}
           {hydrated && (
-          <div
+          <motion.div
             className="pointer-events-none absolute inset-0 z-[7] hidden items-center md:flex"
             aria-hidden={!erodingReady}
+            style={{ opacity: erodingTextExit }}
           >
             <div
               className="pointer-events-none w-full"
@@ -3519,7 +3520,7 @@ function Hero() {
                 </motion.p>
               </div>
             </div>
-          </div>
+          </motion.div>
           )}
 
           {/* "The sim-to-real gap is still wide" — appears in the GAP
@@ -4285,7 +4286,9 @@ function Hero() {
               </div>
             </div>
           </motion.div>
-          </>
+
+
+</>
           )}
 
           </div>
@@ -5193,6 +5196,7 @@ function EtymologyEntry() {
    ========================================================================== */
 
 function StageMeshBackground() {
+  const { phase } = useIntro();
   const [dims, setDims] = useState({ width: 1920, height: 1080 });
   useEffect(() => {
     const update = () => setDims({ width: window.innerWidth, height: window.innerHeight });
@@ -5200,6 +5204,7 @@ function StageMeshBackground() {
     window.addEventListener("resize", update);
     return () => window.removeEventListener("resize", update);
   }, []);
+  if (phase !== "done") return <div style={{ position: "absolute", inset: 0, zIndex: 0, background: "#0f0e0d" }} />;
   return (
     <div style={{ position: "absolute", inset: 0, zIndex: 0 }}>
       <MeshGradient
@@ -5619,15 +5624,11 @@ function StepCard({ step, revealed, isLast, s }: {
    headline and a two-column body layout.
    ========================================================================== */
 function ForceGroundedSection() {
-  const tight =
-    "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif";
+  const tight = "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif";
+  const jb = "var(--font-jetbrains-mono), 'JetBrains Mono', 'Fira Code', monospace";
   const ink = "rgba(15, 14, 13, 0.96)";
   const inkMuted = "rgba(15, 14, 13, 0.6)";
   const inkGhost = "rgba(15, 14, 13, 0.32)";
-
-  const vp = { once: true, margin: "-8%" as const };
-  const ease = [0.22, 1, 0.36, 1] as const;
-
   const divider = "1px solid rgba(15, 14, 13, 0.1)";
   const pad = "clamp(2rem, 3vw, 3rem)";
 
@@ -5635,20 +5636,22 @@ function ForceGroundedSection() {
     {
       num: "01",
       title: "Capture",
-      tagline: "Record the force a human already knows.",
-      body: "An expert performs the task wearing our rig — EMG for muscle-level force, plus force, motion, and vision, synchronized in real time. We capture the force intuition that cameras and teleoperation can't see.",
+      body: "The demonstrator wears our rig, capturing the force intuition cameras and teleoperation miss.",
     },
     {
       num: "02",
-      title: "Ground",
-      tagline: "Turn a handful of demonstrations into a verified dataset.",
-      body: "Our pipeline predicts grip force from muscle signals, validated against real sensors at R² = 0.96, then augments each demonstration into thousands of physics-simulated scenarios, keeping only the ones that match real human force. Reality is the filter.",
+      title: "Learn",
+      body: "We predict force and intent from muscle signals, grounded in real force data.",
     },
     {
       num: "03",
+      title: "Ground",
+      body: "We augment demos into thousands of scenarios, keeping only what matches reality.",
+    },
+    {
+      num: "04",
       title: "Deploy",
-      tagline: "Put force-aware policies on the robots you already trust.",
-      body: "The verified data trains a force-aware policy that we deploy onto your existing robot infrastructure, with the safety supervisor and integration included. Every deployment compounds into the deepest force dataset in fragile assembly — our core moat.",
+      body: "A force-aware policy runs on your existing robots, safety supervisor included.",
     },
   ];
 
@@ -5657,207 +5660,442 @@ function ForceGroundedSection() {
     target: scrollRef,
     offset: ["start start", "end end"],
   });
-  const [headerVisible, setHeaderVisible] = useState(false);
-  const [visibleCount, setVisibleCount] = useState(0);
+
+  // Phase 1: solution hero holds 0→0.12, fades out 0.12→0.22
+  const solutionOpacity = useTransform(scrollYProgress, [0.12, 0.22], [1, 0]);
+  const solutionY = useTransform(scrollYProgress, [0.12, 0.22], [0, -40]);
+
+  // Phase 2: fades in 0.20→0.28, fades out 0.63→0.70
+  const headerOpacity = useTransform(scrollYProgress, [0.20, 0.28, 0.63, 0.70], [0, 1, 1, 0]);
+
+  // Phase 3: "Who We Build For" fades in 0.68→0.75
+  const phase3Opacity = useTransform(scrollYProgress, [0.68, 0.75], [0, 1]);
+
+  const [hasPhase2, setHasPhase2] = useState(false);
+  const [hasBox1, setHasBox1] = useState(false);
+  const [hasBox2, setHasBox2] = useState(false);
+  const [hasBox3, setHasBox3] = useState(false);
+  const [hasBox4, setHasBox4] = useState(false);
+  const [hasPhase3, setHasPhase3] = useState(false);
   useMotionValueEvent(scrollYProgress, "change", (v) => {
-    if (v >= 0.04) setHeaderVisible(true);
-    if (v >= 0.78) setVisibleCount(c => Math.max(c, 3));
-    else if (v >= 0.50) setVisibleCount(c => Math.max(c, 2));
-    else if (v >= 0.22) setVisibleCount(c => Math.max(c, 1));
+    setHasPhase2(v >= 0.20);
+    setHasBox1(v >= 0.28);
+    setHasBox2(v >= 0.38);
+    setHasBox3(v >= 0.48);
+    setHasBox4(v >= 0.57);
+    setHasPhase3(v >= 0.68);
   });
 
-  const styleProps = { tight, ink, inkMuted, inkGhost, divider, pad };
+  const boxVisible = [hasBox1, hasBox2, hasBox3, hasBox4];
+
+  // Entrance progress: 0 when scrollRef bottom = viewport bottom, 1 when scrollRef top = viewport top
+  // At entranceProgress 0.8 → section occupies 80% of the viewport (slides in from below)
+  const { scrollYProgress: entranceProgress } = useScroll({
+    target: scrollRef,
+    offset: ["start 100%", "start 0%"],
+  });
+
+  const [hasEntered, setHasEntered] = useState(false);
+  useMotionValueEvent(entranceProgress, "change", (v) => {
+    setHasEntered(v >= 0.8);
+  });
 
   return (
-    <div style={{ position: "relative" }}>
-      {/* ── SINGLE BACKGROUND covering both sections ── */}
-      <MeshGradient
-        className="absolute inset-0 w-full h-full"
-        colors={["#f5efe5", "#c9b8d4", "#f5efe5", "#dfc4aa", "#f5efe5"]}
-        speed={0.5}
-      />
+    <div
+      ref={scrollRef}
+      style={{ height: "820vh", position: "relative", zIndex: 1 }}
+    >
+      <section
+        className="relative overflow-hidden"
+        style={{ position: "sticky", top: 0, height: "100vh" }}
+      >
+        {/* Gradient background — shared across all phases */}
+        <MeshGradient
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", zIndex: 0 }}
+          colors={["#f0e6d3", "#a87fd4", "#f5efe5", "#c9a0e8", "#e8d0b0"]}
+          speed={0.4}
+        />
 
-    {/* ── STICKY SCROLL — what we build + steps ── */}
-    <div ref={scrollRef} style={{ height: "250vh", position: "relative" }}>
-      <section className="relative overflow-hidden" style={{ position: "sticky", top: 0, height: "100vh" }}>
-
-        <div className="relative mx-auto flex flex-col h-full" style={{ width: "80%" }}>
-
-          {/* ── WHAT WE BUILD STRIP ── */}
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: headerVisible ? 1 : 0, y: headerVisible ? 0 : 12 }}
-            transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-            style={{ paddingTop: "2rem", borderBottom: "1px solid rgba(15, 14, 13, 0.06)", display: "flex", alignItems: "flex-end", flexShrink: 0 }}
-          >
-            <div style={{
-              backgroundColor: "rgba(255, 255, 255, 0.48)",
-              backdropFilter: "blur(20px) saturate(150%)",
-              WebkitBackdropFilter: "blur(20px) saturate(150%)",
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              padding: "0.55rem 1.5rem",
-              border: divider,
-            }}>
-              <span style={{ fontFamily: tight, fontSize: "clamp(1.2rem, 2vw, 2rem)", fontWeight: 700, letterSpacing: "-0.02em", color: ink }}>
-                What we build
-              </span>
-            </div>
-          </motion.div>
-
-          {/* ── WHITE BG FRAME ── */}
-          <div className="flex flex-col flex-1 overflow-hidden" style={{
-            backgroundColor: "rgba(255, 255, 255, 0.48)",
-            backdropFilter: "blur(20px) saturate(150%)",
-            WebkitBackdropFilter: "blur(20px) saturate(150%)",
-          }}>
-
-            {/* ── TOP HEADER ROW ── */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", borderBottom: divider, flexShrink: 0 }}>
-              <motion.div
-                initial={{ opacity: 0, y: 18 }}
-                animate={{ opacity: headerVisible ? 1 : 0, y: headerVisible ? 0 : 18 }}
-                transition={{ duration: 0.65, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
-                style={{ padding: pad }}
-              >
-                <h2 style={{ fontFamily: tight, fontSize: "clamp(1.8rem, 2.6vw, 3rem)", fontWeight: 700, lineHeight: 1.08, letterSpacing: "-0.025em", color: ink, margin: 0 }}>
-                  Force-Grounded Intelligence for Precision Manufacturing
-                </h2>
-              </motion.div>
-              <motion.div
-                initial={{ opacity: 0, y: 18 }}
-                animate={{ opacity: headerVisible ? 1 : 0, y: headerVisible ? 0 : 18 }}
-                transition={{ duration: 0.65, delay: 0.16, ease: [0.22, 1, 0.36, 1] }}
-                style={{ padding: pad }}
-              >
-                <p style={{ fontFamily: tight, fontSize: "clamp(0.95rem, 1.1vw, 1.08rem)", fontWeight: 400, lineHeight: 1.74, letterSpacing: "-0.005em", color: inkMuted, margin: 0 }}>
-                  Novonus provides an end-to-end imitation learning pipeline for capturing human force
-                  expertise, training force-aware policies, and deploying them onto
-                  existing industrial robots. It records how skilled operators apply
-                  force during contact-rich tasks, through muscle signals, force,
-                  motion, and vision, and grounds policy training in that real human
-                  data to close the sim-to-real gap that breaks vision-only systems.
-                  Novonus delivers production-ready automation for the
-                  fragile, high-precision assembly that current systems can&apos;t
-                  reliably handle, turning expert human touch into robots that keep it.
-                </p>
-              </motion.div>
-            </div>
-
-            {/* ── STEPS ── */}
-            <div className="flex flex-1">
-              <div className="flex flex-col flex-1" style={{ borderRight: divider }}>
-                {steps.map((step, i) => (
-                  <StepCard
-                    key={step.num}
-                    step={step}
-                    revealed={visibleCount > i}
-                    isLast={i === steps.length - 1}
-                    s={styleProps}
-                  />
-                ))}
-              </div>
-              <div style={{ flex: 1 }} />
-            </div>
-
-          </div>
-        </div>
-      </section>
-    </div>
-
-    {/* ── FULL STACK APPROACH — normal flow after sticky ── */}
-    <div style={{ position: "relative" }}>
-      <div className="relative mx-auto flex flex-col" style={{ width: "80%" }}>
-
-        {/* ── GAP ── */}
-        <div style={{ height: "3rem" }} />
-
-        {/* ── FULL STACK APPROACH STRIP ── */}
-        <div style={{ paddingTop: "2rem", borderBottom: "1px solid rgba(15, 14, 13, 0.06)", display: "flex", alignItems: "flex-end" }}>
-          <div style={{
-            backgroundColor: "rgba(255, 255, 255, 0.48)",
-            backdropFilter: "blur(20px) saturate(150%)",
-            WebkitBackdropFilter: "blur(20px) saturate(150%)",
-            display: "inline-flex",
+        {/* ── PHASE 1: SOLUTION HERO ── */}
+        <motion.div
+          style={{
+            position: "absolute",
+            inset: 0,
+            display: "flex",
+            flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
-            padding: "0.55rem 1.5rem",
-            border: divider,
-          }}>
-            <span style={{ fontFamily: tight, fontSize: "clamp(1.2rem, 2vw, 2rem)", fontWeight: 700, letterSpacing: "-0.02em", color: ink }}>
-              Full Stack Approach
-            </span>
+            textAlign: "center",
+            padding: "0 clamp(2rem, 8vw, 10rem)",
+            gap: "2rem",
+            opacity: solutionOpacity,
+            y: solutionY,
+            pointerEvents: "none",
+          }}
+        >
+          {/* eyebrow reveal */}
+          <div style={{ overflow: "hidden", paddingBottom: "0.1em" }}>
+            <motion.p
+              initial={{ y: "110%" }}
+              animate={{ y: hasEntered ? "0%" : "110%" }}
+              transition={{ duration: 0.65, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+              style={{
+                fontFamily: jb,
+                fontSize: "clamp(1.1rem, 1.6vw, 1.6rem)",
+                fontWeight: 400,
+                letterSpacing: "0.14em",
+                color: "#6d28d9",
+                textTransform: "uppercase",
+                margin: 0,
+              }}
+            >
+              [ THE SOLUTION ]
+            </motion.p>
           </div>
-        </div>
 
-        {/* ── FULL STACK APPROACH ROW ── */}
-        <div style={{
-          position: "relative",
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          minHeight: "18rem",
-          backgroundColor: "rgba(255, 255, 255, 0.48)",
-          backdropFilter: "blur(20px) saturate(150%)",
-          WebkitBackdropFilter: "blur(20px) saturate(150%)",
-        }}>
+          {/* divider draws in from center */}
           <motion.div
-            initial={{ opacity: 0, x: -12 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={vp}
-            transition={{ duration: 0.7, ease }}
-            style={{ padding: pad, borderRight: divider, display: "flex", flexDirection: "column", justifyContent: "flex-start", gap: "1.25rem" }}
+            initial={{ scaleX: 0, opacity: 0 }}
+            animate={{ scaleX: hasEntered ? 1 : 0, opacity: hasEntered ? 1 : 0 }}
+            transition={{ duration: 0.45, delay: 0.52, ease: [0.22, 1, 0.36, 1] }}
+            style={{
+              width: "clamp(3rem, 5vw, 5rem)",
+              height: "2px",
+              background: "linear-gradient(90deg, #6d28d9, #8b5cf6)",
+              borderRadius: "999px",
+              transformOrigin: "center center",
+            }}
+          />
+
+          {/* headline reveal — slides up from clip line */}
+          <div style={{ overflow: "hidden", paddingBottom: "0.12em" }}>
+            <motion.h2
+              initial={{ y: "105%" }}
+              animate={{ y: hasEntered ? "0%" : "105%" }}
+              transition={{ duration: 1.1, delay: 0.22, ease: [0.16, 1, 0.3, 1] }}
+              style={{
+                fontFamily: tight,
+                fontSize: "clamp(3rem, 6.5vw, 7rem)",
+                fontWeight: 300,
+                lineHeight: 0.96,
+                letterSpacing: "-0.036em",
+                color: ink,
+                margin: 0,
+                maxWidth: "22ch",
+              }}
+            >
+              Robot Cells your Factory Workers can Train.
+            </motion.h2>
+          </div>
+        </motion.div>
+
+        {/* ── PHASE 2: WHAT WE BUILD ── */}
+        <motion.div
+          style={{
+            position: "absolute",
+            inset: 0,
+            opacity: headerOpacity,
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          <motion.div
+            className="relative mx-auto flex flex-col"
+            style={{ width: "80%", paddingTop: "clamp(5rem, 11vh, 11rem)", paddingBottom: 0, flex: 1, minHeight: 0 }}
           >
-            <p style={{ fontFamily: tight, fontSize: "clamp(1.5rem, 2.2vw, 2.2rem)", fontWeight: 700, letterSpacing: "-0.03em", color: ink, margin: 0, lineHeight: 1.1 }}>
-              Hardware<br />Sensor Rig Stack
-            </p>
-            <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: "0.55rem" }}>
-              {[
-                ["EMG sensors", "capture muscle-level force intent"],
-                ["Force sensors", "measure real grip and contact force (ground truth)"],
-                ["IMUs", "track hand and arm motion and orientation"],
-                ["Flex sensors", "capture grasp shape and finger aperture"],
-                ["Vision (RGB-D camera)", "capture the scene and spatial context"],
-              ].map(([label, desc]) => (
-                <li key={label} style={{ fontFamily: tight, fontSize: "clamp(1rem, 1.15vw, 1.15rem)", fontWeight: 400, lineHeight: 1.68, color: "rgba(15,14,13,0.6)", margin: 0 }}>
-                  <span style={{ fontWeight: 600, color: ink }}>{label}</span>{" — "}{desc}
-                </li>
+            {/* Header cluster — label + tagline */}
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "0.6rem",
+                paddingBottom: "clamp(1rem, 2vh, 2rem)",
+                flexShrink: 0,
+              }}
+            >
+              <div style={{ overflow: "hidden", paddingBottom: "0.1em" }}>
+                <motion.span
+                  initial={{ y: "110%" }}
+                  animate={{ y: hasPhase2 ? "0%" : "110%" }}
+                  transition={{ duration: 0.65, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
+                  style={{
+                    display: "block",
+                    fontFamily: jb,
+                    fontSize: "clamp(0.75rem, 1vw, 1rem)",
+                    fontWeight: 400,
+                    letterSpacing: "0.14em",
+                    color: "#6d28d9",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  [ What we build ]
+                </motion.span>
+              </div>
+              <div style={{ overflow: "hidden", paddingBottom: "0.12em" }}>
+                <motion.h2
+                  initial={{ y: "105%" }}
+                  animate={{ y: hasPhase2 ? "0%" : "105%" }}
+                  transition={{ duration: 0.9, delay: 0.12, ease: [0.16, 1, 0.3, 1] }}
+                  style={{
+                    fontFamily: tight,
+                    fontSize: "clamp(2.6rem, 4.5vw, 5.5rem)",
+                    fontWeight: 300,
+                    lineHeight: 1.05,
+                    letterSpacing: "-0.025em",
+                    color: ink,
+                    margin: 0,
+                  }}
+                >
+                  Collect, Train and Deploy With Us
+                </motion.h2>
+              </div>
+            </div>
+
+            {/* Top header row — title + description */}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                borderBottom: divider,
+                borderTop: divider,
+                flexShrink: 0,
+                alignItems: "center",
+                paddingBottom: "clamp(1rem, 2vh, 2rem)",
+              }}
+            >
+              <div style={{ padding: pad, paddingBottom: "clamp(1rem, 1.5vh, 1.5rem)" }}>
+                <div style={{ overflow: "hidden", paddingBottom: "0.12em" }}>
+                  <motion.h2
+                    initial={{ y: "105%" }}
+                    animate={{ y: hasPhase2 ? "0%" : "105%" }}
+                    transition={{ duration: 1.1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                    style={{
+                      fontFamily: tight,
+                      fontSize: "clamp(1.8rem, 2.6vw, 3rem)",
+                      fontWeight: 700,
+                      lineHeight: 1.08,
+                      letterSpacing: "-0.025em",
+                      color: ink,
+                      margin: 0,
+                    }}
+                  >
+                    Force-Grounded Intelligence for Precision Manufacturing
+                  </motion.h2>
+                </div>
+              </div>
+              <div style={{ padding: pad, paddingBottom: "clamp(1rem, 1.5vh, 1.5rem)", paddingLeft: "clamp(4rem, 7vw, 7rem)" }}>
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: hasPhase2 ? 1 : 0 }}
+                  transition={{ duration: 0.75, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                  style={{
+                    fontFamily: tight,
+                    fontSize: "clamp(0.95rem, 1.1vw, 1.08rem)",
+                    fontWeight: 400,
+                    lineHeight: 1.74,
+                    letterSpacing: "-0.005em",
+                    color: inkMuted,
+                    margin: 0,
+                  }}
+                >
+                  Novonus is a complete imitation learning pipeline for capturing
+                  human force expertise, training force-aware policies, and
+                  deploying them onto existing industrial robots. It records how
+                  skilled operators apply force during contact-rich tasks, through
+                  muscle signals, force, motion, and vision, and grounds training
+                  in that real human data. This gives robots the force awareness
+                  vision-only systems lack, and closes the sim-to-real gap by
+                  verifying every simulated scenario against real human force. The
+                  result is reliable automation for the fragile, high-precision
+                  assembly current systems can&apos;t handle, turning expert human
+                  touch into robots that keep it.
+                </motion.p>
+              </div>
+            </div>
+
+            {/* ── STEP BOXES — one per scroll beat, centred row ── */}
+            <div
+              style={{
+                display: "flex",
+                gap: "clamp(1rem, 1.5vw, 1.5rem)",
+                paddingLeft: "clamp(0.5rem, 0.75vw, 0.75rem)",
+                paddingRight: "clamp(0.5rem, 0.75vw, 0.75rem)",
+                marginTop: "clamp(0.75rem, 1.5vh, 1.5rem)",
+                marginBottom: 0,
+                flex: 1,
+                alignItems: "stretch",
+              }}
+            >
+              {steps.map((step, i) => (
+                <div
+                  key={step.num}
+                  style={{
+                    flex: 1,
+                    overflow: "hidden",
+                    minHeight: 0,
+                  }}
+                >
+                  <motion.div
+                    initial={{ y: "105%" }}
+                    animate={{ y: boxVisible[i] ? "0%" : "105%" }}
+                    transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+                    style={{
+                      height: "100%",
+                      border: divider,
+                      padding: "clamp(2rem, 2.8vw, 2.8rem)",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "1rem",
+                      willChange: "transform",
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontFamily: jb,
+                        fontSize: "0.78rem",
+                        fontWeight: 400,
+                        letterSpacing: "0.2em",
+                        color: "var(--cyan)",
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      {step.num}
+                    </span>
+                    <div style={{ overflow: "hidden" }}>
+                      <motion.h3
+                        initial={{ y: "110%" }}
+                        animate={{ y: boxVisible[i] ? "0%" : "110%" }}
+                        transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+                        style={{
+                          fontFamily: tight,
+                          fontSize: "clamp(1.5rem, 2vw, 2rem)",
+                          fontWeight: 700,
+                          letterSpacing: "-0.022em",
+                          color: ink,
+                          margin: 0,
+                          willChange: "transform",
+                        }}
+                      >
+                        {step.title}
+                      </motion.h3>
+                    </div>
+                    <p
+                      style={{
+                        fontFamily: tight,
+                        fontSize: "clamp(0.9rem, 1.05vw, 1.05rem)",
+                        fontWeight: 500,
+                        lineHeight: 1.7,
+                        color: "rgba(15,14,13,0.52)",
+                        margin: 0,
+                      }}
+                    >
+                      {step.body}
+                    </p>
+                  </motion.div>
+                </div>
               ))}
-            </ul>
+            </div>
+
+
           </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, x: 12 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={vp}
-            transition={{ duration: 0.7, delay: 0.08, ease }}
-            style={{ padding: pad, display: "flex", flexDirection: "column", justifyContent: "flex-start", gap: "1.25rem" }}
-          >
-            <p style={{ fontFamily: tight, fontSize: "clamp(1.5rem, 2.2vw, 2.2rem)", fontWeight: 700, letterSpacing: "-0.03em", color: ink, margin: 0, lineHeight: 1.1 }}>
-              Software<br />Pipeline Stack
-            </p>
-            <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: "0.55rem" }}>
-              {[
-                ["Sensor synchronization (LSL)", "lock all sensor streams to a common clock so every modality aligns to the same instant"],
-                ["Signal processing", "clean and normalize every stream: filter muscle signals, calibrate force to real units, fuse motion data, process grasp-shape signals, and encode vision into scene features"],
-                ["Intent + force model", "predict grip force and intent from muscle signals, grounded against real force sensors"],
-                ["Multimodal fusion", "combine vision, force, motion, and grasp shape into a unified representation of the task"],
-                ["Physics-based augmentation", "expand real demonstrations into thousands of simulated scenarios"],
-                ["Force verification", "validate every scenario against real human force, discarding anything that doesn't match reality"],
-                ["Policy training", "train a force-aware imitation learning policy on the verified, multimodal data"],
-                ["Edge deployment", "run the policy on-device to drive the robot, with a real-time safety supervisor"],
-              ].map(([label, desc]) => (
-                <li key={label} style={{ fontFamily: tight, fontSize: "clamp(1rem, 1.15vw, 1.15rem)", fontWeight: 400, lineHeight: 1.68, color: "rgba(15,14,13,0.6)", margin: 0 }}>
-                  <span style={{ fontWeight: 600, color: ink }}>{label}</span>{" — "}{desc}
-                </li>
-              ))}
-            </ul>
-          </motion.div>
-        </div>
+        </motion.div>
 
-        <div style={{ height: "3rem" }} />
-      </div>
-    </div>
+        {/* ── PHASE 3: WHO WE BUILD FOR ── */}
+        <motion.div
+          style={{
+            position: "absolute",
+            inset: 0,
+            opacity: phase3Opacity,
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          <div
+            className="relative mx-auto flex flex-col"
+            style={{ width: "80%", paddingTop: "clamp(5rem, 11vh, 11rem)", paddingBottom: "clamp(3rem, 6vh, 6rem)", flex: 1, minHeight: 0, gap: "clamp(2rem, 4vh, 4rem)" }}
+          >
+            {/* Label + title row */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem", flexShrink: 0 }}>
+              <div style={{ overflow: "hidden", paddingBottom: "0.1em" }}>
+                <motion.span
+                  initial={{ y: "110%" }}
+                  animate={{ y: hasPhase3 ? "0%" : "110%" }}
+                  transition={{ duration: 0.65, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
+                  style={{ display: "block", fontFamily: jb, fontSize: "clamp(0.75rem, 1vw, 1rem)", fontWeight: 400, letterSpacing: "0.14em", color: "#6d28d9", textTransform: "uppercase" }}
+                >
+                  [ Who We Build For ]
+                </motion.span>
+              </div>
+              <div style={{ overflow: "hidden", paddingBottom: "0.25em" }}>
+                <motion.h2
+                  initial={{ y: "105%" }}
+                  animate={{ y: hasPhase3 ? "0%" : "105%" }}
+                  transition={{ duration: 0.9, delay: 0.12, ease: [0.16, 1, 0.3, 1] }}
+                  style={{ fontFamily: tight, fontSize: "clamp(2.6rem, 4.5vw, 5.5rem)", fontWeight: 300, lineHeight: 1.05, letterSpacing: "-0.025em", color: ink, margin: 0 }}
+                >
+                  Companies needing precise automation for skilled manufacturing
+                </motion.h2>
+              </div>
+            </div>
+
+            {/* Industries served — centred above boxes */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: hasPhase3 ? 1 : 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.75rem", flexShrink: 0 }}
+            >
+              <span style={{ fontFamily: jb, fontSize: "0.72rem", fontWeight: 400, letterSpacing: "0.18em", color: inkGhost, textTransform: "uppercase" }}>
+                Industries served
+              </span>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap", justifyContent: "center" }}>
+                {["Medical Device Assembly", "Aerospace & Defense", "Semiconductor & Electronics", "Automotive Precision Parts", "Industrial Equipment", "Robotics & Automation"].map((tag, i) => (
+                  <motion.span
+                    key={tag}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: hasPhase3 ? 1 : 0, y: hasPhase3 ? 0 : 6 }}
+                    transition={{ duration: 0.45, delay: 0.35 + i * 0.07 }}
+                    style={{ fontFamily: tight, fontSize: "clamp(0.82rem, 0.95vw, 0.95rem)", fontWeight: 500, color: ink, padding: "0.35rem 0.9rem", border: divider, background: "#ffffff", display: "inline-block" }}
+                  >
+                    {tag}
+                  </motion.span>
+                ))}
+              </div>
+            </motion.div>
+
+            {/* Customer boxes — 4-column row, square */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "clamp(0.75rem, 1.25vw, 1.25rem)", flexShrink: 0 }}>
+              {[
+                { title: "Contract Manufacturers", body: "High-mix, low-volume shops doing connector, harness, and delicate assembly by hand. We automate the force-critical steps they can't staff, without disrupting the lines they already run." },
+                { title: "Precision OEMs", body: "Aerospace, medical, and electronics makers whose fragile assembly still needs skilled human hands. We capture that expertise before it retires and deploy it onto the robots they already own." },
+                { title: "Hardware Startups", body: "Fast-moving teams hand-building delicate prototypes and low-volume products. We give them force-aware automation early, so precision assembly never becomes their bottleneck." },
+                { title: "Robotics Platforms", body: "Companies building the arms and humanoids that need force intelligence to handle contact-rich work. We provide the training layer that teaches their hardware the human touch." },
+              ].map((card, i) => (
+                <motion.div
+                  key={card.title}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: hasPhase3 ? 1 : 0, y: hasPhase3 ? 0 : 16 }}
+                  transition={{ duration: 0.7, delay: 0.25 + i * 0.1, ease: [0.22, 1, 0.36, 1] }}
+                  style={{
+                    aspectRatio: "1 / 1",
+                    padding: "clamp(1.25rem, 2vw, 2rem)",
+                    border: divider,
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "0.65rem",
+                    overflow: "hidden",
+                  }}
+                >
+                  <h3 style={{ fontFamily: tight, fontSize: "clamp(1.05rem, 1.3vw, 1.3rem)", fontWeight: 700, letterSpacing: "-0.02em", color: ink, margin: 0 }}>{card.title}</h3>
+                  <p style={{ fontFamily: tight, fontSize: "clamp(0.82rem, 0.93vw, 0.93rem)", fontWeight: 400, lineHeight: 1.65, color: inkMuted, margin: 0 }}>{card.body}</p>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+
+      </section>
     </div>
   );
 }
@@ -5877,9 +6115,7 @@ function ContentSections() {
   const vp = { once: true, margin: "-5%" as const };
   const ease = [0.22, 1, 0.36, 1] as const;
   const wb = {
-    backgroundColor: "rgba(255, 255, 255, 0.48)" as const,
-    backdropFilter: "blur(20px) saturate(150%)" as const,
-    WebkitBackdropFilter: "blur(20px) saturate(150%)" as const,
+    backgroundColor: "transparent" as const,
   };
   const strip = (label: string) => (
     <div style={{ paddingTop: "2rem", borderBottom: dividerLight, display: "flex", alignItems: "flex-end" }}>
@@ -5890,29 +6126,8 @@ function ContentSections() {
   );
 
   return (
-    <div style={{ position: "relative" }}>
-      <MeshGradient
-        className="absolute inset-0 w-full h-full"
-        colors={["#f5efe5", "#c9b8d4", "#f5efe5", "#dfc4aa", "#f5efe5"]}
-        speed={0.5}
-      />
+    <div>
       <div className="relative mx-auto" style={{ width: "80%" }}>
-
-        {/* ══ ROBOT CELLS STATEMENT ══════════════════════════════════════ */}
-        <motion.div
-          initial={{ opacity: 0, y: 36 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={vp}
-          transition={{ duration: 0.9, ease }}
-          style={{ padding: "clamp(5rem, 8vw, 9rem) 0 clamp(4rem, 6vw, 7rem)", borderBottom: dividerLight }}
-        >
-          <p style={{ fontFamily: tight, fontSize: "0.63rem", fontWeight: 600, letterSpacing: "0.24em", color: inkGhost, textTransform: "uppercase", margin: "0 0 2rem" }}>
-            Novonus — Force-Grounded Intelligence
-          </p>
-          <h2 style={{ fontFamily: tight, fontSize: "clamp(3rem, 6.5vw, 7rem)", fontWeight: 700, lineHeight: 0.96, letterSpacing: "-0.036em", color: ink, margin: 0, maxWidth: "18ch" }}>
-            Robot cells your factory workers can teach.
-          </h2>
-        </motion.div>
 
         {/* ══ THE PROOF ══════════════════════════════════════════════════ */}
         {strip("The Proof")}
@@ -6273,7 +6488,6 @@ export default function Home() {
       <main>
         <Hero />
         <ForceGroundedSection />
-        <ContentSections />
         <EvidenceSection />
         <div className="relative" style={{ background: "#f0e6d3" }}>
           <ScrollSection><EtymologyEntry /></ScrollSection>
