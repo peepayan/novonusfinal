@@ -6239,7 +6239,7 @@ function ForceGroundedSection() {
                 [ Hardware Agnostic Training ]
               </span>
               <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", gap: isMobile ? "0.5rem" : "clamp(3rem, 6vw, 7rem)", alignItems: "baseline" }}>
-                <h3 style={{ fontFamily: tight, fontSize: "clamp(1.3rem, 1.8vw, 2rem)", fontWeight: 700, letterSpacing: "-0.022em", color: ink, margin: 0, flexShrink: 0 }}>
+                <h3 style={{ fontFamily: tight, fontSize: "clamp(2.2rem, 3.5vw, 4rem)", fontWeight: 300, letterSpacing: "-0.03em", color: ink, margin: 0, flexShrink: 0, lineHeight: 1.05 }}>
                   Train on Robots You Rely on
                 </h3>
                 <p style={{ fontFamily: tight, fontSize: "clamp(0.88rem, 1vw, 1rem)", fontWeight: 400, lineHeight: 1.72, color: inkMuted, margin: 0 }}>
