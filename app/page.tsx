@@ -2795,22 +2795,6 @@ function Hero() {
             />
           </motion.div>
 
-          {/* Purple edge feathering — bleeds in from all four sides on slide 1 */}
-          <motion.div
-            aria-hidden
-            className="pointer-events-none absolute inset-0 z-[2]"
-            style={{ opacity: boxAlphaProgress }}
-          >
-            {/* left edge */}
-            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right, rgba(109,40,217,0.55) 0%, transparent 22%)" }} />
-            {/* right edge */}
-            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to left, rgba(109,40,217,0.55) 0%, transparent 22%)" }} />
-            {/* top edge */}
-            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(80,20,200,0.6) 0%, transparent 22%)" }} />
-            {/* bottom edge */}
-            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(80,20,200,0.6) 0%, transparent 22%)" }} />
-          </motion.div>
-
           {/* Topographical dots — dots hidden on slide 1, box always visible */}
           <TopographicalDots
             morphProgress={morphProgress}
