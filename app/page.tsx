@@ -653,7 +653,7 @@ function BrandLockup() {
       {docked && (
         <motion.nav
           className="pointer-events-auto absolute z-[120] hidden items-center gap-10 md:flex"
-          style={{ top: "16px", right: "clamp(2rem, 4vw, 4rem)", height: "56px" }}
+          style={{ top: "16px", right: "clamp(6rem, 10vw, 12rem)", height: "56px" }}
           initial={skipIntroAnim ? { opacity: 1 } : { opacity: 0 }}
           animate={{ opacity: phase === "done" ? 1 : 0 }}
           transition={{ duration: 0.4, ease: EASE_FADE, delay: skipIntroAnim ? 0 : 0.15 }}
