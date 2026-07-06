@@ -2796,6 +2796,69 @@ function Hero() {
             dotOpacity={dotEnterProgress}
           />
 
+          {/* CTA buttons — below the canvas box, at the bottom of the hero */}
+          <motion.div
+            style={{
+              position: "absolute",
+              left: 0,
+              right: 0,
+              bottom: "clamp(2rem, 4vh, 4rem)",
+              zIndex: 10,
+              opacity: boxAlphaProgress,
+              display: "flex",
+              justifyContent: "center",
+              gap: "0.75rem",
+            }}
+          >
+            <a
+              href="https://novonus.com/demo"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                fontFamily: "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
+                fontSize: "clamp(0.85rem, 0.95vw, 1rem)",
+                fontWeight: 600,
+                padding: "0.8rem 1.8rem",
+                border: "1px solid rgba(15, 14, 13, 0.3)",
+                borderRadius: "0.625rem",
+                backgroundColor: "rgba(15, 14, 13, 0.9)",
+                color: "rgba(245, 239, 229, 0.95)",
+                letterSpacing: "0.01em",
+                cursor: "pointer",
+                textDecoration: "none",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.5rem",
+                whiteSpace: "nowrap",
+              }}
+            >
+              View Demo
+              <span aria-hidden style={{ fontSize: "0.9em" }}>↗</span>
+            </a>
+            <a
+              href="mailto:deepayanc10@gmail.com"
+              style={{
+                fontFamily: "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
+                fontSize: "clamp(0.85rem, 0.95vw, 1rem)",
+                fontWeight: 600,
+                padding: "0.8rem 1.8rem",
+                border: "1px solid rgba(15, 14, 13, 0.3)",
+                borderRadius: "0.625rem",
+                backgroundColor: "rgba(15, 14, 13, 0.9)",
+                color: "rgba(245, 239, 229, 0.95)",
+                letterSpacing: "0.01em",
+                cursor: "pointer",
+                textDecoration: "none",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.5rem",
+                whiteSpace: "nowrap",
+              }}
+            >
+              Contact
+            </a>
+          </motion.div>
+
 
           {/* Slide 2 — single sentence revealed letter by letter as the
               user scrolls. Vertically centered, generous max-width so
@@ -5661,15 +5724,21 @@ function ForceGroundedSection() {
     offset: ["start start", "end end"],
   });
 
-  // Phase 1: solution hero holds 0→0.12, fades out 0.12→0.22
-  const solutionOpacity = useTransform(scrollYProgress, [0.12, 0.22], [1, 0]);
-  const solutionY = useTransform(scrollYProgress, [0.12, 0.22], [0, -40]);
+  // Phase 1: solution hero holds 0→0.073, fades out 0.073→0.139
+  const solutionOpacity = useTransform(scrollYProgress, [0.073, 0.139], [1, 0]);
+  const solutionY = useTransform(scrollYProgress, [0.073, 0.139], [0, -40]);
 
-  // Phase 2: fades in 0.20→0.28, fades out 0.63→0.70
-  const headerOpacity = useTransform(scrollYProgress, [0.20, 0.28, 0.63, 0.70], [0, 1, 1, 0]);
+  // Phase 2: fades in 0.125→0.176, fades out 0.396→0.440
+  const headerOpacity = useTransform(scrollYProgress, [0.125, 0.176, 0.396, 0.440], [0, 1, 1, 0]);
 
-  // Phase 3: "Who We Build For" fades in 0.68→0.75
-  const phase3Opacity = useTransform(scrollYProgress, [0.68, 0.75], [0, 1]);
+  // Phase 3: fades in 0.433→0.477, fades out 0.528→0.557
+  const phase3Opacity = useTransform(scrollYProgress, [0.433, 0.477, 0.528, 0.557], [0, 1, 1, 0]);
+
+  // Phase 4: fades in 0.543→0.587, fades out 0.631→0.675
+  const phase4Opacity = useTransform(scrollYProgress, [0.543, 0.587, 0.631, 0.675], [0, 1, 1, 0]);
+
+  // Pipeline container: fades in at 0.631→0.675, stays
+  const pipelineOpacity = useTransform(scrollYProgress, [0.631, 0.675], [0, 1]);
 
   const [hasPhase2, setHasPhase2] = useState(false);
   const [hasBox1, setHasBox1] = useState(false);
@@ -5677,13 +5746,22 @@ function ForceGroundedSection() {
   const [hasBox3, setHasBox3] = useState(false);
   const [hasBox4, setHasBox4] = useState(false);
   const [hasPhase3, setHasPhase3] = useState(false);
+  const [hasPhase4, setHasPhase4] = useState(false);
+  const [pipelineStep, setPipelineStep] = useState(-1);
   useMotionValueEvent(scrollYProgress, "change", (v) => {
-    setHasPhase2(v >= 0.20);
-    setHasBox1(v >= 0.28);
-    setHasBox2(v >= 0.38);
-    setHasBox3(v >= 0.48);
-    setHasBox4(v >= 0.57);
-    setHasPhase3(v >= 0.68);
+    setHasPhase2(v >= 0.125);
+    setHasBox1(v >= 0.176);
+    setHasBox2(v >= 0.242);
+    setHasBox3(v >= 0.301);
+    setHasBox4(v >= 0.359);
+    setHasPhase3(v >= 0.433);
+    setHasPhase4(v >= 0.543);
+    if      (v < 0.631) setPipelineStep(-1);
+    else if (v < 0.707) setPipelineStep(0);
+    else if (v < 0.773) setPipelineStep(1);
+    else if (v < 0.840) setPipelineStep(2);
+    else if (v < 0.907) setPipelineStep(3);
+    else                setPipelineStep(4);
   });
 
   const boxVisible = [hasBox1, hasBox2, hasBox3, hasBox4];
@@ -5703,7 +5781,7 @@ function ForceGroundedSection() {
   return (
     <div
       ref={scrollRef}
-      style={{ height: "820vh", position: "relative", zIndex: 1 }}
+      style={{ height: "1500vh", position: "relative", zIndex: 1 }}
     >
       <section
         className="relative overflow-hidden"
@@ -6047,7 +6125,7 @@ function ForceGroundedSection() {
               style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.75rem", flexShrink: 0 }}
             >
               <span style={{ fontFamily: jb, fontSize: "0.72rem", fontWeight: 400, letterSpacing: "0.18em", color: inkGhost, textTransform: "uppercase" }}>
-                Industries served
+                Industries targeted
               </span>
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap", justifyContent: "center" }}>
                 {["Medical Device Assembly", "Aerospace & Defense", "Semiconductor & Electronics", "Automotive Precision Parts", "Industrial Equipment", "Robotics & Automation"].map((tag, i) => (
@@ -6092,6 +6170,110 @@ function ForceGroundedSection() {
                 </motion.div>
               ))}
             </div>
+          </div>
+        </motion.div>
+
+        {/* ── PHASE 4: HOW IT WORKS ── */}
+        <motion.div
+          style={{
+            position: "absolute",
+            inset: 0,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            textAlign: "center",
+            padding: "0 clamp(2rem, 8vw, 10rem)",
+            gap: "2rem",
+            opacity: phase4Opacity,
+            pointerEvents: "none",
+          }}
+        >
+          <div style={{ overflow: "hidden", paddingBottom: "0.1em" }}>
+            <motion.p
+              initial={{ y: "110%" }}
+              animate={{ y: hasPhase4 ? "0%" : "110%" }}
+              transition={{ duration: 0.65, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
+              style={{ fontFamily: jb, fontSize: "clamp(1.1rem, 1.6vw, 1.6rem)", fontWeight: 400, letterSpacing: "0.14em", color: "#6d28d9", textTransform: "uppercase", margin: 0 }}
+            >
+              [ How It Works ]
+            </motion.p>
+          </div>
+
+          <motion.div
+            initial={{ scaleX: 0, opacity: 0 }}
+            animate={{ scaleX: hasPhase4 ? 1 : 0, opacity: hasPhase4 ? 1 : 0 }}
+            transition={{ duration: 0.45, delay: 0.45, ease: [0.22, 1, 0.36, 1] }}
+            style={{ width: "clamp(3rem, 5vw, 5rem)", height: "2px", background: "linear-gradient(90deg, #6d28d9, #8b5cf6)", borderRadius: "999px", transformOrigin: "center center" }}
+          />
+
+          <div style={{ overflow: "hidden", paddingBottom: "0.12em" }}>
+            <motion.h2
+              initial={{ y: "105%" }}
+              animate={{ y: hasPhase4 ? "0%" : "105%" }}
+              transition={{ duration: 1.1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+              style={{ fontFamily: tight, fontSize: "clamp(3rem, 6.5vw, 7rem)", fontWeight: 300, lineHeight: 0.96, letterSpacing: "-0.036em", color: ink, margin: 0 }}
+            >
+              The Pipeline
+            </motion.h2>
+          </div>
+        </motion.div>
+
+        {/* ── PIPELINE PHASES 5–9: single persistent container ── */}
+        <motion.div
+          style={{ position: "absolute", inset: 0, opacity: pipelineOpacity, display: "flex", flexDirection: "column" }}
+        >
+          {/* Static header — renders once, never re-animates between steps */}
+          <div style={{ paddingTop: "clamp(6rem, 11vh, 11rem)", display: "flex", flexDirection: "column", alignItems: "center", gap: "0.15rem", flexShrink: 0 }}>
+            <span style={{ fontFamily: jb, fontSize: "0.85rem", fontWeight: 400, letterSpacing: "0.18em", color: "#6d28d9", textTransform: "uppercase" }}>[ How It Works ]</span>
+            <span style={{ fontFamily: tight, fontSize: "0.95rem", fontWeight: 500, letterSpacing: "0.08em", color: inkMuted }}>The Pipeline</span>
+          </div>
+
+          {/* Step content — exits out, next slides up from below */}
+          <div
+            className="relative mx-auto flex flex-col"
+            style={{ width: "80%", flex: 1, minHeight: 0, justifyContent: "center", paddingBottom: "clamp(3rem, 6vh, 6rem)" }}
+          >
+            <AnimatePresence mode="wait">
+              {pipelineStep >= 0 && (
+                <motion.div
+                  key={pipelineStep}
+                  initial={{ y: 80, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: -40, opacity: 0 }}
+                  transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                  style={{ display: "flex", flexDirection: "column", gap: "clamp(1.5rem, 3vh, 3rem)" }}
+                >
+                  {(() => {
+                    const steps = [
+                      { num: "01", title: "Sync",    body: "All sensor streams, muscle, force, motion, and vision, are locked to a common clock, so every modality aligns to the same instant." },
+                      { num: "02", title: "Process", body: "Each stream is cleaned and normalized: filtering muscle signals, calibrating force to real units, fusing motion, and encoding vision into scene features." },
+                      { num: "03", title: "Learn",   body: "A model predicts force and intent from the multimodal data, grounded against real force sensors so it learns what human touch actually feels like." },
+                      { num: "04", title: "Ground",  body: "Each demonstration is augmented into thousands of simulated scenarios, keeping only those that match real human force, closing the sim-to-real gap." },
+                      { num: "05", title: "Deploy",  body: "The verified data trains a force-aware policy that runs on your existing robots, with a real-time safety supervisor watching contact force." },
+                    ];
+                    const { num, title, body } = steps[pipelineStep];
+                    return (
+                      <>
+                        <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                          <span style={{ fontFamily: jb, fontSize: "clamp(0.75rem, 1vw, 1rem)", fontWeight: 400, letterSpacing: "0.2em", color: "#6d28d9", textTransform: "uppercase" }}>
+                            {num}
+                          </span>
+                          <div style={{ overflow: "hidden", paddingBottom: "0.12em" }}>
+                            <h2 style={{ fontFamily: tight, fontSize: "clamp(3rem, 6vw, 7rem)", fontWeight: 300, lineHeight: 0.96, letterSpacing: "-0.036em", color: ink, margin: 0 }}>
+                              {title}
+                            </h2>
+                          </div>
+                        </div>
+                        <p style={{ fontFamily: tight, fontSize: "clamp(1rem, 1.3vw, 1.3rem)", fontWeight: 400, lineHeight: 1.75, color: inkMuted, margin: 0, maxWidth: "52ch" }}>
+                          {body}
+                        </p>
+                      </>
+                    );
+                  })()}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </motion.div>
 
