@@ -2816,7 +2816,7 @@ function Hero() {
               position: "absolute",
               left: 0,
               right: 0,
-              bottom: "clamp(2rem, 4vh, 4rem)",
+              top: "calc(50% + min(42.5vh, 290px) + 1rem)",
               zIndex: 10,
               opacity: boxAlphaProgress,
               display: "flex",
