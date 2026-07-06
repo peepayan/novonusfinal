@@ -234,6 +234,20 @@ function LogoGlass({ glass }: { glass: boolean }) {
 }
 
 /* ============================================================================
+   MOBILE HOOK — SSR-safe, updates on resize
+   ========================================================================== */
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+  return isMobile;
+}
+
+/* ============================================================================
    PRELOADER — full-viewport black overlay with logo pop & dock
    ========================================================================== */
 
@@ -2808,6 +2822,8 @@ function Hero() {
               display: "flex",
               justifyContent: "center",
               gap: "0.75rem",
+              flexWrap: "wrap",
+              padding: "0 1rem",
             }}
           >
             <a
@@ -5687,6 +5703,7 @@ function StepCard({ step, revealed, isLast, s }: {
    headline and a two-column body layout.
    ========================================================================== */
 function ForceGroundedSection() {
+  const isMobile = useIsMobile();
   const tight = "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif";
   const jb = "var(--font-jetbrains-mono), 'JetBrains Mono', 'Fira Code', monospace";
   const ink = "rgba(15, 14, 13, 0.96)";
@@ -5784,15 +5801,20 @@ function ForceGroundedSection() {
       style={{ height: "1500vh", position: "relative", zIndex: 1 }}
     >
       <section
-        className="relative overflow-hidden"
+        className="relative overflow-hidden purple-section-wrap"
         style={{ position: "sticky", top: 0, height: "100vh" }}
       >
         {/* Gradient background — shared across all phases */}
         <MeshGradient
           style={{ position: "absolute", inset: 0, width: "100%", height: "100%", zIndex: 0 }}
-          colors={["#f0e6d3", "#a87fd4", "#f5efe5", "#c9a0e8", "#e8d0b0"]}
-          speed={0.4}
+          colors={["#e8d5f5", "#6d28d9", "#f0e6d3", "#7c3aed", "#c4b5fd"]}
+          speed={0.5}
         />
+        {/* Purple edge vignette — bleeds in from all four sides */}
+        <div aria-hidden style={{
+          position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none",
+          background: "radial-gradient(ellipse 120% 120% at 50% 50%, transparent 30%, rgba(109,40,217,0.28) 70%, rgba(80,20,200,0.55) 100%)",
+        }} />
 
         {/* ── PHASE 1: SOLUTION HERO ── */}
         <motion.div
@@ -5879,7 +5901,7 @@ function ForceGroundedSection() {
         >
           <motion.div
             className="relative mx-auto flex flex-col"
-            style={{ width: "80%", paddingTop: "clamp(5rem, 11vh, 11rem)", paddingBottom: 0, flex: 1, minHeight: 0 }}
+            style={{ width: isMobile ? "92%" : "80%", paddingTop: "clamp(5rem, 11vh, 11rem)", paddingBottom: 0, flex: 1, minHeight: 0 }}
           >
             {/* Header cluster — label + tagline */}
             <div
@@ -5933,7 +5955,7 @@ function ForceGroundedSection() {
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "1fr 1fr",
+                gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
                 borderBottom: divider,
                 borderTop: divider,
                 flexShrink: 0,
@@ -5949,7 +5971,7 @@ function ForceGroundedSection() {
                     transition={{ duration: 1.1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
                     style={{
                       fontFamily: tight,
-                      fontSize: "clamp(1.8rem, 2.6vw, 3rem)",
+                      fontSize: "clamp(1.6rem, 2.6vw, 3rem)",
                       fontWeight: 700,
                       lineHeight: 1.08,
                       letterSpacing: "-0.025em",
@@ -5961,7 +5983,7 @@ function ForceGroundedSection() {
                   </motion.h2>
                 </div>
               </div>
-              <div style={{ padding: pad, paddingBottom: "clamp(1rem, 1.5vh, 1.5rem)", paddingLeft: "clamp(4rem, 7vw, 7rem)" }}>
+              <div style={{ padding: pad, paddingBottom: "clamp(1rem, 1.5vh, 1.5rem)", paddingLeft: isMobile ? pad : "clamp(4rem, 7vw, 7rem)" }}>
                 <motion.p
                   initial={{ opacity: 0 }}
                   animate={{ opacity: hasPhase2 ? 1 : 0 }}
@@ -5991,24 +6013,21 @@ function ForceGroundedSection() {
               </div>
             </div>
 
-            {/* ── STEP BOXES — one per scroll beat, centred row ── */}
+            {/* ── STEP BOXES — one per scroll beat, 2×2 on mobile ── */}
             <div
               style={{
-                display: "flex",
-                gap: "clamp(1rem, 1.5vw, 1.5rem)",
-                paddingLeft: "clamp(0.5rem, 0.75vw, 0.75rem)",
-                paddingRight: "clamp(0.5rem, 0.75vw, 0.75rem)",
+                display: "grid",
+                gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : "repeat(4, 1fr)",
+                gap: "clamp(0.5rem, 1vw, 1rem)",
                 marginTop: "clamp(0.75rem, 1.5vh, 1.5rem)",
                 marginBottom: 0,
                 flex: 1,
-                alignItems: "stretch",
               }}
             >
               {steps.map((step, i) => (
                 <div
                   key={step.num}
                   style={{
-                    flex: 1,
                     overflow: "hidden",
                     minHeight: 0,
                   }}
@@ -6091,7 +6110,7 @@ function ForceGroundedSection() {
         >
           <div
             className="relative mx-auto flex flex-col"
-            style={{ width: "80%", paddingTop: "clamp(5rem, 11vh, 11rem)", paddingBottom: "clamp(3rem, 6vh, 6rem)", flex: 1, minHeight: 0, gap: "clamp(2rem, 4vh, 4rem)" }}
+            style={{ width: isMobile ? "92%" : "80%", paddingTop: "clamp(5rem, 11vh, 11rem)", paddingBottom: "clamp(3rem, 6vh, 6rem)", flex: 1, minHeight: 0, gap: "clamp(1.5rem, 3vh, 3rem)" }}
           >
             {/* Label + title row */}
             <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem", flexShrink: 0 }}>
@@ -6142,8 +6161,8 @@ function ForceGroundedSection() {
               </div>
             </motion.div>
 
-            {/* Customer boxes — 4-column row, square */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "clamp(0.75rem, 1.25vw, 1.25rem)", flexShrink: 0 }}>
+            {/* Customer boxes — 2×2 on mobile, 4-col on desktop */}
+            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : "repeat(4, 1fr)", gap: "clamp(0.5rem, 1vw, 1rem)", flexShrink: 0 }}>
               {[
                 { title: "Contract Manufacturers", body: "High-mix, low-volume shops doing connector, harness, and delicate assembly by hand. We automate the force-critical steps they can't staff, without disrupting the lines they already run." },
                 { title: "Precision OEMs", body: "Aerospace, medical, and electronics makers whose fragile assembly still needs skilled human hands. We capture that expertise before it retires and deploy it onto the robots they already own." },
@@ -6156,12 +6175,12 @@ function ForceGroundedSection() {
                   animate={{ opacity: hasPhase3 ? 1 : 0, y: hasPhase3 ? 0 : 16 }}
                   transition={{ duration: 0.7, delay: 0.25 + i * 0.1, ease: [0.22, 1, 0.36, 1] }}
                   style={{
-                    aspectRatio: "1 / 1",
-                    padding: "clamp(1.25rem, 2vw, 2rem)",
+                    aspectRatio: isMobile ? "auto" : "1 / 1",
+                    padding: isMobile ? "clamp(0.9rem, 3vw, 1.25rem)" : "clamp(1.25rem, 2vw, 2rem)",
                     border: divider,
                     display: "flex",
                     flexDirection: "column",
-                    gap: "0.65rem",
+                    gap: "0.5rem",
                     overflow: "hidden",
                   }}
                 >
@@ -6232,7 +6251,7 @@ function ForceGroundedSection() {
           {/* Step content — exits out, next slides up from below */}
           <div
             className="relative mx-auto flex flex-col"
-            style={{ width: "80%", flex: 1, minHeight: 0, justifyContent: "center", paddingBottom: "clamp(3rem, 6vh, 6rem)" }}
+            style={{ width: isMobile ? "92%" : "80%", flex: 1, minHeight: 0, justifyContent: "center", paddingBottom: "clamp(3rem, 6vh, 6rem)" }}
           >
             <AnimatePresence mode="wait">
               {pipelineStep >= 0 && (
@@ -6260,7 +6279,7 @@ function ForceGroundedSection() {
                             {num}
                           </span>
                           <div style={{ overflow: "hidden", paddingBottom: "0.12em" }}>
-                            <h2 style={{ fontFamily: tight, fontSize: "clamp(3rem, 6vw, 7rem)", fontWeight: 300, lineHeight: 0.96, letterSpacing: "-0.036em", color: ink, margin: 0 }}>
+                            <h2 style={{ fontFamily: tight, fontSize: isMobile ? "clamp(2.5rem, 12vw, 4rem)" : "clamp(3rem, 6vw, 7rem)", fontWeight: 300, lineHeight: 0.96, letterSpacing: "-0.036em", color: ink, margin: 0 }}>
                               {title}
                             </h2>
                           </div>
@@ -6286,6 +6305,7 @@ function ForceGroundedSection() {
    CONTENT SECTIONS — Proof, Applications, Why Different, Moat, Traction, CTA
    ========================================================================== */
 function ContentSections() {
+  const isMobile = useIsMobile();
   const tight = "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif";
   const ink = "rgba(15, 14, 13, 0.96)";
   const inkMuted = "rgba(15, 14, 13, 0.6)";
@@ -6347,13 +6367,13 @@ function ContentSections() {
         {/* ══ THE APPLICATIONS ══════════════════════════════════════════ */}
         {strip("The Applications")}
         <div style={{ ...wb, borderBottom: divider, marginBottom: "3rem" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", borderBottom: divider }}>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", borderBottom: divider }}>
             <motion.div
               initial={{ opacity: 0, y: 18 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={vp}
               transition={{ duration: 0.7, ease }}
-              style={{ padding: pad, borderRight: divider }}
+              style={{ padding: pad, borderRight: isMobile ? "none" : divider, borderBottom: isMobile ? divider : "none" }}
             >
               <h2 style={{ fontFamily: tight, fontSize: "clamp(1.8rem, 2.6vw, 3rem)", fontWeight: 700, lineHeight: 1.06, letterSpacing: "-0.025em", color: ink, margin: 0 }}>
                 We go where robots break.
@@ -6371,7 +6391,7 @@ function ContentSections() {
               </p>
             </motion.div>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", borderBottom: divider }}>
+          <div className="content-grid-4" style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", borderBottom: divider }}>
             {[
               { n: "01", title: "Seating and mating fragile connectors", body: "Sub-millimeter positioning with controlled insertion force. No crushing, no missed engagement, no rework." },
               { n: "02", title: "Placing components too delicate to crush", body: "Force-limited handling from pick to place. The grip adjusts to the part, not the other way around." },
@@ -6424,13 +6444,13 @@ function ContentSections() {
               Everyone else is looking in the wrong place.
             </h2>
           </motion.div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr" }}>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr" }}>
             <motion.div
-              initial={{ opacity: 0, x: -14 }}
+              initial={{ opacity: 0, x: isMobile ? 0 : -14 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={vp}
               transition={{ duration: 0.7, ease }}
-              style={{ padding: pad, borderRight: divider }}
+              style={{ padding: pad, borderRight: isMobile ? "none" : divider, borderBottom: isMobile ? divider : "none" }}
             >
               <p style={{ fontFamily: tight, fontSize: "0.63rem", fontWeight: 600, letterSpacing: "0.2em", color: inkGhost, textTransform: "uppercase", margin: "0 0 1rem" }}>The industry</p>
               <p style={{ fontFamily: tight, fontSize: "clamp(0.95rem, 1.1vw, 1.08rem)", fontWeight: 400, lineHeight: 1.78, color: inkMuted, margin: 0 }}>
@@ -6457,13 +6477,13 @@ function ContentSections() {
 
         {/* ══ THE MOAT ═══════════════════════════════════════════════════ */}
         {strip("The Moat")}
-        <div style={{ ...wb, display: "grid", gridTemplateColumns: "1fr 1fr", borderBottom: divider, marginBottom: "3rem" }}>
+        <div style={{ ...wb, display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", borderBottom: divider, marginBottom: "3rem" }}>
           <motion.div
             initial={{ opacity: 0, y: 18 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={vp}
             transition={{ duration: 0.75, ease }}
-            style={{ padding: pad, borderRight: divider, display: "flex", alignItems: "center" }}
+            style={{ padding: pad, borderRight: isMobile ? "none" : divider, borderBottom: isMobile ? divider : "none", display: "flex", alignItems: "center" }}
           >
             <h2 style={{ fontFamily: tight, fontSize: "clamp(1.8rem, 2.8vw, 3.2rem)", fontWeight: 700, lineHeight: 1.08, letterSpacing: "-0.03em", color: ink, margin: 0 }}>
               The dataset is the company.
@@ -6487,13 +6507,13 @@ function ContentSections() {
 
         {/* ══ TRACTION ═══════════════════════════════════════════════════ */}
         {strip("Traction")}
-        <div style={{ ...wb, display: "grid", gridTemplateColumns: "1fr 1fr", borderBottom: divider, marginBottom: "3rem" }}>
+        <div style={{ ...wb, display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", borderBottom: divider, marginBottom: "3rem" }}>
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={vp}
             transition={{ duration: 0.7, ease }}
-            style={{ padding: pad, borderRight: divider, display: "flex", alignItems: "center" }}
+            style={{ padding: pad, borderRight: isMobile ? "none" : divider, borderBottom: isMobile ? divider : "none", display: "flex", alignItems: "center" }}
           >
             <h2 style={{ fontFamily: tight, fontSize: "clamp(1.6rem, 2.4vw, 2.8rem)", fontWeight: 700, lineHeight: 1.1, letterSpacing: "-0.025em", color: ink, margin: 0 }}>
               Momentum.
@@ -6527,9 +6547,9 @@ function ContentSections() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={vp}
           transition={{ duration: 0.8, ease }}
-          style={{ ...wb, display: "grid", gridTemplateColumns: "1fr 1fr" }}
+          style={{ ...wb, display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr" }}
         >
-          <div style={{ padding: pad, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+          <div style={{ padding: pad, display: "flex", flexDirection: "column", justifyContent: "center", borderBottom: isMobile ? divider : "none" }}>
             <h2 style={{ fontFamily: tight, fontSize: "clamp(1.5rem, 2.2vw, 2.6rem)", fontWeight: 700, lineHeight: 1.12, letterSpacing: "-0.025em", color: ink, margin: 0 }}>
               Let&apos;s put force-aware robots on your line.
             </h2>
