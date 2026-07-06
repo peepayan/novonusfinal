@@ -3889,7 +3889,7 @@ function Hero() {
           {/* Border — fades on scroll exactly like the original canvas box */}
           <motion.div
             aria-hidden
-            className="pointer-events-none absolute inset-0 z-[5] hidden items-center justify-center md:flex"
+            className="pointer-events-none absolute inset-0 z-[5] flex items-center justify-center"
             style={{ opacity: boxAlphaProgress }}
           >
             <div
@@ -3898,7 +3898,8 @@ function Hero() {
             />
           </motion.div>
           <motion.div
-            className="pointer-events-none absolute inset-0 z-[5] hidden items-center justify-center px-6 md:flex md:px-10"
+            className="pointer-events-none absolute inset-0 z-[5] flex items-center justify-center px-6 md:px-10"
+            style={{ opacity: boxAlphaProgress }}
           >
             <div className="pointer-events-none flex flex-col items-center justify-center" style={{ width: "min(92vw, 1060px)", height: "min(85svh, 580px)" }}>
               {/* Eyebrow — rises from its overflow-hidden barrier after the title */}
@@ -5939,7 +5940,7 @@ function ForceGroundedSection() {
         >
           <motion.div
             className="relative mx-auto flex flex-col"
-            style={{ width: isMobile ? "92%" : "80%", paddingTop: "clamp(5rem, 11vh, 11rem)", paddingBottom: 0, flex: 1, minHeight: 0 }}
+            style={{ width: isMobile ? "92%" : "80%", paddingTop: isMobile ? "clamp(3rem, 6vh, 5rem)" : "clamp(5rem, 11vh, 11rem)", paddingBottom: 0, flex: 1, minHeight: 0 }}
           >
             {/* Header cluster — label + tagline */}
             <div
@@ -6021,7 +6022,8 @@ function ForceGroundedSection() {
                   </motion.h2>
                 </div>
               </div>
-              <div style={{ padding: pad, paddingBottom: "clamp(1rem, 1.5vh, 1.5rem)", paddingLeft: isMobile ? pad : "clamp(4rem, 7vw, 7rem)" }}>
+              {!isMobile && (
+              <div style={{ padding: pad, paddingBottom: "clamp(1rem, 1.5vh, 1.5rem)", paddingLeft: "clamp(4rem, 7vw, 7rem)" }}>
                 <motion.p
                   initial={{ opacity: 0 }}
                   animate={{ opacity: hasPhase2 ? 1 : 0 }}
@@ -6049,6 +6051,7 @@ function ForceGroundedSection() {
                   touch into robots that keep it.
                 </motion.p>
               </div>
+              )}
             </div>
 
             {/* ── STEP BOXES — one per scroll beat, 2×2 on mobile ── */}
@@ -6077,10 +6080,10 @@ function ForceGroundedSection() {
                     style={{
                       height: "100%",
                       border: divider,
-                      padding: "clamp(2rem, 2.8vw, 2.8rem)",
+                      padding: isMobile ? "1rem" : "clamp(2rem, 2.8vw, 2.8rem)",
                       display: "flex",
                       flexDirection: "column",
-                      gap: "1rem",
+                      gap: isMobile ? "0.5rem" : "1rem",
                       willChange: "transform",
                     }}
                   >
@@ -6148,7 +6151,7 @@ function ForceGroundedSection() {
         >
           <div
             className="relative mx-auto flex flex-col"
-            style={{ width: isMobile ? "92%" : "80%", paddingTop: "clamp(5rem, 11vh, 11rem)", paddingBottom: "clamp(3rem, 6vh, 6rem)", flex: 1, minHeight: 0, gap: "clamp(1.5rem, 3vh, 3rem)" }}
+            style={{ width: isMobile ? "92%" : "80%", paddingTop: isMobile ? "clamp(2.5rem, 5vh, 4rem)" : "clamp(5rem, 11vh, 11rem)", paddingBottom: isMobile ? "clamp(1.5rem, 3vh, 3rem)" : "clamp(3rem, 6vh, 6rem)", flex: 1, minHeight: 0, gap: isMobile ? "clamp(1rem, 2vh, 1.5rem)" : "clamp(1.5rem, 3vh, 3rem)" }}
           >
             {/* Label + title row */}
             <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem", flexShrink: 0 }}>
@@ -6228,12 +6231,12 @@ function ForceGroundedSection() {
               ))}
             </div>
 
-            {/* Hardware Agnostic Training blurb */}
-            <motion.div
+            {/* Hardware Agnostic Training blurb — desktop only to prevent mobile overflow */}
+            {!isMobile && <motion.div
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: hasPhase3 ? 1 : 0, y: hasPhase3 ? 0 : 12 }}
               transition={{ duration: 0.7, delay: 0.65, ease: [0.22, 1, 0.36, 1] }}
-              style={{ display: "flex", flexDirection: isMobile ? "column" : "row", gap: isMobile ? "1rem" : "clamp(3rem, 6vw, 7rem)", alignItems: "flex-end", paddingTop: "clamp(3rem, 6vh, 6rem)", borderTop: divider, flexShrink: 0 }}
+              style={{ display: "flex", flexDirection: "row", gap: "clamp(3rem, 6vw, 7rem)", alignItems: "flex-end", paddingTop: "clamp(3rem, 6vh, 6rem)", borderTop: divider, flexShrink: 0 }}
             >
               {/* Left: eyebrow + heading, bottom-aligned with paragraph */}
               <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", flexShrink: 0 }}>
@@ -6247,7 +6250,7 @@ function ForceGroundedSection() {
               <p style={{ fontFamily: tight, fontSize: "clamp(0.88rem, 1vw, 1rem)", fontWeight: 400, lineHeight: 1.72, color: inkMuted, margin: 0 }}>
                 Our Physical AI is built for multi-embodiment, training on human data and not robot specific control, supporting diverse hardware options by retargeting a single set of human demonstrations across robots rather than re-collecting data for each one. Novonus trains the robots you already rely on, no new hardware, no rebuilding your line.
               </p>
-            </motion.div>
+            </motion.div>}
 
           </div>
         </motion.div>
