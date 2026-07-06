@@ -648,6 +648,48 @@ function BrandLockup() {
           </motion.div>
         </div>
       </motion.div>
+
+      {/* Nav links — right side of top bar, cream text, no styling */}
+      {docked && (
+        <motion.nav
+          className="pointer-events-auto absolute right-4 z-[120] hidden items-center gap-6 md:right-8 md:flex lg:right-12"
+          style={{ top: "28px", transform: "translateY(-50%)" }}
+          initial={skipIntroAnim ? { opacity: 1 } : { opacity: 0 }}
+          animate={{ opacity: phase === "done" ? 1 : 0 }}
+          transition={{ duration: 0.4, ease: EASE_FADE, delay: skipIntroAnim ? 0 : 0.15 }}
+        >
+          {([
+            { label: "What", p: 0.130 },
+            { label: "Who",  p: 0.440 },
+            { label: "How",  p: 0.550 },
+          ] as { label: string; p: number }[]).map(({ label, p }) => (
+            <button
+              key={label}
+              type="button"
+              onClick={() => {
+                const el = document.getElementById("force-grounded");
+                if (!el) return;
+                const top = el.getBoundingClientRect().top + window.scrollY;
+                window.scrollTo({ top: top + p * el.offsetHeight, behavior: "smooth" });
+              }}
+              style={{
+                fontFamily: "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
+                fontSize: "14px",
+                fontWeight: 500,
+                letterSpacing: "0.01em",
+                color: "rgba(245, 239, 229, 0.82)",
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                padding: 0,
+                lineHeight: 1,
+              }}
+            >
+              {label}
+            </button>
+          ))}
+        </motion.nav>
+      )}
     </motion.div>
   );
 }
@@ -5797,6 +5839,7 @@ function ForceGroundedSection() {
 
   return (
     <div
+      id="force-grounded"
       ref={scrollRef}
       style={{ height: "1500vh", position: "relative", zIndex: 1 }}
     >
