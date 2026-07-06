@@ -2795,6 +2795,22 @@ function Hero() {
             />
           </motion.div>
 
+          {/* Purple edge feathering — bleeds in from all four sides on slide 1 */}
+          <motion.div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 z-[2]"
+            style={{ opacity: boxAlphaProgress }}
+          >
+            {/* left edge */}
+            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right, rgba(109,40,217,0.55) 0%, transparent 22%)" }} />
+            {/* right edge */}
+            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to left, rgba(109,40,217,0.55) 0%, transparent 22%)" }} />
+            {/* top edge */}
+            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(80,20,200,0.6) 0%, transparent 22%)" }} />
+            {/* bottom edge */}
+            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(80,20,200,0.6) 0%, transparent 22%)" }} />
+          </motion.div>
+
           {/* Topographical dots — dots hidden on slide 1, box always visible */}
           <TopographicalDots
             morphProgress={morphProgress}
@@ -5801,20 +5817,15 @@ function ForceGroundedSection() {
       style={{ height: "1500vh", position: "relative", zIndex: 1 }}
     >
       <section
-        className="relative overflow-hidden purple-section-wrap"
+        className="relative overflow-hidden"
         style={{ position: "sticky", top: 0, height: "100vh" }}
       >
         {/* Gradient background — shared across all phases */}
         <MeshGradient
           style={{ position: "absolute", inset: 0, width: "100%", height: "100%", zIndex: 0 }}
-          colors={["#e8d5f5", "#6d28d9", "#f0e6d3", "#7c3aed", "#c4b5fd"]}
-          speed={0.5}
+          colors={["#f0e6d3", "#a87fd4", "#f5efe5", "#c9a0e8", "#e8d0b0"]}
+          speed={0.4}
         />
-        {/* Purple edge vignette — bleeds in from all four sides */}
-        <div aria-hidden style={{
-          position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none",
-          background: "radial-gradient(ellipse 120% 120% at 50% 50%, transparent 30%, rgba(109,40,217,0.28) 70%, rgba(80,20,200,0.55) 100%)",
-        }} />
 
         {/* ── PHASE 1: SOLUTION HERO ── */}
         <motion.div
