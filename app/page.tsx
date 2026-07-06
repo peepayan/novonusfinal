@@ -6233,7 +6233,7 @@ function ForceGroundedSection() {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: hasPhase3 ? 1 : 0, y: hasPhase3 ? 0 : 12 }}
               transition={{ duration: 0.7, delay: 0.65, ease: [0.22, 1, 0.36, 1] }}
-              style={{ display: "flex", flexDirection: isMobile ? "column" : "row", gap: isMobile ? "1rem" : "clamp(3rem, 6vw, 7rem)", alignItems: "flex-end", paddingTop: "clamp(1.25rem, 2vh, 2rem)", borderTop: divider, flexShrink: 0 }}
+              style={{ display: "flex", flexDirection: isMobile ? "column" : "row", gap: isMobile ? "1rem" : "clamp(3rem, 6vw, 7rem)", alignItems: "flex-end", paddingTop: "clamp(3rem, 6vh, 6rem)", borderTop: divider, flexShrink: 0 }}
             >
               {/* Left: eyebrow + heading, bottom-aligned with paragraph */}
               <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", flexShrink: 0 }}>
