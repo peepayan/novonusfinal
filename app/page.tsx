@@ -6213,7 +6213,7 @@ function ForceGroundedSection() {
                   animate={{ opacity: hasPhase3 ? 1 : 0, y: hasPhase3 ? 0 : 16 }}
                   transition={{ duration: 0.7, delay: 0.25 + i * 0.1, ease: [0.22, 1, 0.36, 1] }}
                   style={{
-                    aspectRatio: isMobile ? "auto" : "1 / 1",
+                    aspectRatio: isMobile ? "auto" : "4 / 3",
                     padding: isMobile ? "clamp(0.9rem, 3vw, 1.25rem)" : "clamp(1.25rem, 2vw, 2rem)",
                     border: divider,
                     display: "flex",
