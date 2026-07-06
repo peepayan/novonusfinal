@@ -6233,19 +6233,20 @@ function ForceGroundedSection() {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: hasPhase3 ? 1 : 0, y: hasPhase3 ? 0 : 12 }}
               transition={{ duration: 0.7, delay: 0.65, ease: [0.22, 1, 0.36, 1] }}
-              style={{ display: "flex", flexDirection: "column", gap: "0.5rem", paddingTop: "clamp(1.25rem, 2vh, 2rem)", borderTop: divider, flexShrink: 0 }}
+              style={{ display: "flex", flexDirection: isMobile ? "column" : "row", gap: isMobile ? "1rem" : "clamp(3rem, 6vw, 7rem)", alignItems: "flex-end", paddingTop: "clamp(1.25rem, 2vh, 2rem)", borderTop: divider, flexShrink: 0 }}
             >
-              <span style={{ fontFamily: jb, fontSize: "clamp(0.7rem, 0.85vw, 0.85rem)", fontWeight: 400, letterSpacing: "0.18em", color: "#6d28d9", textTransform: "uppercase" }}>
-                [ Hardware Agnostic Training ]
-              </span>
-              <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", gap: isMobile ? "0.5rem" : "clamp(3rem, 6vw, 7rem)", alignItems: "baseline" }}>
+              {/* Left: eyebrow + heading, bottom-aligned with paragraph */}
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", flexShrink: 0 }}>
+                <span style={{ fontFamily: jb, fontSize: "clamp(0.7rem, 0.85vw, 0.85rem)", fontWeight: 400, letterSpacing: "0.18em", color: "#6d28d9", textTransform: "uppercase" }}>
+                  [ Hardware Agnostic Training ]
+                </span>
                 <h3 style={{ fontFamily: tight, fontSize: "clamp(2.2rem, 3.5vw, 4rem)", fontWeight: 300, letterSpacing: "-0.03em", color: ink, margin: 0, flexShrink: 0, lineHeight: 1.05 }}>
                   Train on Robots You Rely on
                 </h3>
-                <p style={{ fontFamily: tight, fontSize: "clamp(0.88rem, 1vw, 1rem)", fontWeight: 400, lineHeight: 1.72, color: inkMuted, margin: 0 }}>
-                  Our Physical AI is built for multi-embodiment, training on human data and not robot specific control, supporting diverse hardware options by retargeting a single set of human demonstrations across robots rather than re-collecting data for each one. Novonus trains the robots you already rely on, no new hardware, no rebuilding your line.
-                </p>
               </div>
+              <p style={{ fontFamily: tight, fontSize: "clamp(0.88rem, 1vw, 1rem)", fontWeight: 400, lineHeight: 1.72, color: inkMuted, margin: 0 }}>
+                Our Physical AI is built for multi-embodiment, training on human data and not robot specific control, supporting diverse hardware options by retargeting a single set of human demonstrations across robots rather than re-collecting data for each one. Novonus trains the robots you already rely on, no new hardware, no rebuilding your line.
+              </p>
             </motion.div>
 
           </div>
