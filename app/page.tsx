@@ -5794,11 +5794,14 @@ function ForceGroundedSection() {
   // Phase 3: fades in 0.433→0.477, fades out 0.528→0.557
   const phase3Opacity = useTransform(scrollYProgress, [0.433, 0.477, 0.528, 0.557], [0, 1, 1, 0]);
 
-  // Phase 4: fades in 0.543→0.587, fades out 0.631→0.675
-  const phase4Opacity = useTransform(scrollYProgress, [0.543, 0.587, 0.631, 0.675], [0, 1, 1, 0]);
+  // Phase 5 (Why Novonus): fades in 0.543→0.587, fades out 0.631→0.670
+  const whyOpacity = useTransform(scrollYProgress, [0.543, 0.587, 0.631, 0.670], [0, 1, 1, 0]);
 
-  // Pipeline container: fades in at 0.631→0.675, stays
-  const pipelineOpacity = useTransform(scrollYProgress, [0.631, 0.675], [0, 1]);
+  // Phase 4: fades in 0.660→0.700, fades out 0.745→0.785
+  const phase4Opacity = useTransform(scrollYProgress, [0.660, 0.700, 0.745, 0.785], [0, 1, 1, 0]);
+
+  // Pipeline container: fades in at 0.745→0.785, stays
+  const pipelineOpacity = useTransform(scrollYProgress, [0.745, 0.785], [0, 1]);
 
   const [hasPhase2, setHasPhase2] = useState(false);
   const [hasBox1, setHasBox1] = useState(false);
@@ -5806,6 +5809,7 @@ function ForceGroundedSection() {
   const [hasBox3, setHasBox3] = useState(false);
   const [hasBox4, setHasBox4] = useState(false);
   const [hasPhase3, setHasPhase3] = useState(false);
+  const [hasWhy, setHasWhy] = useState(false);
   const [hasPhase4, setHasPhase4] = useState(false);
   const [pipelineStep, setPipelineStep] = useState(-1);
   useMotionValueEvent(scrollYProgress, "change", (v) => {
@@ -5815,12 +5819,13 @@ function ForceGroundedSection() {
     setHasBox3(v >= 0.301);
     setHasBox4(v >= 0.359);
     setHasPhase3(v >= 0.433);
-    setHasPhase4(v >= 0.543);
-    if      (v < 0.631) setPipelineStep(-1);
-    else if (v < 0.707) setPipelineStep(0);
-    else if (v < 0.773) setPipelineStep(1);
-    else if (v < 0.840) setPipelineStep(2);
-    else if (v < 0.907) setPipelineStep(3);
+    setHasWhy(v >= 0.543);
+    setHasPhase4(v >= 0.660);
+    if      (v < 0.785) setPipelineStep(-1);
+    else if (v < 0.828) setPipelineStep(0);
+    else if (v < 0.871) setPipelineStep(1);
+    else if (v < 0.914) setPipelineStep(2);
+    else if (v < 0.957) setPipelineStep(3);
     else                setPipelineStep(4);
   });
 
@@ -6271,6 +6276,99 @@ function ForceGroundedSection() {
               </p>
             </motion.div>}
 
+          </div>
+        </motion.div>
+
+        {/* ── PHASE 5: WHY NOVONUS ── */}
+        <motion.div
+          style={{
+            position: "absolute",
+            inset: 0,
+            opacity: whyOpacity,
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          <div
+            className="relative mx-auto flex flex-col"
+            style={{ width: isMobile ? "92%" : "80%", paddingTop: isMobile ? "clamp(2.5rem, 5vh, 4rem)" : "clamp(5rem, 11vh, 11rem)", paddingBottom: isMobile ? "clamp(1.5rem, 3vh, 2rem)" : "clamp(3rem, 6vh, 6rem)", flex: 1, minHeight: 0, gap: isMobile ? "clamp(1rem, 2vh, 1.5rem)" : "clamp(1.5rem, 3vh, 3rem)" }}
+          >
+            {/* Label + title */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem", flexShrink: 0 }}>
+              <div style={{ overflow: "hidden", paddingBottom: "0.1em" }}>
+                <motion.span
+                  initial={{ y: "110%" }}
+                  animate={{ y: hasWhy ? "0%" : "110%" }}
+                  transition={{ duration: 0.65, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
+                  style={{ display: "block", fontFamily: jb, fontSize: "clamp(0.75rem, 1vw, 1rem)", fontWeight: 400, letterSpacing: "0.14em", color: "#6d28d9", textTransform: "uppercase" }}
+                >
+                  [ Why Novonus ]
+                </motion.span>
+              </div>
+              <div style={{ overflow: "hidden", paddingBottom: "0.12em" }}>
+                <motion.h2
+                  initial={{ y: "105%" }}
+                  animate={{ y: hasWhy ? "0%" : "105%" }}
+                  transition={{ duration: 0.9, delay: 0.12, ease: [0.16, 1, 0.3, 1] }}
+                  style={{ fontFamily: tight, fontSize: "clamp(2.6rem, 4.5vw, 5.5rem)", fontWeight: 300, lineHeight: 1.05, letterSpacing: "-0.025em", color: ink, margin: 0 }}
+                >
+                  The Signal Others Miss
+                </motion.h2>
+              </div>
+            </div>
+
+            {/* 4-item grid */}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+                flex: 1,
+                minHeight: 0,
+              }}
+            >
+              {[
+                {
+                  heading: "Beyond sight. Beyond force.",
+                  body: "Cameras can't feel how hard to grip. Force sensors can, but they miss how stiff the hand is — the muscle co-contraction that makes a grip loose or rigid. Two grips with identical force can behave completely differently, and that difference shapes whether a delicate part seats or jams. EMG reads that stiffness straight from the muscle: the compliance skilled hands use that cameras and touch sensors both miss.",
+                },
+                {
+                  heading: "Grounded in reality.",
+                  body: "Simulators can't model real contact physics, so robots trained in them fail on real parts. We verify every simulated scenario against real human force, keeping only what holds up. Reality is our filter.",
+                },
+                {
+                  heading: "Runs on the robots you trust.",
+                  body: "No new hardware, no rebuilding your line. Because we capture human intent rather than robot-specific control, our policies deploy onto the grippers, arms, and humanoids you already own.",
+                },
+                {
+                  heading: "Deep where the giants stay shallow.",
+                  body: "General-purpose robotics companies chase broad capability. We go deep on the fragile, force-critical assembly they can't prioritize — building the richest force dataset in the hardest corner of manufacturing.",
+                },
+              ].map((item, i) => (
+                <motion.div
+                  key={item.heading}
+                  initial={{ opacity: 0, y: 14 }}
+                  animate={{ opacity: hasWhy ? 1 : 0, y: hasWhy ? 0 : 14 }}
+                  transition={{ duration: 0.65, delay: 0.25 + i * 0.1, ease: [0.22, 1, 0.36, 1] }}
+                  style={{
+                    borderTop: divider,
+                    borderRight: !isMobile && i % 2 === 0 ? divider : undefined,
+                    padding: isMobile ? "clamp(1rem, 2vh, 1.5rem) 0" : "clamp(1.5rem, 2.5vh, 2.5rem) clamp(2rem, 3vw, 3rem)",
+                    paddingLeft: !isMobile && i % 2 === 0 ? 0 : undefined,
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "0.6rem",
+                    minHeight: 0,
+                  }}
+                >
+                  <h3 style={{ fontFamily: tight, fontSize: "clamp(1rem, 1.3vw, 1.25rem)", fontWeight: 600, letterSpacing: "-0.02em", color: ink, margin: 0 }}>
+                    {item.heading}
+                  </h3>
+                  <p style={{ fontFamily: tight, fontSize: isMobile ? "clamp(0.8rem, 2.8vw, 0.9rem)" : "clamp(0.88rem, 1vw, 0.98rem)", fontWeight: 400, lineHeight: 1.72, color: inkMuted, margin: 0 }}>
+                    {item.body}
+                  </p>
+                </motion.div>
+              ))}
+            </div>
           </div>
         </motion.div>
 
