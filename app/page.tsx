@@ -6317,15 +6317,8 @@ function ForceGroundedSection() {
               </div>
             </div>
 
-            {/* 4-item grid */}
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
-                flex: 1,
-                minHeight: 0,
-              }}
-            >
+            {/* 4-item editorial rows */}
+            <div style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
               {[
                 {
                   heading: "Beyond sight. Beyond force.",
@@ -6346,26 +6339,62 @@ function ForceGroundedSection() {
               ].map((item, i) => (
                 <motion.div
                   key={item.heading}
-                  initial={{ opacity: 0, y: 14 }}
-                  animate={{ opacity: hasWhy ? 1 : 0, y: hasWhy ? 0 : 14 }}
-                  transition={{ duration: 0.65, delay: 0.25 + i * 0.1, ease: [0.22, 1, 0.36, 1] }}
+                  initial={{ opacity: 0, y: 18 }}
+                  animate={{ opacity: hasWhy ? 1 : 0, y: hasWhy ? 0 : 18 }}
+                  transition={{ duration: 0.6, delay: 0.2 + i * 0.1, ease: [0.22, 1, 0.36, 1] }}
                   style={{
-                    borderTop: divider,
-                    borderRight: !isMobile && i % 2 === 0 ? divider : undefined,
-                    padding: isMobile ? "clamp(1rem, 2vh, 1.5rem) 0" : "clamp(1.5rem, 2.5vh, 2.5rem) clamp(2rem, 3vw, 3rem)",
-                    paddingLeft: !isMobile ? (i % 2 === 0 ? 0 : "clamp(3rem, 4vw, 5rem)") : undefined,
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "0.6rem",
+                    flex: 1,
                     minHeight: 0,
+                    borderTop: divider,
+                    display: "grid",
+                    gridTemplateColumns: isMobile
+                      ? "clamp(2.8rem,8vw,3.5rem) 1fr"
+                      : "clamp(3.5rem,5vw,5rem) 1fr 1.6fr",
+                    columnGap: isMobile ? "clamp(0.75rem,3vw,1rem)" : "clamp(2rem,4vw,5rem)",
+                    alignItems: "start",
+                    paddingTop: isMobile ? "clamp(0.75rem,1.5vh,1.25rem)" : "clamp(1.25rem,2.2vh,2.2rem)",
                   }}
                 >
-                  <h3 style={{ fontFamily: tight, fontSize: "clamp(1rem, 1.3vw, 1.25rem)", fontWeight: 600, letterSpacing: "-0.02em", color: ink, margin: 0 }}>
+                  {/* Counter */}
+                  <span style={{
+                    fontFamily: jb,
+                    fontSize: isMobile ? "0.65rem" : "0.72rem",
+                    fontWeight: 400,
+                    letterSpacing: "0.16em",
+                    color: "#6d28d9",
+                    textTransform: "uppercase",
+                    paddingTop: isMobile ? "0.15rem" : "0.3rem",
+                    lineHeight: 1,
+                  }}>
+                    [ 0{i + 1} ]
+                  </span>
+
+                  {/* Heading */}
+                  <h3 style={{
+                    fontFamily: tight,
+                    fontSize: isMobile ? "clamp(0.9rem,3.5vw,1.1rem)" : "clamp(1.1rem,1.5vw,1.45rem)",
+                    fontWeight: 500,
+                    letterSpacing: "-0.022em",
+                    lineHeight: 1.22,
+                    color: ink,
+                    margin: 0,
+                  }}>
                     {item.heading}
                   </h3>
-                  <p style={{ fontFamily: tight, fontSize: isMobile ? "clamp(0.8rem, 2.8vw, 0.9rem)" : "clamp(0.88rem, 1vw, 0.98rem)", fontWeight: 400, lineHeight: 1.72, color: inkMuted, margin: 0 }}>
-                    {item.body}
-                  </p>
+
+                  {/* Body — desktop only; mobile screens can't fit the full paragraphs */}
+                  {!isMobile && (
+                    <p style={{
+                      fontFamily: tight,
+                      fontSize: "clamp(0.85rem,0.95vw,0.95rem)",
+                      fontWeight: 400,
+                      lineHeight: 1.76,
+                      color: inkMuted,
+                      margin: 0,
+                    }}>
+                      {item.body}
+                    </p>
+                  )}
                 </motion.div>
               ))}
             </div>
