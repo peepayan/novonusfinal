@@ -6305,7 +6305,7 @@ function ForceGroundedSection() {
                   [ Why Novonus ]
                 </motion.span>
               </div>
-              <div style={{ overflow: "hidden", paddingBottom: "0.12em" }}>
+              <div style={{ overflow: "hidden", paddingBottom: "0.3em" }}>
                 <motion.h2
                   initial={{ y: "105%" }}
                   animate={{ y: hasWhy ? "0%" : "105%" }}
@@ -6353,7 +6353,7 @@ function ForceGroundedSection() {
                     borderTop: divider,
                     borderRight: !isMobile && i % 2 === 0 ? divider : undefined,
                     padding: isMobile ? "clamp(1rem, 2vh, 1.5rem) 0" : "clamp(1.5rem, 2.5vh, 2.5rem) clamp(2rem, 3vw, 3rem)",
-                    paddingLeft: !isMobile && i % 2 === 0 ? 0 : undefined,
+                    paddingLeft: !isMobile ? (i % 2 === 0 ? 0 : "clamp(3rem, 4vw, 5rem)") : undefined,
                     display: "flex",
                     flexDirection: "column",
                     gap: "0.6rem",
