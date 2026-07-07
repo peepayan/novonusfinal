@@ -5923,9 +5923,28 @@ function ForceGroundedSection() {
                 maxWidth: "22ch",
               }}
             >
-              Robot Cells your Factory Workers can Train.
+              Teach your robots the human touch
             </motion.h2>
           </div>
+
+          {/* subtitle */}
+          <motion.p
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: hasEntered ? 1 : 0, y: hasEntered ? 0 : 12 }}
+            transition={{ duration: 0.75, delay: 0.55, ease: [0.22, 1, 0.36, 1] }}
+            style={{
+              fontFamily: tight,
+              fontSize: "clamp(0.95rem, 1.1vw, 1.1rem)",
+              fontWeight: 400,
+              lineHeight: 1.72,
+              letterSpacing: "-0.005em",
+              color: inkMuted,
+              margin: 0,
+              maxWidth: "48ch",
+            }}
+          >
+            Cameras, motion sensors, tactile gloves, and EMG sensors capture the demonstration; our pipeline turns it into deployable robot policies
+          </motion.p>
         </motion.div>
 
         {/* ── PHASE 2: WHAT WE BUILD ── */}
