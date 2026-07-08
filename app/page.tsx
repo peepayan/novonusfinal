@@ -2110,11 +2110,26 @@ function TopographicalDots({
 
       raf = requestAnimationFrame(render);
     };
+
+    // Pause the loop when canvas leaves the viewport (e.g. after scrolling past the hero)
+    let paused = false;
+    const visObs = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && paused) {
+        paused = false;
+        raf = requestAnimationFrame(render);
+      } else if (!entry.isIntersecting) {
+        paused = true;
+        cancelAnimationFrame(raf);
+      }
+    }, { threshold: 0 });
+    visObs.observe(host);
+
     raf = requestAnimationFrame(render);
 
     return () => {
       disposed = true;
       cancelAnimationFrame(raf);
+      visObs.disconnect();
       host.removeEventListener("pointermove", onMove);
       host.removeEventListener("pointerleave", onLeave);
       ro.disconnect();
@@ -5857,7 +5872,7 @@ function ForceGroundedSection() {
         <MeshGradient
           style={{ position: "absolute", inset: 0, width: "100%", height: "100%", zIndex: 0 }}
           colors={["#f0e6d3", "#a87fd4", "#f5efe5", "#c9a0e8", "#e8d0b0"]}
-          speed={0.4}
+          speed={0.15}
         />
 
         {/* ── PHASE 1: SOLUTION HERO ── */}
@@ -5960,6 +5975,7 @@ function ForceGroundedSection() {
             opacity: headerOpacity,
             display: "flex",
             flexDirection: "column",
+            willChange: "opacity",
           }}
         >
           <motion.div
@@ -6171,6 +6187,7 @@ function ForceGroundedSection() {
             opacity: phase3Opacity,
             display: "flex",
             flexDirection: "column",
+            willChange: "opacity",
           }}
         >
           <div
@@ -6287,6 +6304,7 @@ function ForceGroundedSection() {
             opacity: whyOpacity,
             display: "flex",
             flexDirection: "column",
+            willChange: "opacity",
           }}
         >
           <div
@@ -6449,7 +6467,7 @@ function ForceGroundedSection() {
 
         {/* ── PIPELINE PHASES 5–9: single persistent container ── */}
         <motion.div
-          style={{ position: "absolute", inset: 0, opacity: pipelineOpacity, display: "flex", flexDirection: "column" }}
+          style={{ position: "absolute", inset: 0, opacity: pipelineOpacity, display: "flex", flexDirection: "column", willChange: "opacity" }}
         >
           {/* Static header — renders once, never re-animates between steps */}
           <div style={{ paddingTop: "clamp(6rem, 11vh, 11rem)", display: "flex", flexDirection: "column", alignItems: "center", gap: "0.15rem", flexShrink: 0 }}>
