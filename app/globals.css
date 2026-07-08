@@ -803,3 +803,7 @@ body {
   }
 }
 
+.contact-field::placeholder {
+  color: rgba(245, 239, 229, 0.28);
+}
+

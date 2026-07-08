@@ -37,6 +37,7 @@ import { Component as EtherealShadow } from "@/components/ui/etheral-shadow";
    exactly once when the crossfade reveals them. */
 const ZERO_MV = motionValue(0);
 const SectionVisibleCtx = createContext<MotionValue<number>>(ZERO_MV);
+const ContactModalCtx = createContext<() => void>(() => {});
 
 /* ============================================================================
    INTRO PROVIDER — cinematic preloader phase machine
@@ -700,7 +701,7 @@ function BrandLockup() {
 
 const NAV_ITEMS = ["System", "Markets", "Insights", "Resources", "About"];
 
-function Sidebar() {
+function Sidebar({ onContactClick }: { onContactClick?: () => void }) {
   const { phase } = useIntro();
   const ready = phase === "done";
   const [open, setOpen] = useState(false);
@@ -767,13 +768,14 @@ function Sidebar() {
             ))}
           </nav>
           <div className="mt-2 border-t border-white/10 pt-3">
-            <a
-              href="#contact"
-              className="liquid-glass-btn liquid-glass-cta group relative flex items-center justify-between px-4 py-2.5 text-sm font-medium text-ink"
+            <button
+              type="button"
+              onClick={onContactClick}
+              className="liquid-glass-btn liquid-glass-cta group relative flex w-full items-center justify-between px-4 py-2.5 text-sm font-medium text-ink"
             >
               <span className="relative z-10">Contact</span>
               <Arrow className="relative z-10 h-3 w-3 transition-transform group-hover:translate-x-0.5" />
-            </a>
+            </button>
           </div>
         </div>
       </motion.aside>
@@ -2600,6 +2602,7 @@ function renderTokenOverlay(
 
 function Hero() {
   const { phase, skipIntroAnim } = useIntro();
+  const openContact = useContext(ContactModalCtx);
   /* Heading reveal is gated on `done` — the dark page sits empty while
      the logo finishes docking, then the text smoothly fades in. */
   const textReady = phase === "done";
@@ -2966,8 +2969,9 @@ function Hero() {
               View Demo
               <span aria-hidden style={{ fontSize: "0.9em" }}>↗</span>
             </a>
-            <a
-              href="mailto:deepayanc10@gmail.com"
+            <button
+              type="button"
+              onClick={openContact}
               style={{
                 fontFamily: "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
                 fontSize: "clamp(0.85rem, 0.95vw, 1rem)",
@@ -2979,7 +2983,6 @@ function Hero() {
                 color: "#0f0e0d",
                 letterSpacing: "0.01em",
                 cursor: "pointer",
-                textDecoration: "none",
                 display: "inline-flex",
                 alignItems: "center",
                 gap: "0.5rem",
@@ -2987,7 +2990,7 @@ function Hero() {
               }}
             >
               Contact
-            </a>
+            </button>
           </motion.div>
 
 
@@ -4875,6 +4878,243 @@ function Technicals() {
 /* ============================================================================
    SITE FOOTER — minimal two-line strip
    ========================================================================== */
+/* ============================================================================
+   CONTACT MODAL
+   ========================================================================== */
+
+type ContactState = "idle" | "submitting" | "success" | "error";
+
+function ContactModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
+  const [status, setStatus] = useState<ContactState>("idle");
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [open, onClose]);
+
+  useEffect(() => {
+    if (!open) {
+      const t = setTimeout(() => {
+        setName(""); setEmail(""); setMessage(""); setStatus("idle");
+      }, 400);
+      return () => clearTimeout(t);
+    }
+  }, [open]);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setStatus("submitting");
+    try {
+      const res = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          access_key: "9fd2589c-5724-420a-9224-85c431af712b",
+          name,
+          email,
+          message,
+        }),
+      });
+      const data = await res.json();
+      setStatus(data.success ? "success" : "error");
+    } catch {
+      setStatus("error");
+    }
+  }
+
+  const IT = "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif";
+
+  const fieldStyle: React.CSSProperties = {
+    width: "100%",
+    background: "transparent",
+    border: "none",
+    borderBottom: "1px solid rgba(245,239,229,0.15)",
+    padding: "0.55rem 0",
+    color: "#f5efe5",
+    fontFamily: IT,
+    fontSize: "14px",
+    outline: "none",
+    lineHeight: 1.6,
+  };
+
+  const labelStyle: React.CSSProperties = {
+    display: "block",
+    fontFamily: IT,
+    fontSize: "10px",
+    letterSpacing: "0.18em",
+    textTransform: "uppercase",
+    color: "rgba(245,239,229,0.38)",
+    marginBottom: "0.3rem",
+  };
+
+  return (
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          key="contact-backdrop"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.22 }}
+          onClick={onClose}
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 9999,
+            background: "rgba(0,0,0,0.72)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "1.5rem",
+          }}
+        >
+          <motion.div
+            key="contact-card"
+            initial={{ opacity: 0, y: 28 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 16 }}
+            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: "100%",
+              maxWidth: 520,
+              background: "#1a1917",
+              borderRadius: 8,
+              overflow: "hidden",
+              boxShadow: "0 32px 80px rgba(0,0,0,0.65), 0 0 0 1px rgba(245,239,229,0.07)",
+              fontFamily: IT,
+            }}
+          >
+            {/* Gradient accent line */}
+            <div style={{
+              height: 1,
+              background: "linear-gradient(90deg, transparent 0%, rgba(139,92,246,0.6) 30%, rgba(110,231,183,0.6) 70%, transparent 100%)",
+            }} />
+
+            <div style={{ padding: "1.75rem 2rem 2.25rem" }}>
+              {/* Header */}
+              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "1.75rem" }}>
+                <div>
+                  <p style={{ fontSize: "10px", letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(245,239,229,0.35)", marginBottom: "0.35rem", fontFamily: IT }}>
+                    Novonus
+                  </p>
+                  <h2 style={{ fontSize: "22px", fontWeight: 600, color: "#f5efe5", lineHeight: 1.2, margin: 0, fontFamily: IT }}>
+                    Get in touch
+                  </h2>
+                </div>
+                <button
+                  onClick={onClose}
+                  aria-label="Close"
+                  style={{
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    color: "rgba(245,239,229,0.35)",
+                    padding: "0.2rem",
+                    lineHeight: 1,
+                    marginTop: "0.15rem",
+                    transition: "color 0.15s",
+                  }}
+                >
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M3 3L13 13M13 3L3 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                  </svg>
+                </button>
+              </div>
+
+              {status === "success" ? (
+                <div style={{ textAlign: "center", padding: "1.5rem 0 0.5rem" }}>
+                  <p style={{ fontSize: "15px", fontWeight: 500, color: "rgba(110,231,183,0.9)", marginBottom: "0.5rem", fontFamily: IT }}>
+                    Message sent.
+                  </p>
+                  <p style={{ fontSize: "13px", color: "rgba(245,239,229,0.42)", fontFamily: IT }}>
+                    We&apos;ll be in touch shortly.
+                  </p>
+                </div>
+              ) : (
+                <form onSubmit={handleSubmit}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "1.4rem" }}>
+                    <div>
+                      <label style={labelStyle}>Name</label>
+                      <input
+                        type="text"
+                        className="contact-field"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        required
+                        placeholder="Your name"
+                        style={fieldStyle}
+                      />
+                    </div>
+                    <div>
+                      <label style={labelStyle}>Email</label>
+                      <input
+                        type="email"
+                        className="contact-field"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                        placeholder="your@email.com"
+                        style={fieldStyle}
+                      />
+                    </div>
+                    <div>
+                      <label style={labelStyle}>Message</label>
+                      <textarea
+                        className="contact-field"
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
+                        required
+                        placeholder="What would you like to discuss?"
+                        rows={4}
+                        style={{ ...fieldStyle, resize: "none" }}
+                      />
+                    </div>
+                  </div>
+
+                  {status === "error" && (
+                    <p style={{ fontSize: "12px", color: "rgba(248,113,113,0.8)", marginTop: "1rem", fontFamily: IT }}>
+                      Something went wrong — please try again.
+                    </p>
+                  )}
+
+                  <div style={{ marginTop: "1.75rem" }}>
+                    <button
+                      type="submit"
+                      disabled={status === "submitting"}
+                      style={{
+                        width: "100%",
+                        padding: "0.72rem 1.5rem",
+                        background: status === "submitting" ? "rgba(245,239,229,0.08)" : "#f5efe5",
+                        color: status === "submitting" ? "rgba(245,239,229,0.35)" : "#1a1917",
+                        border: "none",
+                        borderRadius: 4,
+                        fontFamily: IT,
+                        fontSize: "13px",
+                        fontWeight: 600,
+                        letterSpacing: "0.04em",
+                        cursor: status === "submitting" ? "not-allowed" : "pointer",
+                        transition: "background 0.18s, color 0.18s",
+                      }}
+                    >
+                      {status === "submitting" ? "Sending…" : "Send message"}
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
 function SiteFooter() {
   const trackRef = useRef<HTMLDivElement>(null);
   const lineRef  = useRef<HTMLDivElement>(null);
@@ -6984,8 +7224,11 @@ function EvidenceSection() {
    ========================================================================== */
 
 export default function Home() {
+  const [contactOpen, setContactOpen] = useState(false);
+  const openContact = useCallback(() => setContactOpen(true), []);
   return (
-    <IntroProvider sidebar={<Sidebar />}>
+    <ContactModalCtx.Provider value={openContact}>
+    <IntroProvider sidebar={<Sidebar onContactClick={openContact} />}>
       <main>
         <Hero />
         <ForceGroundedSection />
@@ -6997,6 +7240,8 @@ export default function Home() {
           <SiteFooter />
         </div>
       </main>
+      <ContactModal open={contactOpen} onClose={() => setContactOpen(false)} />
     </IntroProvider>
+    </ContactModalCtx.Provider>
   );
 }
