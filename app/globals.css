@@ -748,6 +748,25 @@ body {
 }
 
 /* ============================================================================
+   PERFORMANCE — GPU / layout containment
+   ============================================================================ */
+
+/* Hero canvas host — isolate its stacking context so repaints can't
+   propagate outside. The canvas repaints every rAF; containment keeps
+   those invalidations local. */
+.hero-canvas-host {
+  contain: layout paint;
+}
+
+/* Heavy sections that scroll into view: browser can skip layout/paint
+   until they're near the viewport. contain-intrinsic-size gives the
+   browser a size estimate so scroll bars don't jump. */
+.section-offscreen {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 100vh;
+}
+
+/* ============================================================================
    MOBILE — phones up to 767px
    ============================================================================ */
 @media (max-width: 767px) {

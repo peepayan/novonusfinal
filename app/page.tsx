@@ -1059,6 +1059,26 @@ function TopographicalDots({
     let prevCliffMorph = 0;
     let prevCliffPhase = 0;
 
+    /* Pre-allocated draw buffers — reused every frame to avoid GC pressure.
+       Instead of N individual arc+fill calls we collect positions into typed
+       arrays and flush with 2 batch fill() calls (inside + outside) plus a
+       small number of individual calls for the rare elevated dots. */
+    const TWO_PI = Math.PI * 2;
+    const MAX_DOTS = 8000;
+    const dInsideX = new Float32Array(MAX_DOTS);
+    const dInsideY = new Float32Array(MAX_DOTS);
+    const dOutsideX = new Float32Array(MAX_DOTS);
+    const dOutsideY = new Float32Array(MAX_DOTS);
+    const MAX_ELEV = 512;
+    const dElevX = new Float32Array(MAX_ELEV);
+    const dElevY = new Float32Array(MAX_ELEV);
+    const dElevR = new Float32Array(MAX_ELEV);
+    const dElevFill: string[] = new Array(MAX_ELEV).fill('');
+
+    /* Frame-skip counter — when nothing is animating, render at ~30fps
+       instead of 60fps to halve GPU load. */
+    let skipFrame = false;
+
     /* Brain silhouette comes from the real reference image at
        /brain-reference.jpg. On image load we threshold dark pixels
        and densify with a window-sum so only the solid brain region
@@ -1532,7 +1552,7 @@ function TopographicalDots({
       const rect = host.getBoundingClientRect();
       width = rect.width;
       height = rect.height;
-      const dpr = window.devicePixelRatio || 1;
+      const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
       canvas.width = Math.max(1, Math.floor(width * dpr));
       canvas.height = Math.max(1, Math.floor(height * dpr));
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -1897,6 +1917,16 @@ function TopographicalDots({
         Math.abs(earthOffset - prevEarthOffset) +
         Math.abs(cliffMorph - prevCliffMorph) +
         Math.abs(cliffPhase - prevCliffPhase);
+
+      /* Idle frame-skip: when nothing is moving (no cursor, no waves,
+         no morph in progress) render at ~30fps instead of 60fps. */
+      const isIdleFrame = morphDelta < 0.0005 && !cursor.has && waves.length === 0;
+      skipFrame = isIdleFrame ? !skipFrame : false;
+      if (skipFrame) {
+        raf = requestAnimationFrame(render);
+        return;
+      }
+
       ctx.clearRect(0, 0, width, height);
       prevMorph = morph;
       prevEyeMorph = eyeMorph;
@@ -1981,12 +2011,17 @@ function TopographicalDots({
       const padW = boxW / 2 + 16;
       const padH = boxH / 2 + 16;
 
+      /* ── BATCHED DOT DRAW ──────────────────────────────────────────────
+         Collect positions into pre-allocated typed arrays (one pass),
+         then flush with 2 batch fill() calls + a small set of individual
+         fills for the rare elevated dots. Reduces GPU draw calls from
+         N (3 000+) per frame down to ~3–5 in the common case.          */
+      let insideCount = 0;
+      let outsideCount = 0;
+      let elevCount = 0;
+
       for (let i = 0; i < cells.length; i++) {
         const cell = cells[i];
-        /* Four-stage morph: grid → brain → clock → earth → cliffs.
-           Each stage lerps from the previous result to its target
-           so partial morphs always travel along the path between
-           adjacent targets. */
         const s1X = cell.gx + (cell.bx - cell.gx) * morph;
         const s1Y = cell.gy + (cell.by - cell.gy) * morph;
         const s2X = s1X + (cell.ex - s1X) * eyeMorph;
@@ -1995,7 +2030,6 @@ function TopographicalDots({
         const s3Y = s2Y + (cell.fy - s2Y) * earthMorph;
         const baseX = s3X + (cell.cx - s3X) * cliffMorph;
         const baseY = s3Y + (cell.cy - s3Y) * cliffMorph;
-
 
         let elev = 0;
         if (peakActive) {
@@ -2012,63 +2046,28 @@ function TopographicalDots({
           const delta = dist - ringR;
           const life = 1 - w.t / WAVE_LIFE;
           const amp = w.amp * life * life;
-          elev +=
-            amp *
-            Math.exp(
-              -(delta * delta) /
-                (2 * WAVE_THICKNESS * WAVE_THICKNESS),
-            );
+          elev += amp * Math.exp(-(delta * delta) / (2 * WAVE_THICKNESS * WAVE_THICKNESS));
         }
         elev *= cursorAttenuation;
 
         const isInsideBox = Math.abs(baseX - canvasCenterX) < padW && Math.abs(baseY - canvasCenterY) < padH;
+
         if (!hasAnyMotion || elev < 0.012 || (!isInsideBox && dotOpacityVal < 1)) {
-          ctx.fillStyle = isInsideBox ? baseFillInside : baseFillOutside;
-          ctx.beginPath();
-          ctx.arc(baseX, baseY, BASE_SIZE, 0, Math.PI * 2);
-          ctx.fill();
+          if (isInsideBox) {
+            dInsideX[insideCount] = baseX;
+            dInsideY[insideCount++] = baseY;
+          } else {
+            dOutsideX[outsideCount] = baseX;
+            dOutsideY[outsideCount++] = baseY;
+          }
           continue;
         }
 
-        const elevClamped = Math.min(elev, 1.2);
-        const lift = elevClamped * LIFT_PX;
-        const size = BASE_SIZE + Math.min(elevClamped, 1) * PEAK_SIZE;
-
-        const m = width > 0 ? baseX / width : 0.5;
-        const gr = PURPLE.r * (1 - m) + GREEN.r * m;
-        const gg = PURPLE.g * (1 - m) + GREEN.g * m;
-        const gb = PURPLE.b * (1 - m) + GREEN.b * m;
-        const blend = Math.min(1, elevClamped * 1.4);
-        const cr = baseR * (1 - blend) + gr * blend;
-        const cg = baseG * (1 - blend) + gg * blend;
-        const cb = baseB * (1 - blend) + gb * blend;
-        const dotFactor = isInsideBox ? dotOpacityVal : outsideDotFactor;
-        const alpha =
-          (baseAlpha + Math.min(elevClamped, 1) * 0.55 * cursorAttenuation) * dotFactor;
-
-        ctx.fillStyle = `rgba(${cr | 0}, ${cg | 0}, ${cb | 0}, ${alpha})`;
-        ctx.beginPath();
-        ctx.arc(baseX, baseY - lift, size, 0, Math.PI * 2);
-        ctx.fill();
-      }
-
-      // Draw the glowing text bounding box outline using small line segments so the
-      // color blending matches the hover logic, but intentionally omits the waves
-      // so the line stays perfectly still.
-      if (drawBox) {
-        ctx.lineWidth = 1;
-        const drawSeg = (x: number, y: number) => {
-          let elev = 0;
-          if (peakActive) {
-            const dx = x - px;
-            const dy = y - py;
-            elev += peakAmp * Math.exp(-(dx * dx + dy * dy) / TWO_SIGMA_SQ);
-          }
-          // Exclude waves calculation so the border does not move with the wave!
-          elev *= cursorAttenuation;
-          
+        if (elevCount < MAX_ELEV) {
           const elevClamped = Math.min(elev, 1.2);
-          const m = width > 0 ? x / width : 0.5;
+          const lift = elevClamped * LIFT_PX;
+          const size = BASE_SIZE + Math.min(elevClamped, 1) * PEAK_SIZE;
+          const m = width > 0 ? baseX / width : 0.5;
           const gr = PURPLE.r * (1 - m) + GREEN.r * m;
           const gg = PURPLE.g * (1 - m) + GREEN.g * m;
           const gb = PURPLE.b * (1 - m) + GREEN.b * m;
@@ -2076,36 +2075,88 @@ function TopographicalDots({
           const cr = baseR * (1 - blend) + gr * blend;
           const cg = baseG * (1 - blend) + gg * blend;
           const cb = baseB * (1 - blend) + gb * blend;
-          const alpha = (baseAlpha + Math.min(elevClamped, 1) * 0.55 * cursorAttenuation) * textAlpha;
-          return `rgba(${cr | 0}, ${cg | 0}, ${cb | 0}, ${alpha})`;
-        };
+          const dotFactor = isInsideBox ? dotOpacityVal : outsideDotFactor;
+          const alpha = (baseAlpha + Math.min(elevClamped, 1) * 0.55 * cursorAttenuation) * dotFactor;
+          dElevX[elevCount] = baseX;
+          dElevY[elevCount] = baseY - lift;
+          dElevR[elevCount] = size;
+          dElevFill[elevCount++] = `rgba(${cr | 0},${cg | 0},${cb | 0},${alpha})`;
+        }
+      }
 
-        const STEP = 10;
-        const strokeLine = (x1: number, y1: number, x2: number, y2: number) => {
-          const dx = x2 - x1;
-          const dy = y2 - y1;
-          const len = Math.sqrt(dx * dx + dy * dy);
-          const steps = Math.ceil(len / STEP);
-          for (let i = 0; i < steps; i++) {
-            const t1 = i / steps;
-            const t2 = (i + 1) / steps;
-            const sx = x1 + dx * t1;
-            const sy = y1 + dy * t1;
-            const ex = x1 + dx * t2;
-            const ey = y1 + dy * t2;
-            
-            ctx.strokeStyle = drawSeg((sx + ex) / 2, (sy + ey) / 2);
-            ctx.beginPath();
-            ctx.moveTo(sx, sy);
-            ctx.lineTo(ex, ey);
-            ctx.stroke();
-          }
-        };
-        
-        strokeLine(boxMinX, boxMinY, boxMaxX, boxMinY);
-        strokeLine(boxMaxX, boxMinY, boxMaxX, boxMaxY);
-        strokeLine(boxMaxX, boxMaxY, boxMinX, boxMaxY);
-        strokeLine(boxMinX, boxMaxY, boxMinX, boxMinY);
+      // Batch draw: inside dots
+      if (insideCount > 0) {
+        ctx.fillStyle = baseFillInside;
+        ctx.beginPath();
+        for (let i = 0; i < insideCount; i++) ctx.arc(dInsideX[i], dInsideY[i], BASE_SIZE, 0, TWO_PI);
+        ctx.fill();
+      }
+      // Batch draw: outside dots
+      if (outsideCount > 0) {
+        ctx.fillStyle = baseFillOutside;
+        ctx.beginPath();
+        for (let i = 0; i < outsideCount; i++) ctx.arc(dOutsideX[i], dOutsideY[i], BASE_SIZE, 0, TWO_PI);
+        ctx.fill();
+      }
+      // Individual draw: elevated dots (rare — cursor/wave interaction only)
+      for (let i = 0; i < elevCount; i++) {
+        ctx.fillStyle = dElevFill[i];
+        ctx.beginPath();
+        ctx.arc(dElevX[i], dElevY[i], dElevR[i], 0, TWO_PI);
+        ctx.fill();
+      }
+
+      // Box outline — batched when no cursor interaction, segmented only when hovering.
+      if (drawBox) {
+        ctx.lineWidth = 1;
+        if (!peakActive) {
+          // Fast path: single rect stroke, no per-segment color variation.
+          ctx.strokeStyle = `rgba(${baseR | 0},${baseG | 0},${baseB | 0},${baseAlpha * textAlpha})`;
+          ctx.beginPath();
+          ctx.moveTo(boxMinX, boxMinY);
+          ctx.lineTo(boxMaxX, boxMinY);
+          ctx.lineTo(boxMaxX, boxMaxY);
+          ctx.lineTo(boxMinX, boxMaxY);
+          ctx.closePath();
+          ctx.stroke();
+        } else {
+          // Hover path: coarser segments (step=24 instead of 10) for speed.
+          const drawSeg = (x: number, y: number) => {
+            let elev = 0;
+            const dx = x - px;
+            const dy = y - py;
+            elev += peakAmp * Math.exp(-(dx * dx + dy * dy) / TWO_SIGMA_SQ);
+            elev *= cursorAttenuation;
+            const elevClamped = Math.min(elev, 1.2);
+            const m = width > 0 ? x / width : 0.5;
+            const gr = PURPLE.r * (1 - m) + GREEN.r * m;
+            const gg = PURPLE.g * (1 - m) + GREEN.g * m;
+            const gb = PURPLE.b * (1 - m) + GREEN.b * m;
+            const blend = Math.min(1, elevClamped * 1.4);
+            const cr = baseR * (1 - blend) + gr * blend;
+            const cg = baseG * (1 - blend) + gg * blend;
+            const cb = baseB * (1 - blend) + gb * blend;
+            const alpha = (baseAlpha + Math.min(elevClamped, 1) * 0.55 * cursorAttenuation) * textAlpha;
+            return `rgba(${cr | 0},${cg | 0},${cb | 0},${alpha})`;
+          };
+          const STEP = 24;
+          const strokeLine = (x1: number, y1: number, x2: number, y2: number) => {
+            const dx = x2 - x1;
+            const dy = y2 - y1;
+            const steps = Math.max(1, Math.ceil(Math.sqrt(dx * dx + dy * dy) / STEP));
+            for (let i = 0; i < steps; i++) {
+              ctx.strokeStyle = drawSeg(x1 + dx * (i + 0.5) / steps, y1 + dy * (i + 0.5) / steps);
+              ctx.beginPath();
+              ctx.moveTo(x1 + dx * i / steps, y1 + dy * i / steps);
+              ctx.lineTo(x1 + dx * (i + 1) / steps, y1 + dy * (i + 1) / steps);
+              ctx.stroke();
+            }
+          };
+          strokeLine(boxMinX, boxMinY, boxMaxX, boxMinY);
+          strokeLine(boxMaxX, boxMinY, boxMaxX, boxMaxY);
+          strokeLine(boxMaxX, boxMaxY, boxMinX, boxMaxY);
+          strokeLine(boxMinX, boxMaxY, boxMinX, boxMinY);
+        }
       }
 
       raf = requestAnimationFrame(render);
@@ -2828,7 +2879,7 @@ function Hero() {
         />
         <div className="sticky top-0 h-[100svh] overflow-hidden">
           {/* Hero content — fills the viewport while pinned */}
-          <div className="absolute inset-0 overflow-hidden">
+          <div className="hero-canvas-host absolute inset-0 overflow-hidden">
           {/* Scroll-driven cream → dark backdrop. Replaces the static
               PaperBackground for the hero so it can invert with the
               dot color crossfade. */}
@@ -4989,7 +5040,7 @@ function EtymologyEntry() {
 
   return (
     <div
-      className="relative flex min-h-[100svh] w-full items-center justify-center px-6 md:px-14"
+      className="section-offscreen relative flex min-h-[100svh] w-full items-center justify-center px-6 md:px-14"
       style={{
         backgroundColor: "#f5efe5",
         fontFamily: garamond,
@@ -5481,7 +5532,7 @@ function FloatingDust() {
 
     const N = 65;
     const positions = new Float32Array(N * 3);
-    const velocities = new Float32Array(N * 2); // x, y velocity per particle
+    const velocities = new Float32Array(N * 2);
     for (let i = 0; i < N; i++) {
       positions[i * 3]     = (Math.random() - 0.5) * 14;
       positions[i * 3 + 1] = (Math.random() - 0.5) * 10;
@@ -5505,7 +5556,9 @@ function FloatingDust() {
     scene.add(mesh);
 
     let raf = 0;
+    let paused = false;
     const tick = () => {
+      if (paused) return;
       raf = requestAnimationFrame(tick);
       const pos = geo.attributes.position.array as Float32Array;
       for (let i = 0; i < N; i++) {
@@ -5518,6 +5571,17 @@ function FloatingDust() {
       geo.attributes.position.needsUpdate = true;
       renderer.render(scene, camera);
     };
+
+    const visObs = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && paused) {
+        paused = false;
+        tick();
+      } else if (!entry.isIntersecting) {
+        paused = true;
+        cancelAnimationFrame(raf);
+      }
+    }, { threshold: 0 });
+    visObs.observe(canvas);
     tick();
 
     const onResize = () => {
@@ -5529,6 +5593,7 @@ function FloatingDust() {
 
     return () => {
       cancelAnimationFrame(raf);
+      visObs.disconnect();
       window.removeEventListener("resize", onResize);
       renderer.dispose();
       geo.dispose();
@@ -6882,7 +6947,7 @@ function EvidenceSection() {
   ];
 
   return (
-    <section style={{ position: "relative", background: "#f0e6d3" }}>
+    <section className="section-offscreen" style={{ position: "relative", background: "#f0e6d3" }}>
       <div className="relative mx-auto" style={{ width: "80%" }}>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)" }}>
           {stats.map((s, i) => (
