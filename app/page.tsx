@@ -2084,18 +2084,25 @@ function TopographicalDots({
         }
       }
 
-      // Batch draw: inside dots
+      // Batch draw: inside dots — moveTo before each arc lifts the pen so
+      // the canvas doesn't draw connecting lines between circles.
       if (insideCount > 0) {
         ctx.fillStyle = baseFillInside;
         ctx.beginPath();
-        for (let i = 0; i < insideCount; i++) ctx.arc(dInsideX[i], dInsideY[i], BASE_SIZE, 0, TWO_PI);
+        for (let i = 0; i < insideCount; i++) {
+          ctx.moveTo(dInsideX[i] + BASE_SIZE, dInsideY[i]);
+          ctx.arc(dInsideX[i], dInsideY[i], BASE_SIZE, 0, TWO_PI);
+        }
         ctx.fill();
       }
       // Batch draw: outside dots
       if (outsideCount > 0) {
         ctx.fillStyle = baseFillOutside;
         ctx.beginPath();
-        for (let i = 0; i < outsideCount; i++) ctx.arc(dOutsideX[i], dOutsideY[i], BASE_SIZE, 0, TWO_PI);
+        for (let i = 0; i < outsideCount; i++) {
+          ctx.moveTo(dOutsideX[i] + BASE_SIZE, dOutsideY[i]);
+          ctx.arc(dOutsideX[i], dOutsideY[i], BASE_SIZE, 0, TWO_PI);
+        }
         ctx.fill();
       }
       // Individual draw: elevated dots (rare — cursor/wave interaction only)
