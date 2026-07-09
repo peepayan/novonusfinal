@@ -505,14 +505,10 @@ function BrandLockup() {
           aria-hidden
           className="pointer-events-none absolute left-4 right-4 top-4 z-[119] h-[56px] rounded-2xl md:left-8 md:right-8 lg:left-12 lg:right-12"
           initial={
-            skipIntroAnim ? { opacity: 1, y: 0 } : { opacity: 0, y: -10 }
+            skipIntroAnim ? { opacity: 1, y: 0 } : { opacity: 0, y: 0 }
           }
           animate={{ opacity: 1, y: 0 }}
-          transition={{
-            duration: skipIntroAnim ? 0 : 0.42,
-            ease: EASE_FADE,
-            delay: skipIntroAnim ? 0 : 0.18,
-          }}
+          transition={{ duration: 0 }}
           style={{ backgroundColor: "rgba(15, 14, 13, 0.75)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" }}
         />
       )}
@@ -541,12 +537,15 @@ function BrandLockup() {
           skipIntroAnim
             ? { duration: 0 }
             : {
-                y: { duration: centered ? 0.62 : 0.36, ease: EASE_MORPH },
+                // Dock is an instant cut (duration 0) — animating the logo's
+                // width/height across the fly-to-top thrashed layout every
+                // frame and tanked WebKit/Gecko. Keep only the logoPop pop-in.
+                y: { duration: centered ? 0.62 : 0, ease: EASE_MORPH },
                 scale: {
-                  duration: centered ? 0.62 : 0.32,
+                  duration: centered ? 0.62 : 0,
                   ease: centered ? EASE_POP : EASE_MORPH,
                 },
-                opacity: { duration: centered ? 0.42 : 0.26, ease: EASE_FADE },
+                opacity: { duration: centered ? 0.42 : 0, ease: EASE_FADE },
               }
         }
       >
@@ -564,7 +563,7 @@ function BrandLockup() {
             height: centered ? 144 : 38,
           }}
           transition={{
-            duration: skipIntroAnim ? 0 : (centered ? 0.58 : 0.38),
+            duration: skipIntroAnim ? 0 : (centered ? 0.58 : 0),
             ease: EASE_MORPH,
           }}
         >
@@ -582,7 +581,7 @@ function BrandLockup() {
             zIndex: 1,
             position: "relative",
             width: centered ? 240 : 120,
-            transition: `width ${centered ? 0 : 0.32}s`,
+            transition: "width 0s",
           }}
         >
           <motion.div
@@ -593,13 +592,13 @@ function BrandLockup() {
                 : { clipPath: "inset(0 100% 0 0)", opacity: 0 }
             }
             animate={{
-              clipPath: centered || (phase === "done") ? "inset(0 0% 0 0)" : "inset(0 100% 0 0)",
-              opacity: centered || (phase === "done") ? 1 : 0,
+              clipPath: centered || phase === "dock" || phase === "done" ? "inset(0 0% 0 0)" : "inset(0 100% 0 0)",
+              opacity: centered || phase === "dock" || phase === "done" ? 1 : 0,
             }}
             transition={{
-              duration: centered ? 0.65 : (phase === "done") ? 0.36 : 0.15,
+              duration: centered ? 0.65 : 0,
               ease: centered ? EASE_MORPH : EASE_FADE,
-              delay: centered ? 0.38 : (phase === "done") ? 0.06 : 0,
+              delay: centered ? 0.38 : 0,
             }}
           >
           {/* Large intro wordmark — visible only during logoPop */}
@@ -607,7 +606,7 @@ function BrandLockup() {
             className="block select-none"
             initial={{ opacity: skipIntroAnim ? 0 : 0 }}
             animate={{ opacity: centered ? 1 : 0 }}
-            transition={{ duration: centered ? 0.42 : 0.12, ease: EASE_FADE, delay: centered ? 0.38 : 0 }}
+            transition={{ duration: centered ? 0.42 : 0, ease: EASE_FADE, delay: centered ? 0.38 : 0 }}
             style={{
               fontFamily: "var(--font-inter-tight), Inter, ui-sans-serif, system-ui",
               fontWeight: 800,
@@ -625,12 +624,8 @@ function BrandLockup() {
           <motion.span
             className="block select-none"
             initial={{ opacity: skipIntroAnim ? 1 : 0 }}
-            animate={{ opacity: phase === "done" ? 1 : 0 }}
-            transition={{
-              duration: skipIntroAnim ? 0 : 0.4,
-              ease: EASE_FADE,
-              delay: skipIntroAnim ? 0 : (phase === "done" ? 0.1 : 0),
-            }}
+            animate={{ opacity: (phase === "dock" || phase === "done") ? 1 : 0 }}
+            transition={{ duration: 0 }}
             style={{
               position: "absolute",
               top: "50%",
@@ -2927,6 +2922,7 @@ function Hero() {
               animation={{ scale: 100, speed: 90 }}
               noise={{ opacity: 1, scale: 1.2 }}
               sizing="fill"
+              freeze={isSafari}
             />
           </motion.div>
 
@@ -7249,10 +7245,14 @@ export default function Home() {
   const openContact = useCallback(() => setContactOpen(true), []);
 
   useEffect(() => {
-    const safari = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
-    if (safari) {
+    const ua = navigator.userAgent;
+    const isSafariUA = /Safari/.test(ua) && !/Chrome/.test(ua) && !/Chromium/.test(ua);
+    const isFirefox = /Firefox/.test(ua);
+    // Any non-Chromium engine: WebKit (Safari) and Gecko (Firefox) both
+    // choke on the animated SVG displacement filter + heavy canvas loop.
+    if (isSafariUA || isFirefox) {
       setIsSafari(true);
-      document.documentElement.setAttribute("data-safari", "");
+      document.documentElement.setAttribute("data-lowfx", "");
     }
   }, []);
 

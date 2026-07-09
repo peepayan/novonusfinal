@@ -30,6 +30,10 @@ interface ShadowOverlayProps {
     noise?: NoiseConfig;
     style?: CSSProperties;
     className?: string;
+    /* When true, the SVG displacement filter renders once (static) and the
+       per-frame hue-rotate loop never starts. Preserves the distorted look
+       without the continuous full-screen repaint that kills WebKit/Gecko. */
+    freeze?: boolean;
 }
 
 function mapRange(
@@ -56,7 +60,8 @@ export function Component({
     animation,
     noise,
     style,
-    className
+    className,
+    freeze = false
 }: ShadowOverlayProps) {
     const id = useInstanceId();
     const animationEnabled = animation && animation.scale > 0;
@@ -68,6 +73,7 @@ export function Component({
     const animationDuration = animation ? mapRange(animation.speed, 1, 100, 1000, 50) : 1;
 
     useEffect(() => {
+        if (freeze) return; // static filter, no per-frame repaint
         if (feColorMatrixRef.current && animationEnabled) {
             if (hueRotateAnimation.current) hueRotateAnimation.current.stop();
             hueRotateMotionValue.set(0);
@@ -86,7 +92,7 @@ export function Component({
             });
             return () => { hueRotateAnimation.current?.stop(); };
         }
-    }, [animationEnabled, animationDuration, hueRotateMotionValue]);
+    }, [animationEnabled, animationDuration, hueRotateMotionValue, freeze]);
 
     return (
         <div
