@@ -129,6 +129,7 @@ function IntroProvider({
 
   return (
     <IntroContext.Provider value={{ phase, skipIntroAnim }}>
+      <a href="#main-content" className="skip-link">Skip to content</a>
       <Preloader />
       <HeroLoadingBar />
       <BrandLockup />
@@ -4966,7 +4967,7 @@ function ContactModal({ open, onClose }: { open: boolean; onClose: () => void })
     fontSize: "10px",
     letterSpacing: "0.18em",
     textTransform: "uppercase",
-    color: "rgba(245,239,229,0.38)",
+    color: "rgba(245,239,229,0.62)",
     marginBottom: "0.3rem",
   };
 
@@ -5264,7 +5265,7 @@ function SiteFooter() {
       >
         <div
           className="flex flex-col items-start justify-between gap-2 text-[12px] md:flex-row md:items-center md:text-[13px]"
-          style={{ color: "rgba(245,239,229,0.38)" }}
+          style={{ color: "rgba(245,239,229,0.62)" }}
         >
           <p style={{ letterSpacing: "0.01em" }}>
             Novonus{" "}
@@ -6140,7 +6141,7 @@ function StepCard({ step, revealed, isLast, s }: {
       <p style={{ fontFamily: s.tight, fontSize: "clamp(0.92rem, 1.05vw, 1.05rem)", fontWeight: 600, color: s.inkMuted, margin: 0, marginBottom: "0.65rem", letterSpacing: "-0.01em" }}>
         {ever ? step.tagline : ""}
       </p>
-      <p style={{ fontFamily: s.tight, fontSize: "clamp(0.9rem, 1vw, 1rem)", fontWeight: 400, lineHeight: 1.72, color: "rgba(15,14,13,0.52)", margin: 0 }}>
+      <p style={{ fontFamily: s.tight, fontSize: "clamp(0.9rem, 1vw, 1rem)", fontWeight: 400, lineHeight: 1.72, color: "rgba(15,14,13,0.66)", margin: 0 }}>
         {ever ? step.body : ""}
       </p>
     </motion.div>
@@ -6158,8 +6159,8 @@ function ForceGroundedSection() {
   const tight = "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif";
   const jb = "var(--font-jetbrains-mono), 'JetBrains Mono', 'Fira Code', monospace";
   const ink = "rgba(15, 14, 13, 0.96)";
-  const inkMuted = "rgba(15, 14, 13, 0.6)";
-  const inkGhost = "rgba(15, 14, 13, 0.32)";
+  const inkMuted = "rgba(15, 14, 13, 0.66)";
+  const inkGhost = "rgba(15, 14, 13, 0.5)";
   const divider = "1px solid rgba(15, 14, 13, 0.1)";
   const pad = "clamp(2rem, 3vw, 3rem)";
 
@@ -6556,7 +6557,7 @@ function ForceGroundedSection() {
                         fontSize: "clamp(0.9rem, 1.05vw, 1.05rem)",
                         fontWeight: 500,
                         lineHeight: 1.7,
-                        color: "rgba(15,14,13,0.52)",
+                        color: "rgba(15,14,13,0.66)",
                         margin: 0,
                       }}
                     >
@@ -6928,8 +6929,8 @@ function ContentSections() {
   const isMobile = useIsMobile();
   const tight = "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif";
   const ink = "rgba(15, 14, 13, 0.96)";
-  const inkMuted = "rgba(15, 14, 13, 0.6)";
-  const inkGhost = "rgba(15, 14, 13, 0.32)";
+  const inkMuted = "rgba(15, 14, 13, 0.66)";
+  const inkGhost = "rgba(15, 14, 13, 0.5)";
   const divider = "1px solid rgba(15, 14, 13, 0.1)";
   const dividerLight = "1px solid rgba(15, 14, 13, 0.06)";
   const pad = "clamp(2rem, 3vw, 3rem)";
@@ -7032,7 +7033,7 @@ function ContentSections() {
               >
                 <span style={{ fontFamily: tight, fontSize: "0.63rem", fontWeight: 600, letterSpacing: "0.2em", color: inkGhost, textTransform: "uppercase", display: "block", marginBottom: "0.75rem" }}>{item.n}</span>
                 <h3 style={{ fontFamily: tight, fontSize: "clamp(1rem, 1.2vw, 1.22rem)", fontWeight: 700, letterSpacing: "-0.018em", color: ink, margin: "0 0 0.65rem", lineHeight: 1.28 }}>{item.title}</h3>
-                <p style={{ fontFamily: tight, fontSize: "clamp(0.88rem, 0.95vw, 0.96rem)", fontWeight: 400, lineHeight: 1.72, color: "rgba(15,14,13,0.52)", margin: 0 }}>{item.body}</p>
+                <p style={{ fontFamily: tight, fontSize: "clamp(0.88rem, 0.95vw, 0.96rem)", fontWeight: 400, lineHeight: 1.72, color: "rgba(15,14,13,0.66)", margin: 0 }}>{item.body}</p>
               </motion.div>
             ))}
           </div>
@@ -7262,8 +7263,8 @@ function EvidenceStatCard({
 function EvidenceSection() {
   const tight = "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif";
   const ink = "rgba(15, 14, 13, 0.96)";
-  const inkMuted = "rgba(15, 14, 13, 0.6)";
-  const inkGhost = "rgba(15, 14, 13, 0.32)";
+  const inkMuted = "rgba(15, 14, 13, 0.66)";
+  const inkGhost = "rgba(15, 14, 13, 0.5)";
   const divider = "1px solid rgba(15, 14, 13, 0.1)";
   const accent = "#6d28d9";
 
@@ -7332,7 +7333,7 @@ export default function Home() {
     <SafariCtx.Provider value={isSafari}>
     <ContactModalCtx.Provider value={openContact}>
     <IntroProvider sidebar={<Sidebar onContactClick={openContact} />}>
-      <main>
+      <main id="main-content">
         <Hero />
         <ForceGroundedSection />
         <EvidenceSection />
