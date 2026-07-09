@@ -38,6 +38,7 @@ import { Component as EtherealShadow } from "@/components/ui/etheral-shadow";
 const ZERO_MV = motionValue(0);
 const SectionVisibleCtx = createContext<MotionValue<number>>(ZERO_MV);
 const ContactModalCtx = createContext<() => void>(() => {});
+const SafariCtx = createContext(false);
 
 /* ============================================================================
    INTRO PROVIDER — cinematic preloader phase machine
@@ -2603,6 +2604,7 @@ function renderTokenOverlay(
 function Hero() {
   const { phase, skipIntroAnim } = useIntro();
   const openContact = useContext(ContactModalCtx);
+  const isSafari = useContext(SafariCtx);
   /* Heading reveal is gated on `done` — the dark page sits empty while
      the logo finishes docking, then the text smoothly fades in. */
   const textReady = phase === "done";
@@ -2899,19 +2901,21 @@ function Hero() {
             style={{ backgroundColor: heroBg }}
           />
 
-          {/* Ethereal shadow — hero background, fades out with slide-1 content */}
-          <motion.div
-            aria-hidden
-            className="pointer-events-none absolute inset-0 z-[1]"
-            style={{ opacity: boxAlphaProgress }}
-          >
-            <EtherealShadow
-              color="rgba(109, 40, 217, 0.85)"
-              animation={{ scale: 100, speed: 90 }}
-              noise={{ opacity: 1, scale: 1.2 }}
-              sizing="fill"
-            />
-          </motion.div>
+          {/* Ethereal shadow — skip on Safari (SVG feTurbulence is CPU-only there) */}
+          {!isSafari && (
+            <motion.div
+              aria-hidden
+              className="pointer-events-none absolute inset-0 z-[1]"
+              style={{ opacity: boxAlphaProgress }}
+            >
+              <EtherealShadow
+                color="rgba(109, 40, 217, 0.85)"
+                animation={{ scale: 100, speed: 90 }}
+                noise={{ opacity: 1, scale: 1.2 }}
+                sizing="fill"
+              />
+            </motion.div>
+          )}
 
           {/* Topographical dots — dots hidden on slide 1, box always visible */}
           <TopographicalDots
@@ -5632,6 +5636,7 @@ function EtymologyEntry() {
 
 function StageMeshBackground() {
   const { phase } = useIntro();
+  const isSafari = useContext(SafariCtx);
   const [dims, setDims] = useState({ width: 1920, height: 1080 });
   useEffect(() => {
     const update = () => setDims({ width: window.innerWidth, height: window.innerHeight });
@@ -5640,6 +5645,12 @@ function StageMeshBackground() {
     return () => window.removeEventListener("resize", update);
   }, []);
   if (phase !== "done") return <div style={{ position: "absolute", inset: 0, zIndex: 0, background: "#0f0e0d" }} />;
+  if (isSafari) return (
+    <div style={{
+      position: "absolute", inset: 0, zIndex: 0,
+      background: "linear-gradient(135deg, #f5efe5 0%, #e8d5b7 30%, #c9b0e8 60%, #f0e6d3 100%)",
+    }} />
+  );
   return (
     <div style={{ position: "absolute", inset: 0, zIndex: 0 }}>
       <MeshGradient
@@ -6074,6 +6085,7 @@ function StepCard({ step, revealed, isLast, s }: {
    ========================================================================== */
 function ForceGroundedSection() {
   const isMobile = useIsMobile();
+  const isSafari = useContext(SafariCtx);
   const tight = "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif";
   const jb = "var(--font-jetbrains-mono), 'JetBrains Mono', 'Fira Code', monospace";
   const ink = "rgba(15, 14, 13, 0.96)";
@@ -6180,12 +6192,19 @@ function ForceGroundedSection() {
         className="relative overflow-hidden"
         style={{ position: "sticky", top: 0, height: "100vh" }}
       >
-        {/* Gradient background — shared across all phases */}
-        <MeshGradient
-          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", zIndex: 0 }}
-          colors={["#f0e6d3", "#a87fd4", "#f5efe5", "#c9a0e8", "#e8d0b0"]}
-          speed={0.15}
-        />
+        {/* Gradient background — static on Safari, animated shader elsewhere */}
+        {isSafari ? (
+          <div style={{
+            position: "absolute", inset: 0, width: "100%", height: "100%", zIndex: 0,
+            background: "linear-gradient(135deg, #f0e6d3 0%, #a87fd4 35%, #f5efe5 65%, #e8d0b0 100%)",
+          }} />
+        ) : (
+          <MeshGradient
+            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", zIndex: 0 }}
+            colors={["#f0e6d3", "#a87fd4", "#f5efe5", "#c9a0e8", "#e8d0b0"]}
+            speed={0.15}
+          />
+        )}
 
         {/* ── PHASE 1: SOLUTION HERO ── */}
         <motion.div
@@ -7225,8 +7244,19 @@ function EvidenceSection() {
 
 export default function Home() {
   const [contactOpen, setContactOpen] = useState(false);
+  const [isSafari, setIsSafari] = useState(false);
   const openContact = useCallback(() => setContactOpen(true), []);
+
+  useEffect(() => {
+    const safari = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
+    if (safari) {
+      setIsSafari(true);
+      document.documentElement.setAttribute("data-safari", "");
+    }
+  }, []);
+
   return (
+    <SafariCtx.Provider value={isSafari}>
     <ContactModalCtx.Provider value={openContact}>
     <IntroProvider sidebar={<Sidebar onContactClick={openContact} />}>
       <main>
@@ -7243,5 +7273,6 @@ export default function Home() {
       <ContactModal open={contactOpen} onClose={() => setContactOpen(false)} />
     </IntroProvider>
     </ContactModalCtx.Provider>
+    </SafariCtx.Provider>
   );
 }
