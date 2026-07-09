@@ -5129,41 +5129,40 @@ function ContactModal({ open, onClose }: { open: boolean; onClose: () => void })
   );
 }
 
-/* Small notice for non-Chromium browsers — the animated shaders run best
-   on Chrome's Blink engine. Dismissable, appears bottom-right. */
-function BrowserNotice() {
-  const isSafari = useContext(SafariCtx);
+/* Notice for every non-Chrome browser — the animated shaders run best on
+   Chrome's Blink engine. Dismissable, appears bottom-right. */
+function BrowserNotice({ show }: { show: boolean }) {
   const [dismissed, setDismissed] = useState(false);
-  if (!isSafari || dismissed) return null;
+  if (!show || dismissed) return null;
   return (
     <div
       style={{
         position: "fixed",
-        bottom: 16,
-        right: 16,
+        bottom: 22,
+        right: 22,
         zIndex: 9998,
         display: "flex",
         alignItems: "center",
-        gap: 10,
-        padding: "8px 10px 8px 14px",
-        borderRadius: 8,
-        background: "rgba(26,25,23,0.92)",
-        border: "1px solid rgba(245,239,229,0.1)",
-        boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
+        gap: 14,
+        padding: "14px 16px 14px 22px",
+        borderRadius: 12,
+        background: "rgba(26,25,23,0.94)",
+        border: "1px solid rgba(245,239,229,0.12)",
+        boxShadow: "0 12px 40px rgba(0,0,0,0.5)",
         backdropFilter: "blur(4px)",
         WebkitBackdropFilter: "blur(4px)",
         fontFamily: "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
-        fontSize: 12.5,
-        fontWeight: 500,
+        fontSize: 17,
+        fontWeight: 600,
         letterSpacing: "0.01em",
-        color: "rgba(245,239,229,0.82)",
+        color: "rgba(245,239,229,0.9)",
       }}
     >
       <span
         aria-hidden
         style={{
-          width: 6,
-          height: 6,
+          width: 9,
+          height: 9,
           borderRadius: "50%",
           background: "#8b5cf6",
           flexShrink: 0,
@@ -5178,13 +5177,13 @@ function BrowserNotice() {
           background: "none",
           border: "none",
           cursor: "pointer",
-          color: "rgba(245,239,229,0.4)",
+          color: "rgba(245,239,229,0.45)",
           padding: 4,
           lineHeight: 0,
         }}
       >
-        <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
-          <path d="M3 3L13 13M13 3L3 13" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M3 3L13 13M13 3L3 13" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
         </svg>
       </button>
     </div>
@@ -7304,18 +7303,25 @@ function EvidenceSection() {
 export default function Home() {
   const [contactOpen, setContactOpen] = useState(false);
   const [isSafari, setIsSafari] = useState(false);
+  const [isNonChrome, setIsNonChrome] = useState(false);
   const openContact = useCallback(() => setContactOpen(true), []);
 
   useEffect(() => {
     const ua = navigator.userAgent;
     const isSafariUA = /Safari/.test(ua) && !/Chrome/.test(ua) && !/Chromium/.test(ua);
     const isFirefox = /Firefox/.test(ua);
-    // Any non-Chromium engine: WebKit (Safari) and Gecko (Firefox) both
-    // choke on the animated SVG displacement filter + heavy canvas loop.
+    // Perf degradation is only for non-Chromium engines: WebKit (Safari)
+    // and Gecko (Firefox) choke on the animated SVG filter + canvas loop.
+    // Edge/Opera are Chromium and render the full effects fine.
     if (isSafariUA || isFirefox) {
       setIsSafari(true);
       document.documentElement.setAttribute("data-lowfx", "");
     }
+    // The notice, however, shows on everything that isn't real Chrome —
+    // Edge (Edg/) and Opera (OPR/) carry a "Chrome" token but aren't Chrome.
+    const isRealChrome =
+      /Chrome/.test(ua) && !/Edg\//.test(ua) && !/OPR\//.test(ua) && !/Chromium/.test(ua);
+    if (!isRealChrome) setIsNonChrome(true);
   }, []);
 
   return (
@@ -7334,7 +7340,7 @@ export default function Home() {
         </div>
       </main>
       <ContactModal open={contactOpen} onClose={() => setContactOpen(false)} />
-      <BrowserNotice />
+      <BrowserNotice show={isNonChrome} />
     </IntroProvider>
     </ContactModalCtx.Provider>
     </SafariCtx.Provider>
