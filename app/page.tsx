@@ -1084,6 +1084,8 @@ function TopographicalDots({
     /* Frame-skip counter — when nothing is animating, render at ~30fps
        instead of 60fps to halve GPU load. */
     let skipFrame = false;
+    /* Safari 3-frame counter: only draw every 3rd frame (~20fps). */
+    let safariFc = 0;
 
     /* Brain silhouette comes from the real reference image at
        /brain-reference.jpg. On image load we threshold dark pixels
@@ -1807,6 +1809,7 @@ function TopographicalDots({
     );
 
     const onMove = (e: PointerEvent) => {
+      if (safari) return; // cursor effects disabled on Safari to reduce per-frame JS work
       /* Use HOST's rect — the canvas may be CSS-transformed for the
          card tilt, which would shift `canvas.getBoundingClientRect`
          and silently break cursor coords. The host stays untransformed. */
@@ -1924,17 +1927,21 @@ function TopographicalDots({
         Math.abs(cliffMorph - prevCliffMorph) +
         Math.abs(cliffPhase - prevCliffPhase);
 
-      /* Safari: always cap at ~30fps regardless of animation state.
-         Non-Safari: skip frames only when idle. */
+      /* Safari: cap at ~20fps (render 1 in every 3 frames).
+         Non-Safari: skip frames only when idle (~30fps). */
       if (safari) {
-        skipFrame = !skipFrame;
+        safariFc = (safariFc + 1) % 3;
+        if (safariFc !== 0) {
+          raf = requestAnimationFrame(render);
+          return;
+        }
       } else {
         const isIdleFrame = morphDelta < 0.0005 && !cursor.has && waves.length === 0;
         skipFrame = isIdleFrame ? !skipFrame : false;
-      }
-      if (skipFrame) {
-        raf = requestAnimationFrame(render);
-        return;
+        if (skipFrame) {
+          raf = requestAnimationFrame(render);
+          return;
+        }
       }
 
       ctx.clearRect(0, 0, width, height);
@@ -2909,29 +2916,19 @@ function Hero() {
             style={{ backgroundColor: heroBg }}
           />
 
-          {/* Ethereal shadow — static gradient on Safari (feTurbulence is CPU-only there) */}
-          {isSafari ? (
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-0 z-[1]"
-              style={{
-                background: "radial-gradient(ellipse 70% 55% at 50% 58%, rgba(109,40,217,0.45) 0%, rgba(37,99,235,0.18) 52%, transparent 78%)",
-              }}
+          {/* Ethereal shadow — hero background, fades out with slide-1 content */}
+          <motion.div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 z-[1]"
+            style={{ opacity: boxAlphaProgress }}
+          >
+            <EtherealShadow
+              color="rgba(109, 40, 217, 0.85)"
+              animation={{ scale: 100, speed: 90 }}
+              noise={{ opacity: 1, scale: 1.2 }}
+              sizing="fill"
             />
-          ) : (
-            <motion.div
-              aria-hidden
-              className="pointer-events-none absolute inset-0 z-[1]"
-              style={{ opacity: boxAlphaProgress }}
-            >
-              <EtherealShadow
-                color="rgba(109, 40, 217, 0.85)"
-                animation={{ scale: 100, speed: 90 }}
-                noise={{ opacity: 1, scale: 1.2 }}
-                sizing="fill"
-              />
-            </motion.div>
-          )}
+          </motion.div>
 
           {/* Topographical dots — dots hidden on slide 1, box always visible */}
           <TopographicalDots
@@ -5662,12 +5659,6 @@ function StageMeshBackground() {
     return () => window.removeEventListener("resize", update);
   }, []);
   if (phase !== "done") return <div style={{ position: "absolute", inset: 0, zIndex: 0, background: "#0f0e0d" }} />;
-  if (isSafari) return (
-    <div style={{
-      position: "absolute", inset: 0, zIndex: 0,
-      background: "linear-gradient(135deg, #f5efe5 0%, #e8d5b7 30%, #c9b0e8 60%, #f0e6d3 100%)",
-    }} />
-  );
   return (
     <div style={{ position: "absolute", inset: 0, zIndex: 0 }}>
       <MeshGradient
@@ -6209,19 +6200,12 @@ function ForceGroundedSection() {
         className="relative overflow-hidden"
         style={{ position: "sticky", top: 0, height: "100vh" }}
       >
-        {/* Gradient background — static on Safari, animated shader elsewhere */}
-        {isSafari ? (
-          <div style={{
-            position: "absolute", inset: 0, width: "100%", height: "100%", zIndex: 0,
-            background: "linear-gradient(135deg, #f0e6d3 0%, #a87fd4 35%, #f5efe5 65%, #e8d0b0 100%)",
-          }} />
-        ) : (
-          <MeshGradient
-            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", zIndex: 0 }}
-            colors={["#f0e6d3", "#a87fd4", "#f5efe5", "#c9a0e8", "#e8d0b0"]}
-            speed={0.15}
-          />
-        )}
+        {/* Gradient background — shared across all phases */}
+        <MeshGradient
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", zIndex: 0 }}
+          colors={["#f0e6d3", "#a87fd4", "#f5efe5", "#c9a0e8", "#e8d0b0"]}
+          speed={0.15}
+        />
 
         {/* ── PHASE 1: SOLUTION HERO ── */}
         <motion.div
