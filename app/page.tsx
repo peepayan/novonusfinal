@@ -12,6 +12,7 @@ import {
   type ReactNode,
 } from "react";
 import Image from "next/image";
+import { getCalApi } from "@calcom/embed-react";
 import {
   AnimatePresence,
   animate,
@@ -3007,6 +3008,30 @@ function Hero() {
               }}
             >
               Contact
+            </button>
+            <button
+              type="button"
+              data-cal-namespace="deepayan"
+              data-cal-link="deepayan"
+              data-cal-config='{"layout":"month_view"}'
+              style={{
+                fontFamily: "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
+                fontSize: "clamp(0.85rem, 0.95vw, 1rem)",
+                fontWeight: 600,
+                padding: "0.8rem 1.8rem",
+                border: "1px solid rgba(255,255,255,0.6)",
+                borderRadius: "0.625rem",
+                backgroundColor: "#ffffff",
+                color: "#0f0e0d",
+                letterSpacing: "0.01em",
+                cursor: "pointer",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.5rem",
+                whiteSpace: "nowrap",
+              }}
+            >
+              Book a call
             </button>
           </motion.div>
 
@@ -7308,6 +7333,14 @@ export default function Home() {
   const [isSafari, setIsSafari] = useState(false);
   const [isNonChrome, setIsNonChrome] = useState(false);
   const openContact = useCallback(() => setContactOpen(true), []);
+
+  useEffect(() => {
+    // Cal.com popup booking — same feature as the /demo "Book a call" button.
+    (async () => {
+      const cal = await getCalApi({ namespace: "deepayan" });
+      cal("ui", { hideEventTypeDetails: false, layout: "month_view" });
+    })();
+  }, []);
 
   useEffect(() => {
     const ua = navigator.userAgent;
