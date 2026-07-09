@@ -5129,6 +5129,68 @@ function ContactModal({ open, onClose }: { open: boolean; onClose: () => void })
   );
 }
 
+/* Small notice for non-Chromium browsers — the animated shaders run best
+   on Chrome's Blink engine. Dismissable, appears bottom-right. */
+function BrowserNotice() {
+  const isSafari = useContext(SafariCtx);
+  const [dismissed, setDismissed] = useState(false);
+  if (!isSafari || dismissed) return null;
+  return (
+    <div
+      style={{
+        position: "fixed",
+        bottom: 16,
+        right: 16,
+        zIndex: 9998,
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+        padding: "8px 10px 8px 14px",
+        borderRadius: 8,
+        background: "rgba(26,25,23,0.92)",
+        border: "1px solid rgba(245,239,229,0.1)",
+        boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
+        backdropFilter: "blur(4px)",
+        WebkitBackdropFilter: "blur(4px)",
+        fontFamily: "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
+        fontSize: 12.5,
+        fontWeight: 500,
+        letterSpacing: "0.01em",
+        color: "rgba(245,239,229,0.82)",
+      }}
+    >
+      <span
+        aria-hidden
+        style={{
+          width: 6,
+          height: 6,
+          borderRadius: "50%",
+          background: "#8b5cf6",
+          flexShrink: 0,
+        }}
+      />
+      Best experienced on Chrome
+      <button
+        type="button"
+        onClick={() => setDismissed(true)}
+        aria-label="Dismiss"
+        style={{
+          background: "none",
+          border: "none",
+          cursor: "pointer",
+          color: "rgba(245,239,229,0.4)",
+          padding: 4,
+          lineHeight: 0,
+        }}
+      >
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+          <path d="M3 3L13 13M13 3L3 13" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+        </svg>
+      </button>
+    </div>
+  );
+}
+
 function SiteFooter() {
   const trackRef = useRef<HTMLDivElement>(null);
   const lineRef  = useRef<HTMLDivElement>(null);
@@ -7272,6 +7334,7 @@ export default function Home() {
         </div>
       </main>
       <ContactModal open={contactOpen} onClose={() => setContactOpen(false)} />
+      <BrowserNotice />
     </IntroProvider>
     </ContactModalCtx.Provider>
     </SafariCtx.Provider>
