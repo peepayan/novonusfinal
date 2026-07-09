@@ -2942,13 +2942,17 @@ function Hero() {
             safari={isSafari}
           />
 
-          {/* CTA buttons — below the canvas box, at the bottom of the hero */}
+          {/* CTA buttons — below the canvas box, at the bottom of the hero.
+              The min() caps the offset so on short viewports (laptops, OS
+              display scaling, browser toolbars) the buttons never fall past
+              the bottom edge; on tall viewports they stay attached to the
+              box exactly as before. */}
           <motion.div
             style={{
               position: "absolute",
               left: 0,
               right: 0,
-              top: "calc(50% + min(42.5vh, 290px) + 1rem)",
+              top: "min(calc(50% + min(42.5vh, 290px) + 1rem), calc(100svh - 5rem))",
               zIndex: 10,
               opacity: boxAlphaProgress,
               display: "flex",
