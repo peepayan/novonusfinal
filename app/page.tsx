@@ -255,6 +255,7 @@ function useIsMobile() {
 
 function Preloader() {
   const { phase } = useIntro();
+  const isSafari = useContext(SafariCtx);
   const overlayVisible =
     phase === "loadingBar" || phase === "logoPop";
   const haloVisible = phase === "logoPop";
@@ -306,7 +307,7 @@ function Preloader() {
               borderRadius: "50%",
               background:
                 "radial-gradient(circle, rgba(109,40,217,0.7), rgba(124,58,237,0.3) 45%, transparent 72%)",
-              filter: "blur(8px)",
+              filter: isSafari ? "blur(2px)" : "blur(8px)",
             }}
           />
         </motion.div>
@@ -972,6 +973,7 @@ function TopographicalDots({
   boxAlphaProgress,
   dotFillProgress,
   dotOpacity,
+  safari,
 }: {
   morphProgress?: MotionValue<number>;
   invertProgress?: MotionValue<number>;
@@ -984,6 +986,7 @@ function TopographicalDots({
   boxAlphaProgress?: MotionValue<number>;
   dotFillProgress?: MotionValue<number>;
   dotOpacity?: MotionValue<number>;
+  safari?: boolean;
 } = {}) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -995,7 +998,7 @@ function TopographicalDots({
     const host = canvas.parentElement;
     if (!host) return;
 
-    const SPACING = 26;
+    const SPACING = safari ? 40 : 26;
     const SIGMA = 90;
     const TWO_SIGMA_SQ = 2 * SIGMA * SIGMA;
     const LIFT_PX = 34;
@@ -1555,7 +1558,7 @@ function TopographicalDots({
       const rect = host.getBoundingClientRect();
       width = rect.width;
       height = rect.height;
-      const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+      const dpr = Math.min(window.devicePixelRatio || 1, safari ? 1.0 : 1.5);
       canvas.width = Math.max(1, Math.floor(width * dpr));
       canvas.height = Math.max(1, Math.floor(height * dpr));
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -1921,10 +1924,14 @@ function TopographicalDots({
         Math.abs(cliffMorph - prevCliffMorph) +
         Math.abs(cliffPhase - prevCliffPhase);
 
-      /* Idle frame-skip: when nothing is moving (no cursor, no waves,
-         no morph in progress) render at ~30fps instead of 60fps. */
-      const isIdleFrame = morphDelta < 0.0005 && !cursor.has && waves.length === 0;
-      skipFrame = isIdleFrame ? !skipFrame : false;
+      /* Safari: always cap at ~30fps regardless of animation state.
+         Non-Safari: skip frames only when idle. */
+      if (safari) {
+        skipFrame = !skipFrame;
+      } else {
+        const isIdleFrame = morphDelta < 0.0005 && !cursor.has && waves.length === 0;
+        skipFrame = isIdleFrame ? !skipFrame : false;
+      }
       if (skipFrame) {
         raf = requestAnimationFrame(render);
         return;
@@ -2207,6 +2214,7 @@ function TopographicalDots({
     boxAlphaProgress,
     dotFillProgress,
     dotOpacity,
+    safari,
   ]);
 
   return (
@@ -2901,8 +2909,16 @@ function Hero() {
             style={{ backgroundColor: heroBg }}
           />
 
-          {/* Ethereal shadow — skip on Safari (SVG feTurbulence is CPU-only there) */}
-          {!isSafari && (
+          {/* Ethereal shadow — static gradient on Safari (feTurbulence is CPU-only there) */}
+          {isSafari ? (
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-0 z-[1]"
+              style={{
+                background: "radial-gradient(ellipse 70% 55% at 50% 58%, rgba(109,40,217,0.45) 0%, rgba(37,99,235,0.18) 52%, transparent 78%)",
+              }}
+            />
+          ) : (
             <motion.div
               aria-hidden
               className="pointer-events-none absolute inset-0 z-[1]"
@@ -2930,6 +2946,7 @@ function Hero() {
             boxAlphaProgress={boxAlphaProgress}
             dotFillProgress={dotFillProgress}
             dotOpacity={dotEnterProgress}
+            safari={isSafari}
           />
 
           {/* CTA buttons — below the canvas box, at the bottom of the hero */}
