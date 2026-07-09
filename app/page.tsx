@@ -2965,8 +2965,6 @@ function Hero() {
           >
             <a
               href="https://novonus.com/demo"
-              target="_blank"
-              rel="noopener noreferrer"
               style={{
                 fontFamily: "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
                 fontSize: "clamp(0.85rem, 0.95vw, 1rem)",
