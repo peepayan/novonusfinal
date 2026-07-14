@@ -4972,7 +4972,7 @@ function Technicals() {
    ========================================================================== */
 
 const DEMO_VIDEO_SRC =
-  "https://uwdwktvnnfhx26nw.public.blob.vercel-storage.com/intro-launch-video.mp4";
+  "https://uwdwktvnnfhx26nw.public.blob.vercel-storage.com/intro-launch-video-1080p.mp4";
 
 function fmtTime(s: number) {
   if (!Number.isFinite(s) || s < 0) s = 0;
