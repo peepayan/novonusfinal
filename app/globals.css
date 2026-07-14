@@ -7,6 +7,35 @@
   display: none;
 }
 
+/* Video-modal sliders (seek + volume) */
+.video-range {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(245, 239, 229, 0.28);
+  accent-color: #6d28d9;
+  cursor: pointer;
+}
+.video-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: #f5efe5;
+  cursor: pointer;
+  border: none;
+}
+.video-range::-moz-range-thumb {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: #f5efe5;
+  cursor: pointer;
+  border: none;
+}
+
 :root {
   /* Neural-interface palette — strict five-hue system */
   --ink: #000000;          /* deep black: backgrounds */

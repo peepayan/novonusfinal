@@ -6,6 +6,9 @@ node_modules
 .DS_Store
 *.tsbuildinfo
 
+# Large media served from Vercel Blob, not committed to the repo
+/public/*.mp4
+
 # Vanilla static landing site (localhost:5500). Lives alongside the Next.js
 # project for reference, but never gets pushed — only the Next.js work on
 # localhost:3001 should be tracked in git.
@@ -14,3 +17,5 @@ node_modules
 /script.js
 /README.md
 /assets/
+
+.env*.local

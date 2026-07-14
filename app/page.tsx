@@ -9,6 +9,7 @@ import {
   useLayoutEffect,
   useRef,
   useState,
+  type CSSProperties,
   type ReactNode,
 } from "react";
 import Image from "next/image";
@@ -39,6 +40,7 @@ import { Component as EtherealShadow } from "@/components/ui/etheral-shadow";
 const ZERO_MV = motionValue(0);
 const SectionVisibleCtx = createContext<MotionValue<number>>(ZERO_MV);
 const ContactModalCtx = createContext<() => void>(() => {});
+const VideoModalCtx = createContext<() => void>(() => {});
 const SafariCtx = createContext(false);
 
 /* ============================================================================
@@ -459,6 +461,7 @@ function HeroLoadingBar() {
 
 function BrandLockup() {
   const { phase, skipIntroAnim } = useIntro();
+  const openVideo = useContext(VideoModalCtx);
   const { scrollY } = useScroll();
   const [hidden, setHidden] = useState(false);
   const [centeredY, setCenteredY] = useState(0);
@@ -513,6 +516,50 @@ function BrandLockup() {
           transition={{ duration: 0 }}
           style={{ backgroundColor: "rgba(15, 14, 13, 0.75)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" }}
         />
+      )}
+
+      {/* Demo-video button — sits in the top-left corner of the docked bar */}
+      {docked && (
+        <motion.button
+          type="button"
+          onClick={openVideo}
+          initial={{ opacity: skipIntroAnim ? 1 : 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4, ease: EASE_FADE }}
+          className="pointer-events-auto absolute left-6 top-4 z-[121] flex h-[56px] items-center gap-2 md:left-10 lg:left-14"
+          aria-label="Play demo video"
+          style={{
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            padding: "0 4px",
+            fontFamily: "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
+            fontSize: 14,
+            fontWeight: 600,
+            letterSpacing: "0.01em",
+            color: "rgba(245,239,229,0.92)",
+          }}
+        >
+          <span
+            aria-hidden
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 26,
+              height: 26,
+              borderRadius: "50%",
+              background: "#ffffff",
+              color: "#0f0e0d",
+              flexShrink: 0,
+            }}
+          >
+            <svg width="11" height="11" viewBox="0 0 11 11" fill="currentColor">
+              <path d="M1.5 1.2v8.6a.6.6 0 0 0 .92.5l7-4.3a.6.6 0 0 0 0-1.02l-7-4.3A.6.6 0 0 0 1.5 1.2z" />
+            </svg>
+          </span>
+          Demo Video
+        </motion.button>
       )}
 
       {/* Logo + wordmark lockup. Floats above the bar (z-120 vs z-119).
@@ -4921,6 +4968,254 @@ function Technicals() {
    SITE FOOTER — minimal two-line strip
    ========================================================================== */
 /* ============================================================================
+   VIDEO MODAL — fullscreen popup player with custom controls
+   ========================================================================== */
+
+const DEMO_VIDEO_SRC =
+  "https://uwdwktvnnfhx26nw.public.blob.vercel-storage.com/intro-launch-video.mp4";
+
+function fmtTime(s: number) {
+  if (!Number.isFinite(s) || s < 0) s = 0;
+  const m = Math.floor(s / 60);
+  const sec = Math.floor(s % 60);
+  return `${m}:${sec.toString().padStart(2, "0")}`;
+}
+
+function VideoModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [playing, setPlaying] = useState(false);
+  const [current, setCurrent] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [volume, setVolume] = useState(1);
+  const [muted, setMuted] = useState(false);
+
+  const skip = useCallback((delta: number) => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.currentTime = Math.min(Math.max(0, v.currentTime + delta), v.duration || 0);
+  }, []);
+
+  const togglePlay = useCallback(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (v.paused) v.play().catch(() => {});
+    else v.pause();
+  }, []);
+
+  const setVol = useCallback((val: number) => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.volume = val;
+    v.muted = val === 0;
+    setVolume(val);
+    setMuted(val === 0);
+  }, []);
+
+  const toggleMute = useCallback(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.muted = !v.muted;
+    setMuted(v.muted);
+  }, []);
+
+  // Reset + autoplay on open; pause on close. Lock body scroll while open.
+  useEffect(() => {
+    if (!open) return;
+    const v = videoRef.current;
+    if (v) {
+      v.currentTime = 0;
+      v.play().catch(() => {});
+    }
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      const vid = videoRef.current;
+      if (vid) vid.pause();
+    };
+  }, [open]);
+
+  // Keyboard shortcuts.
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      switch (e.key) {
+        case "Escape": onClose(); break;
+        case " ": case "k": e.preventDefault(); togglePlay(); break;
+        case "ArrowLeft": e.preventDefault(); skip(-5); break;
+        case "ArrowRight": e.preventDefault(); skip(5); break;
+        case "ArrowUp": e.preventDefault(); setVol(Math.min(1, volume + 0.1)); break;
+        case "ArrowDown": e.preventDefault(); setVol(Math.max(0, volume - 0.1)); break;
+        case "m": toggleMute(); break;
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, onClose, togglePlay, skip, setVol, toggleMute, volume]);
+
+  const iconBtn: CSSProperties = {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    background: "none",
+    border: "none",
+    color: "#f5efe5",
+    cursor: "pointer",
+    padding: 6,
+    borderRadius: 8,
+    flexShrink: 0,
+  };
+
+  return (
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.22 }}
+          onClick={onClose}
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 10000,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background: "rgba(0,0,0,0.86)",
+            backdropFilter: "blur(6px)",
+            WebkitBackdropFilter: "blur(6px)",
+          }}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Demo video"
+        >
+          <motion.div
+            initial={{ scale: 0.96, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.96, opacity: 0 }}
+            transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              position: "relative",
+              width: "90vw",
+              height: "90vh",
+              display: "flex",
+              flexDirection: "column",
+              background: "#000",
+              borderRadius: 14,
+              overflow: "hidden",
+              boxShadow: "0 24px 80px rgba(0,0,0,0.6)",
+            }}
+          >
+            {/* Close */}
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Close video"
+              style={{
+                position: "absolute",
+                top: 12,
+                right: 12,
+                zIndex: 3,
+                ...iconBtn,
+                background: "rgba(0,0,0,0.45)",
+                borderRadius: "50%",
+              }}
+            >
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M4 4l12 12M16 4L4 16" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+              </svg>
+            </button>
+
+            {/* Video */}
+            <video
+              ref={videoRef}
+              src={DEMO_VIDEO_SRC}
+              onClick={togglePlay}
+              onPlay={() => setPlaying(true)}
+              onPause={() => setPlaying(false)}
+              onTimeUpdate={(e) => setCurrent(e.currentTarget.currentTime)}
+              onLoadedMetadata={(e) => {
+                setDuration(e.currentTarget.duration);
+                setVolume(e.currentTarget.volume);
+              }}
+              playsInline
+              style={{ flex: 1, width: "100%", minHeight: 0, objectFit: "contain", background: "#000", cursor: "pointer" }}
+            />
+
+            {/* Controls */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 14,
+                padding: "12px 18px",
+                background: "linear-gradient(0deg, rgba(0,0,0,0.9), rgba(0,0,0,0.6))",
+                fontFamily: "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
+                color: "#f5efe5",
+              }}
+            >
+              <button type="button" onClick={togglePlay} style={iconBtn} aria-label={playing ? "Pause" : "Play"}>
+                {playing ? (
+                  <svg width="22" height="22" viewBox="0 0 22 22" fill="currentColor"><rect x="5" y="4" width="4" height="14" rx="1" /><rect x="13" y="4" width="4" height="14" rx="1" /></svg>
+                ) : (
+                  <svg width="22" height="22" viewBox="0 0 22 22" fill="currentColor"><path d="M6 3.4v15.2a.7.7 0 0 0 1.07.6l12-7.6a.7.7 0 0 0 0-1.2l-12-7.6A.7.7 0 0 0 6 3.4z" /></svg>
+                )}
+              </button>
+
+              <button type="button" onClick={() => skip(-5)} style={iconBtn} aria-label="Back 5 seconds">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M11 5L5 11l6 6" /><path d="M5 11h9a5 5 0 0 1 0 10h-1" /></svg>
+              </button>
+              <button type="button" onClick={() => skip(5)} style={iconBtn} aria-label="Forward 5 seconds">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M13 5l6 6-6 6" /><path d="M19 11h-9a5 5 0 0 0 0 10h1" /></svg>
+              </button>
+
+              <span style={{ fontSize: 13, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap", opacity: 0.85 }}>
+                {fmtTime(current)} / {fmtTime(duration)}
+              </span>
+
+              {/* Seek bar */}
+              <input
+                type="range"
+                min={0}
+                max={duration || 0}
+                step={0.1}
+                value={current}
+                onChange={(e) => { const v = videoRef.current; if (v) { v.currentTime = Number(e.target.value); setCurrent(Number(e.target.value)); } }}
+                aria-label="Seek"
+                className="video-range"
+                style={{ flex: 1, minWidth: 80 }}
+              />
+
+              {/* Volume */}
+              <button type="button" onClick={toggleMute} style={iconBtn} aria-label={muted ? "Unmute" : "Mute"}>
+                {muted || volume === 0 ? (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4z" /><path d="M17 9l4 4m0-4l-4 4" /></svg>
+                ) : (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4z" /><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" /></svg>
+                )}
+              </button>
+              <input
+                type="range"
+                min={0}
+                max={1}
+                step={0.05}
+                value={muted ? 0 : volume}
+                onChange={(e) => setVol(Number(e.target.value))}
+                aria-label="Volume"
+                className="video-range"
+                style={{ width: 90, flexShrink: 0 }}
+              />
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+/* ============================================================================
    CONTACT MODAL
    ========================================================================== */
 
@@ -7330,9 +7625,11 @@ function EvidenceSection() {
 
 export default function Home() {
   const [contactOpen, setContactOpen] = useState(false);
+  const [videoOpen, setVideoOpen] = useState(false);
   const [isSafari, setIsSafari] = useState(false);
   const [isNonChrome, setIsNonChrome] = useState(false);
   const openContact = useCallback(() => setContactOpen(true), []);
+  const openVideo = useCallback(() => setVideoOpen(true), []);
 
   useEffect(() => {
     // Cal.com popup booking — same feature as the /demo "Book a call" button.
@@ -7363,6 +7660,7 @@ export default function Home() {
   return (
     <SafariCtx.Provider value={isSafari}>
     <ContactModalCtx.Provider value={openContact}>
+    <VideoModalCtx.Provider value={openVideo}>
     <IntroProvider sidebar={<Sidebar onContactClick={openContact} />}>
       <main id="main-content">
         <Hero />
@@ -7376,8 +7674,10 @@ export default function Home() {
         </div>
       </main>
       <ContactModal open={contactOpen} onClose={() => setContactOpen(false)} />
+      <VideoModal open={videoOpen} onClose={() => setVideoOpen(false)} />
       <BrowserNotice show={isNonChrome} />
     </IntroProvider>
+    </VideoModalCtx.Provider>
     </ContactModalCtx.Provider>
     </SafariCtx.Provider>
   );
