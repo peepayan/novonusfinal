@@ -516,12 +516,12 @@ export function HowItWorks() {
 
   return (
     <section ref={root} id="how">
-      <div className="hiw-pin" style={{ height: `calc(${N * 130}vh / var(--z, 1))`, position: "relative" }}>
+      <div className="hiw-pin" style={{ height: `${N * 130}vh`, position: "relative" }}>
         <div
           style={{
             position: "sticky",
             top: 0,
-            height: "calc(100svh / var(--z, 1))",
+            height: "100svh",
             overflow: "hidden",
             paddingTop: "clamp(5rem, 9vh, 6.5rem)",
             paddingBottom: "clamp(1.8rem, 4vh, 3rem)",
@@ -570,7 +570,7 @@ export function HowItWorks() {
                 }}
               >
                 {/* left: act titles + narration sentences */}
-                <div className="hiw-copy" style={{ position: "relative", height: "clamp(20rem, calc(48vh / var(--z, 1)), 27rem)" }}>
+                <div className="hiw-copy" style={{ position: "relative", height: "clamp(20rem, 48vh, 27rem)" }}>
                   {pipeline.steps.map((s, a) => (
                     <div
                       key={s.n}
@@ -610,7 +610,7 @@ export function HowItWorks() {
                   style={{
                     position: "relative",
                     aspectRatio: "960 / 720",
-                    maxHeight: "min(calc(64vh / var(--z, 1)), 36rem)",
+                    maxHeight: "min(64vh, 36rem)",
                     justifySelf: "end",
                     width: "100%",
                     padding: 10,

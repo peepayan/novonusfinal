@@ -89,7 +89,7 @@ export function Problem() {
         className="problem-pin"
         style={
           {
-            height: "calc(220vh / var(--z, 1))",
+            height: "220vh",
             position: "relative",
             background: "#4c1d95",
             borderRadius: 20,
@@ -102,7 +102,7 @@ export function Problem() {
           style={{
             position: "sticky",
             top: 0,
-            height: "calc(100svh / var(--z, 1))",
+            height: "100svh",
             display: "flex",
             alignItems: "center",
           }}
@@ -155,7 +155,7 @@ export function Problem() {
                 style={{
                   position: "relative",
                   aspectRatio: "1 / 1",
-                  maxHeight: "min(calc(58vh / var(--z, 1)), 30rem)",
+                  maxHeight: "min(58vh, 30rem)",
                   justifySelf: "end",
                   width: "min(100%, 30rem)",
                   padding: 14,
@@ -184,12 +184,12 @@ export function Problem() {
       {/* — movement 2: the deep-dive chapters — */}
       {/* 240vh per chapter: the snap gap outruns a single wheel flick, so one
           gesture advances exactly one chapter and rests there */}
-      <div className="problem-chapters" style={{ height: `calc(${N * 240}vh / var(--z, 1))`, position: "relative" }}>
+      <div className="problem-chapters" style={{ height: `${N * 240}vh`, position: "relative" }}>
         <div
           style={{
             position: "sticky",
             top: 0,
-            height: "calc(100svh / var(--z, 1))",
+            height: "100svh",
             overflow: "hidden",
             /* framed stage: top padding clears the fixed nav; header and
                progress anchor the frame edges, content owns the middle */
@@ -254,7 +254,7 @@ export function Problem() {
                     in the same fixed box so midlines never jump */}
                 <div
                   className="chapter-copy"
-                  style={{ position: "relative", height: "clamp(19rem, calc(44vh / var(--z, 1)), 25rem)" }}
+                  style={{ position: "relative", height: "clamp(19rem, 44vh, 25rem)" }}
                 >
                   {problem.items.map((item, i) => (
                     <div
@@ -302,7 +302,7 @@ export function Problem() {
                   style={{
                     position: "relative",
                     aspectRatio: "1 / 1",
-                    maxHeight: "min(calc(52vh / var(--z, 1)), 29rem)",
+                    maxHeight: "min(52vh, 29rem)",
                     justifySelf: "end",
                     alignSelf: "center",
                     width: "min(100%, 29rem)",

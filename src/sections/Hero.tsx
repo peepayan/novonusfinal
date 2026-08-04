@@ -112,7 +112,7 @@ export function Hero({ ready }: { ready: boolean }) {
         }
         if (textRight > 0) {
           const w = vid.offsetWidth; /* offsetWidth is already layout px */
-          setVideoLeft(Math.min(textRight / z - 95, window.innerWidth / z + 70 - 0.301 * w));
+          setVideoLeft(Math.min(textRight / z - 95, window.innerWidth / z + 10 - 0.301 * w));
         }
       }
     };
@@ -172,7 +172,7 @@ export function Hero({ ready }: { ready: boolean }) {
       id="top"
       style={{
         position: "relative",
-        minHeight: "calc(100svh / var(--z, 1))",
+        minHeight: "100svh",
         display: "flex",
         flexDirection: "column",
         justifyContent: "flex-end",
@@ -208,7 +208,7 @@ export function Hero({ ready }: { ready: boolean }) {
             bottom: -70,
             left:
               videoLeft != null
-                ? `calc(${Math.round(videoLeft)}px + 0.15 * min(76vw, 1120px) - 260px)`
+                ? `calc(${Math.round(videoLeft)}px + 0.15 * min(76vw, 1560px) - 260px)`
                 : "auto",
             right: videoLeft == null ? "4vw" : "auto",
             width: 520,
@@ -235,7 +235,7 @@ export function Hero({ ready }: { ready: boolean }) {
             playsInline
             preload="auto"
             style={{
-              width: "min(76vw, 1120px)",
+              width: "min(76vw, 1560px)",
               aspectRatio: "16 / 9",
               objectFit: "contain",
               transform: `translate(${
@@ -288,7 +288,7 @@ export function Hero({ ready }: { ready: boolean }) {
           style={{
             marginTop: "1.1rem",
             maxWidth: "100%",
-            fontSize: "clamp(3rem, 6.6vw, 6.2rem)",
+            fontSize: "clamp(3rem, 6.6vw, 8.6rem)",
             visibility: ready ? "visible" : "hidden",
           }}
         >

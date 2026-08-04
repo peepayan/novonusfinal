@@ -21,25 +21,6 @@ export default function App() {
     initSmoothScroll();
   }, []);
 
-  /* Proportional scaling: 1536px (the founder's laptop viewport) is the
-     reference composition. Only wider viewports zoom the page up linearly
-     (capped at 1.5x) so every component keeps the same distribution
-     instead of pooling dead space; at and below the reference nothing
-     changes and the responsive rules take over. */
-  useEffect(() => {
-    const applyScale = () => {
-      const w = window.innerWidth;
-      const REF = 1536;
-      const z = w > REF ? Math.min(w / REF, 1.5) : 1;
-      document.body.style.zoom = z === 1 ? "" : String(z);
-      /* viewport units (vh/svh) resolve against the REAL viewport and then
-         get scaled by zoom; stage heights divide by --z to compensate */
-      document.documentElement.style.setProperty("--z", String(z));
-    };
-    applyScale();
-    window.addEventListener("resize", applyScale);
-    return () => window.removeEventListener("resize", applyScale);
-  }, []);
 
   return (
     <div className="grain">
