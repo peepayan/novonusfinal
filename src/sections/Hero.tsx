@@ -30,8 +30,13 @@ export function Hero({ ready }: { ready: boolean }) {
   const title = useLineReveal<HTMLHeadingElement>({ when: ready, scroll: false, delay: 0.1 });
 
   useEffect(() => {
+    /* real Safari answers "probably" for VP9 webm but strips the ALPHA
+       channel, painting an opaque slab behind the arm; no codec query
+       exposes alpha support, so Safari is excluded by UA and gets the
+       black-bg mp4 (the screen blend makes it equivalent) */
+    const isSafari = /^((?!chrome|crios|chromium|android|edg).)*safari/i.test(navigator.userAgent);
     const probe = document.createElement("video");
-    const webm = probe.canPlayType('video/webm; codecs="vp9"') === "probably";
+    const webm = !isSafari && probe.canPlayType('video/webm; codecs="vp9"') === "probably";
     setArmSrc(
       webm
         ? { src: "/robot-arm-hero-alpha-1080p.webm", alpha: true }
@@ -85,7 +90,7 @@ export function Hero({ ready }: { ready: boolean }) {
   useGSAP(
     () => {
       if (!ready) return;
-      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const reduced = false;
 
       /* eyebrow decodes like an instrument booting */
       if (!reduced) {
@@ -193,11 +198,6 @@ export function Hero({ ready }: { ready: boolean }) {
             muted
             loop
             playsInline
-            onLoadedData={(e) => {
-              if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-                e.currentTarget.pause();
-              }
-            }}
             style={{
               width: "min(76vw, 1120px)",
               aspectRatio: "16 / 9",

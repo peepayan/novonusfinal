@@ -40,7 +40,7 @@ export function ForceField({ amplitude = 1 }: { amplitude?: number }) {
     const host = mount.current;
     if (!host) return;
 
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduced = false;
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));

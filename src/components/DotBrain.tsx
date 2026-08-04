@@ -133,7 +133,7 @@ export function DotBrain({
     el.appendChild(canvas);
     const ctx = canvas.getContext("2d")!;
 
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduced = false;
 
     let seed = 1337;
     const rand = () => {

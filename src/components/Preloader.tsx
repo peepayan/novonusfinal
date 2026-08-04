@@ -32,7 +32,7 @@ export function Preloader({ onDone }: { onDone: () => void }) {
 
   useGSAP(
     () => {
-      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const reduced = false;
       if (reduced) {
         gsap.set(root.current, { display: "none" });
         onDone();

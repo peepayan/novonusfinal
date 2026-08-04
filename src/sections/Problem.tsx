@@ -30,7 +30,7 @@ export function Problem() {
 
   useGSAP(
     () => {
-      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const reduced = false;
 
       /* — movement 1: word-by-word statement — */
       const words = gsap.utils.toArray<HTMLElement>(".problem-word");

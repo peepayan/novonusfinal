@@ -9,7 +9,7 @@ export function Stats() {
 
   useGSAP(
     () => {
-      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const reduced = false;
       const cards = gsap.utils.toArray<HTMLElement>(".stat-card");
       gsap.from(cards, {
         autoAlpha: reduced ? 1 : 0,

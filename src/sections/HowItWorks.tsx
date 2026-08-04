@@ -132,7 +132,7 @@ export function HowItWorks() {
   useGSAP(
     () => {
       const q = gsap.utils.selector(root);
-      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const reduced = false;
 
       /* ---- helpers (the grammar) — leaf-targeted, immediateRender-safe ---- */
       const D = 1;

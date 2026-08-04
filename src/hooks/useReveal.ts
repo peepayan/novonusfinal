@@ -17,7 +17,6 @@ export function useLineReveal<T extends HTMLElement>(opts?: {
     () => {
       const el = ref.current;
       if (!el || !when) return;
-      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
       /* Hand-rolled line masks instead of SplitText's mask option: each
          wrapper clips the rising line but extends 0.18em below the line box
@@ -68,7 +67,6 @@ export function useFadeUp<T extends HTMLElement>(opts?: {
     () => {
       const el = ref.current;
       if (!el || !when) return;
-      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
       gsap.from(el, {
         autoAlpha: 0,
         y,

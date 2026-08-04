@@ -275,7 +275,7 @@ export function MorphFigure({
     el.appendChild(canvas);
     const ctx = canvas.getContext("2d")!;
 
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduced = false;
     const rand = makeRand(2026);
     let disposed = false;
     let shapes: Shape[] = [];
