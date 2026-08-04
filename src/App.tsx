@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { initSmoothScroll } from "./lib/gsapSetup";
 import { Preloader } from "./components/Preloader";
-import { Cursor } from "./components/Cursor";
 import { Nav } from "./components/Nav";
 import { Hero } from "./sections/Hero";
 import { Problem } from "./sections/Problem";
@@ -43,7 +42,6 @@ export default function App() {
   return (
     <div className="grain">
       <Preloader onDone={() => setReady(true)} />
-      <Cursor />
       <Nav ready={ready} />
       <main>
         <Hero ready={ready} />
