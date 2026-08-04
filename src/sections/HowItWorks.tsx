@@ -596,7 +596,7 @@ export function HowItWorks() {
                       </div>
                       <p
                         className={`hiw-sentence hiw-par-${a}`}
-                        style={{ marginTop: "1.1rem", maxWidth: "44ch", fontSize: 15, lineHeight: 1.72, color: "var(--mut-dark)" }}
+                        style={{ marginTop: "1.1rem", maxWidth: "44ch", fontSize: 16.5, lineHeight: 1.7, color: "#ffffff" }}
                       >
                         {SENTENCES[a].join(" ")}
                       </p>
