@@ -587,7 +587,10 @@ export function HowItWorks() {
                         <span className="mono-label" style={{ color: "var(--accent)" }}>
                           [{s.n}]
                         </span>
-                        <h3 className="display" style={{ fontSize: "clamp(2.2rem, 4vw, 3.6rem)", marginTop: "0.5rem" }}>
+                        <h3
+                          className="display"
+                          style={{ fontSize: "clamp(2.2rem, 4vw, 3.6rem)", marginTop: "0.5rem", color: "var(--accent)" }}
+                        >
                           {s.title}
                         </h3>
                         <svg width="140" height="8" style={{ marginTop: 8 }} aria-hidden>
