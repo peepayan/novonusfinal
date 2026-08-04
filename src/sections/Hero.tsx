@@ -288,7 +288,7 @@ export function Hero({ ready }: { ready: boolean }) {
           style={{
             marginTop: "1.1rem",
             maxWidth: "100%",
-            fontSize: "clamp(3rem, 6.6vw, 8.6rem)",
+            fontSize: "clamp(3rem, 6.6vw, 6.2rem)",
             visibility: ready ? "visible" : "hidden",
           }}
         >
