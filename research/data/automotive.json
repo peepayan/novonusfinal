@@ -1,0 +1,786 @@
+{
+ "name": "automotive",
+ "url": "https://scale.com/automotive",
+ "finalUrl": "https://scale.com/automotive",
+ "pageHeight": 7430,
+ "styles": {
+  "title": "Autonomous Driving Data Solutions | Scale | Scale AI",
+  "bodyBg": "rgb(255, 255, 255)",
+  "bodyFont": "aeonik, \"aeonik Fallback\", ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Seg",
+  "pageHeight": 7430,
+  "h1": [
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", -apple-system, Arial, sans-serif",
+    "fontSize": "116px",
+    "fontWeight": "400",
+    "lineHeight": "116px",
+    "letterSpacing": "-1.16px",
+    "textTransform": "none",
+    "color": "rgb(255, 255, 255)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "Reliable AI for the world\u2019s most important decisio",
+    "cls": "col-span-full header1 md:text-[7.25rem] leading-none oml:text-[4rem]",
+    "radius": "0px",
+    "border": "0px solid rgb(255, 255, 255)",
+    "padding": "0px"
+   }
+  ],
+  "h2": [
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", -apple-system, Arial, sans-serif",
+    "fontSize": "64px",
+    "fontWeight": "400",
+    "lineHeight": "67.2px",
+    "letterSpacing": "-0.64px",
+    "textTransform": "none",
+    "color": "rgb(255, 255, 255)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "Automotive Data Engine",
+    "cls": "AnimatedText text-white header2 text-balance text-[clamp(2rem,0.5rem+5vw,4rem)]!",
+    "radius": "0px",
+    "border": "0px solid rgb(255, 255, 255)",
+    "padding": "0px"
+   },
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", -apple-system, Arial, sans-serif",
+    "fontSize": "48px",
+    "fontWeight": "400",
+    "lineHeight": "60px",
+    "letterSpacing": "-0.48px",
+    "textTransform": "none",
+    "color": "rgb(0, 0, 0)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "The Automotive Data Engine",
+    "cls": "font-aeonik leading-snug lg:leading-[1.25] text-3xl md:text-4.5xl lg:text-5xl [t",
+    "radius": "0px",
+    "border": "0px solid rgb(0, 0, 0)",
+    "padding": "0px"
+   },
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", -apple-system, Arial, sans-serif",
+    "fontSize": "48px",
+    "fontWeight": "400",
+    "lineHeight": "60px",
+    "letterSpacing": "-0.48px",
+    "textTransform": "none",
+    "color": "rgb(0, 0, 0)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "How to Build Autonomy",
+    "cls": "font-aeonik leading-snug lg:leading-[1.25] text-3xl md:text-4.5xl lg:text-5xl [t",
+    "radius": "0px",
+    "border": "0px solid rgb(0, 0, 0)",
+    "padding": "0px"
+   },
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", -apple-system, Arial, sans-serif",
+    "fontSize": "48px",
+    "fontWeight": "400",
+    "lineHeight": "60px",
+    "letterSpacing": "-0.48px",
+    "textTransform": "none",
+    "color": "rgb(0, 0, 0)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "Phases of Model Development",
+    "cls": "font-aeonik leading-snug lg:leading-[1.25] text-3xl md:text-4.5xl lg:text-5xl [t",
+    "radius": "0px",
+    "border": "0px solid rgb(0, 0, 0)",
+    "padding": "0px"
+   }
+  ],
+  "h3": [
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Seg",
+    "fontSize": "18px",
+    "fontWeight": "700",
+    "lineHeight": "21.6px",
+    "letterSpacing": "normal",
+    "textTransform": "none",
+    "color": "rgb(105, 105, 105)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "Manage Consent Preferences",
+    "cls": "",
+    "radius": "0px",
+    "border": "0px none rgb(105, 105, 105)",
+    "padding": "0px 0px 10px"
+   },
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Seg",
+    "fontSize": "16px",
+    "fontWeight": "700",
+    "lineHeight": "20.8px",
+    "letterSpacing": "normal",
+    "textTransform": "none",
+    "color": "rgb(105, 105, 105)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "Back",
+    "cls": "",
+    "radius": "0px",
+    "border": "0px none rgb(105, 105, 105)",
+    "padding": "0px"
+   },
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Seg",
+    "fontSize": "12.96px",
+    "fontWeight": "700",
+    "lineHeight": "18.144px",
+    "letterSpacing": "normal",
+    "textTransform": "none",
+    "color": "rgb(105, 105, 105)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "",
+    "cls": "ot-host-name",
+    "radius": "0px",
+    "border": "0px none rgb(105, 105, 105)",
+    "padding": "0px"
+   }
+  ],
+  "h4": [
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", -apple-system, Arial, sans-serif",
+    "fontSize": "24px",
+    "fontWeight": "400",
+    "lineHeight": "36px",
+    "letterSpacing": "-0.24px",
+    "textTransform": "none",
+    "color": "rgb(0, 0, 0)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "Sure-Fire Improvements",
+    "cls": "relative text-2xl font-aeonik whitespace-pre-line mt-6",
+    "radius": "0px",
+    "border": "0px solid rgb(0, 0, 0)",
+    "padding": "0px"
+   },
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", -apple-system, Arial, sans-serif",
+    "fontSize": "24px",
+    "fontWeight": "400",
+    "lineHeight": "36px",
+    "letterSpacing": "-0.24px",
+    "textTransform": "none",
+    "color": "rgb(0, 0, 0)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "Maximum Performance",
+    "cls": "relative text-2xl font-aeonik whitespace-pre-line mt-6",
+    "radius": "0px",
+    "border": "0px solid rgb(0, 0, 0)",
+    "padding": "0px"
+   }
+  ],
+  "p": [
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", -apple-system, Arial, sans-serif",
+    "fontSize": "20px",
+    "fontWeight": "400",
+    "lineHeight": "30px",
+    "letterSpacing": "-0.2px",
+    "textTransform": "none",
+    "color": "rgb(255, 255, 255)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "Unlocking Autonomy with best-inclass data.",
+    "cls": "AnimatedText w-full text-white body1 text-balance is-visible",
+    "radius": "0px",
+    "border": "0px solid rgb(255, 255, 255)",
+    "padding": "0px"
+   },
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", -apple-system, Arial, sans-serif",
+    "fontSize": "20px",
+    "fontWeight": "400",
+    "lineHeight": "32px",
+    "letterSpacing": "-0.2px",
+    "textTransform": "none",
+    "color": "lab(0 0 0 / 0.7)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "Scale's Automotive Data Engine has everything you ",
+    "cls": "mt-4 lg:mt-2 leading-[1.60] lg:text-xl [text-wrap:balance] [white-space:inherit]",
+    "radius": "0px",
+    "border": "0px solid lab(0 0 0 / 0.7)",
+    "padding": "0px"
+   },
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", -apple-system, Arial, sans-serif",
+    "fontSize": "16px",
+    "fontWeight": "500",
+    "lineHeight": "24px",
+    "letterSpacing": "-0.16px",
+    "textTransform": "none",
+    "color": "rgb(0, 0, 0)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "Data Labeling",
+    "cls": "font-medium text-black",
+    "radius": "0px",
+    "border": "0px solid rgb(0, 0, 0)",
+    "padding": "0px"
+   },
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", -apple-system, Arial, sans-serif",
+    "fontSize": "14px",
+    "fontWeight": "400",
+    "lineHeight": "21px",
+    "letterSpacing": "-0.14px",
+    "textTransform": "none",
+    "color": "lab(0 0 0 / 0.7)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "Industry-leading annotation of 2D and 3D data sour",
+    "cls": "text-sm text-black/70",
+    "radius": "0px",
+    "border": "0px solid lab(0 0 0 / 0.7)",
+    "padding": "0px"
+   }
+  ],
+  "eyebrows": [
+   {
+    "fontFamily": "mono, \"mono Fallback\", -apple-system, Arial, sans-serif",
+    "fontSize": "12px",
+    "fontWeight": "400",
+    "lineHeight": "24px",
+    "letterSpacing": "1px",
+    "textTransform": "uppercase",
+    "color": "rgb(82, 82, 82)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "AUTONOMY TECH STACK",
+    "cls": "",
+    "radius": "0px",
+    "border": "0px solid rgb(82, 82, 82)",
+    "padding": "0px"
+   },
+   {
+    "fontFamily": "mono, \"mono Fallback\", -apple-system, Arial, sans-serif",
+    "fontSize": "12px",
+    "fontWeight": "400",
+    "lineHeight": "24px",
+    "letterSpacing": "1px",
+    "textTransform": "uppercase",
+    "color": "rgb(82, 82, 82)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "WHY SCALE",
+    "cls": "",
+    "radius": "0px",
+    "border": "0px solid rgb(82, 82, 82)",
+    "padding": "0px"
+   },
+   {
+    "fontFamily": "mono, \"mono Fallback\", -apple-system, Arial, sans-serif",
+    "fontSize": "12px",
+    "fontWeight": "400",
+    "lineHeight": "24px",
+    "letterSpacing": "1px",
+    "textTransform": "uppercase",
+    "color": "rgb(82, 82, 82)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "RESOURCES",
+    "cls": "",
+    "radius": "0px",
+    "border": "0px solid rgb(82, 82, 82)",
+    "padding": "0px"
+   },
+   {
+    "fontFamily": "mono, \"mono Fallback\", -apple-system, Arial, sans-serif",
+    "fontSize": "12px",
+    "fontWeight": "400",
+    "lineHeight": "24px",
+    "letterSpacing": "1px",
+    "textTransform": "uppercase",
+    "color": "rgb(0, 0, 0)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "LIVE DEMO",
+    "cls": "text-xs leading-6 tracking-[1px] uppercase font-geist-mono",
+    "radius": "0px",
+    "border": "0px solid rgb(0, 0, 0)",
+    "padding": "0px"
+   }
+  ],
+  "buttons": [
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Seg",
+    "fontSize": "16px",
+    "fontWeight": "400",
+    "lineHeight": "24px",
+    "letterSpacing": "normal",
+    "textTransform": "none",
+    "color": "rgb(0, 0, 0)",
+    "background": "rgb(234, 234, 234)",
+    "text": "Book demo",
+    "cls": "CMSLink focus:outline-1 relative focus:outline-scale-skyblue w-max group/link Fl",
+    "radius": "6px",
+    "border": "0px solid rgba(0, 0, 0, 0)",
+    "padding": "0px 24px"
+   },
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Seg",
+    "fontSize": "14px",
+    "fontWeight": "400",
+    "lineHeight": "22px",
+    "letterSpacing": "normal",
+    "textTransform": "none",
+    "color": "rgb(0, 0, 0)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "3D",
+    "cls": "relative rounded-full px-4 py-2 transition-colors duration-200 focus:outline-hid",
+    "radius": "3.35544e+07px",
+    "border": "0px solid rgb(0, 0, 0)",
+    "padding": "8px 16px"
+   },
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Seg",
+    "fontSize": "14px",
+    "fontWeight": "400",
+    "lineHeight": "22px",
+    "letterSpacing": "normal",
+    "textTransform": "none",
+    "color": "lab(0 0 0 / 0.5)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "Image",
+    "cls": "relative rounded-full px-4 py-2 transition-colors duration-200 focus:outline-hid",
+    "radius": "3.35544e+07px",
+    "border": "0px solid lab(0 0 0 / 0.5)",
+    "padding": "8px 16px"
+   },
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Seg",
+    "fontSize": "14px",
+    "fontWeight": "400",
+    "lineHeight": "22px",
+    "letterSpacing": "normal",
+    "textTransform": "none",
+    "color": "lab(0 0 0 / 0.5)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "Mapping",
+    "cls": "relative rounded-full px-4 py-2 transition-colors duration-200 focus:outline-hid",
+    "radius": "3.35544e+07px",
+    "border": "0px solid lab(0 0 0 / 0.5)",
+    "padding": "8px 16px"
+   },
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Seg",
+    "fontSize": "14px",
+    "fontWeight": "400",
+    "lineHeight": "22px",
+    "letterSpacing": "normal",
+    "textTransform": "none",
+    "color": "lab(0 0 0 / 0.5)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "Text",
+    "cls": "relative rounded-full px-4 py-2 transition-colors duration-200 focus:outline-hid",
+    "radius": "3.35544e+07px",
+    "border": "0px solid lab(0 0 0 / 0.5)",
+    "padding": "8px 16px"
+   },
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Seg",
+    "fontSize": "14px",
+    "fontWeight": "400",
+    "lineHeight": "22px",
+    "letterSpacing": "normal",
+    "textTransform": "none",
+    "color": "lab(0 0 0 / 0.5)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "Audio",
+    "cls": "relative rounded-full px-4 py-2 transition-colors duration-200 focus:outline-hid",
+    "radius": "3.35544e+07px",
+    "border": "0px solid lab(0 0 0 / 0.5)",
+    "padding": "8px 16px"
+   },
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Seg",
+    "fontSize": "12px",
+    "fontWeight": "700",
+    "lineHeight": "12px",
+    "letterSpacing": "0.96px",
+    "textTransform": "none",
+    "color": "rgb(255, 255, 255)",
+    "background": "rgb(0, 0, 0)",
+    "text": "Allow All",
+    "cls": "",
+    "radius": "2px",
+    "border": "1px solid rgb(0, 0, 0)",
+    "padding": "12px 30px"
+   },
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Seg",
+    "fontSize": "12px",
+    "fontWeight": "700",
+    "lineHeight": "12px",
+    "letterSpacing": "0.96px",
+    "textTransform": "none",
+    "color": "rgb(255, 255, 255)",
+    "background": "rgb(0, 0, 0)",
+    "text": "Apply",
+    "cls": "",
+    "radius": "2px",
+    "border": "1px solid rgb(0, 0, 0)",
+    "padding": "12px 30px"
+   }
+  ],
+  "sections": [
+   {
+    "tag": "MAIN",
+    "cls": "overflow-x-hidden",
+    "top": 39,
+    "h": 6513,
+    "bg": "rgba(0, 0, 0, 0)",
+    "bgImage": ""
+   },
+   {
+    "tag": "DIV",
+    "cls": "pb-10! pt-24!",
+    "top": 39,
+    "h": 856,
+    "bg": "rgba(0, 0, 0, 0)",
+    "bgImage": ""
+   },
+   {
+    "tag": "DIV",
+    "cls": "ClipScrollSection isolate relative w-full bg-white grid-layout-mobile ",
+    "top": 135,
+    "h": 720,
+    "bg": "rgb(255, 255, 255)",
+    "bgImage": ""
+   },
+   {
+    "tag": "SECTION",
+    "cls": "text-black bg-white FullBleedMediaSection rounded-3xl overflow-hidden ",
+    "top": 135,
+    "h": 720,
+    "bg": "rgb(255, 255, 255)",
+    "bgImage": ""
+   },
+   {
+    "tag": "SECTION",
+    "cls": "py-10 md:py-14",
+    "top": 895,
+    "h": 164,
+    "bg": "rgba(0, 0, 0, 0)",
+    "bgImage": ""
+   },
+   {
+    "tag": "SECTION",
+    "cls": "container py-16",
+    "top": 1059,
+    "h": 977,
+    "bg": "rgba(0, 0, 0, 0)",
+    "bgImage": ""
+   },
+   {
+    "tag": "SECTION",
+    "cls": "container py-16",
+    "top": 2036,
+    "h": 693,
+    "bg": "rgba(0, 0, 0, 0)",
+    "bgImage": ""
+   },
+   {
+    "tag": "SECTION",
+    "cls": "container py-16",
+    "top": 2729,
+    "h": 909,
+    "bg": "rgba(0, 0, 0, 0)",
+    "bgImage": ""
+   },
+   {
+    "tag": "SECTION",
+    "cls": "container py-16",
+    "top": 3638,
+    "h": 676,
+    "bg": "rgba(0, 0, 0, 0)",
+    "bgImage": ""
+   },
+   {
+    "tag": "SECTION",
+    "cls": "relative py-16",
+    "top": 4314,
+    "h": 762,
+    "bg": "rgba(0, 0, 0, 0)",
+    "bgImage": ""
+   },
+   {
+    "tag": "SECTION",
+    "cls": "container py-16",
+    "top": 5076,
+    "h": 660,
+    "bg": "rgba(0, 0, 0, 0)",
+    "bgImage": ""
+   },
+   {
+    "tag": "DIV",
+    "cls": "mt-16! pb-8",
+    "top": 5800,
+    "h": 752,
+    "bg": "rgba(0, 0, 0, 0)",
+    "bgImage": ""
+   },
+   {
+    "tag": "DIV",
+    "cls": "ClipScrollSection isolate relative w-full bg-white grid-layout-mobile ",
+    "top": 5800,
+    "h": 720,
+    "bg": "rgb(255, 255, 255)",
+    "bgImage": ""
+   },
+   {
+    "tag": "SECTION",
+    "cls": "text-black bg-white FullBleedMediaSection rounded-3xl overflow-hidden ",
+    "top": 5800,
+    "h": 720,
+    "bg": "rgb(255, 255, 255)",
+    "bgImage": ""
+   },
+   {
+    "tag": "FOOTER",
+    "cls": "flex flex-col gap-12 pt-8 pb-6 text-white bg-black md:gap-32 md:pt-40 ",
+    "top": 6552,
+    "h": 878,
+    "bg": "rgb(0, 0, 0)",
+    "bgImage": ""
+   }
+  ],
+  "containers": {
+   "1472px": 1,
+   "1152px": 2,
+   "1280px": 6,
+   "768px": 6,
+   "1216px": 1,
+   "466px": 1,
+   "368px": 3,
+   "480px": 1,
+   "325px": 1
+  },
+  "topColors": [
+   [
+    "#000000",
+    811
+   ],
+   [
+    "#ffffff",
+    581
+   ],
+   [
+    "#696969",
+    62
+   ],
+   [
+    "#555555",
+    31
+   ],
+   [
+    "#525252",
+    30
+   ],
+   [
+    "#575757",
+    24
+   ],
+   [
+    "#929292",
+    8
+   ],
+   [
+    "#27455c",
+    8
+   ],
+   [
+    "#3860be",
+    6
+   ],
+   [
+    "#e9e9e9",
+    5
+   ],
+   [
+    "#d1aad7",
+    4
+   ],
+   [
+    "#656565",
+    4
+   ],
+   [
+    "#d5e9ff",
+    3
+   ],
+   [
+    "#193a29",
+    2
+   ],
+   [
+    "#010101",
+    2
+   ],
+   [
+    "#212121",
+    2
+   ],
+   [
+    "#d8d8d8",
+    2
+   ],
+   [
+    "#c7c7c7",
+    1
+   ],
+   [
+    "#eaeaea",
+    1
+   ],
+   [
+    "#f5f5f5",
+    1
+   ],
+   [
+    "#ffffff @0.15",
+    1
+   ],
+   [
+    "#000000 @0.7",
+    1
+   ],
+   [
+    "#000000 @0.5",
+    1
+   ],
+   [
+    "#d1d1d1",
+    1
+   ],
+   [
+    "#bbbbbb",
+    1
+   ],
+   [
+    "#f4f4f4",
+    1
+   ]
+  ],
+  "fonts": [
+   "aeonik 400",
+   "aeonik Fallback normal",
+   "mono normal",
+   "mono Fallback normal",
+   "IBMPlexSansVar 100 900",
+   "Neue Montreal 400",
+   "Neue Montreal 500",
+   "Roboto Flex 100 900",
+   "DM Mono 400",
+   "New Forest 500",
+   "Test Manuka 500",
+   "TRJN DaVinci Display 400",
+   "PP Supply Mono 200",
+   "PP Supply Mono 400",
+   "PP Supply Mono 500",
+   "PP Supply Mono 700"
+  ],
+  "gradients": [
+   "linear-gradient(rgba(0, 0, 0, 0) 0%, rgb(0, 0, 0) 100%)",
+   "linear-gradient(to right bottom in oklab, rgb(154, 154, 154) 0%, rgb(26, 26, 26) 50%, rgb(106, 106, 106) 100%)",
+   "linear-gradient(rgb(26, 26, 26) 0%, rgb(26, 26, 26) 100%), linear-gradient(rgba(0, 0, 0, 0) 0%, rgb(10, 10, 10) 100%)"
+  ],
+  "nav": {
+   "fontFamily": "aeonik, \"aeonik Fallback\", ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Seg",
+   "fontSize": "16px",
+   "fontWeight": "400",
+   "lineHeight": "24px",
+   "letterSpacing": "normal",
+   "textTransform": "none",
+   "color": "rgb(0, 0, 0)",
+   "background": "rgba(0, 0, 0, 0)",
+   "text": "Products Solutions Research Resources Log In Book ",
+   "cls": "fixed left-0 right-0 z-50 transition-colors duration-300 top-[var(--announcement",
+   "radius": "0px",
+   "border": "0px solid rgb(0, 0, 0)",
+   "padding": "0px",
+   "position": "fixed",
+   "height": 88,
+   "backdrop": "none"
+  },
+  "videoCount": 0,
+  "canvasCount": 0,
+  "svgCount": 22,
+  "imgSample": [
+   {
+    "src": "https://scale.com/static/img/reskin/headers/automative-data-engine.webp?dpl=dpl_AUbkoinF8sHbKwcuj1FmrHfM3WJQ",
+    "alt": "",
+    "w": 1408,
+    "h": 720
+   },
+   {
+    "src": "https://scale.com/_next/image?url=%2Fstatic%2Fimages%2Flogos%2Fcustomers%2Fvaleo.svg&w=96&q=75&dpl=dpl_AUbkoinF8sHbKwcuj1FmrHfM3WJ",
+    "alt": "Valeo",
+    "w": 92,
+    "h": 40
+   },
+   {
+    "src": "https://scale.com/_next/image?url=%2Fstatic%2Fimages%2Flogos%2Fcustomers%2Foshkosh.svg&w=96&q=75&dpl=dpl_AUbkoinF8sHbKwcuj1FmrHfM3",
+    "alt": "Oshkosh",
+    "w": 96,
+    "h": 32
+   },
+   {
+    "src": "https://scale.com/_next/image?url=%2Fstatic%2Fimages%2Flogos%2Fcustomers%2Fvaleo.svg&w=96&q=75&dpl=dpl_AUbkoinF8sHbKwcuj1FmrHfM3WJ",
+    "alt": "Valeo",
+    "w": 92,
+    "h": 40
+   },
+   {
+    "src": "https://scale.com/_next/image?url=%2Fstatic%2Fimages%2Flogos%2Fcustomers%2Foshkosh.svg&w=96&q=75&dpl=dpl_AUbkoinF8sHbKwcuj1FmrHfM3",
+    "alt": "Oshkosh",
+    "w": 96,
+    "h": 32
+   },
+   {
+    "src": "https://scale.com/_next/image?url=%2Fstatic%2Fimages%2Flogos%2Fcustomers%2Fvaleo.svg&w=96&q=75&dpl=dpl_AUbkoinF8sHbKwcuj1FmrHfM3WJ",
+    "alt": "Valeo",
+    "w": 92,
+    "h": 40
+   },
+   {
+    "src": "https://scale.com/_next/image?url=%2Fstatic%2Fimages%2Flogos%2Fcustomers%2Foshkosh.svg&w=96&q=75&dpl=dpl_AUbkoinF8sHbKwcuj1FmrHfM3",
+    "alt": "Oshkosh",
+    "w": 96,
+    "h": 32
+   },
+   {
+    "src": "https://scale.com/_next/image?url=%2Fstatic%2Fimg%2Freskin%2Fautomotive-data-engine%2F01.png&w=768&q=80&dpl=dpl_AUbkoinF8sHbKwcuj1",
+    "alt": "Automotive Data Engine",
+    "w": 662,
+    "h": 553
+   },
+   {
+    "src": "https://scale.com/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Flidar-iframe-placeholder.3nz9j9ssqpfyi.jpeg&w=768&q=75&dpl=dpl_AUbko",
+    "alt": "",
+    "w": 647,
+    "h": 400
+   },
+   {
+    "src": "https://scale.com/_next/image?url=%2Fstatic%2Fimages%2Fpages%2Fautomotive%2Fimg-base-phase.webp&w=640&q=75&dpl=dpl_AUbkoinF8sHbKwc",
+    "alt": "Base Phase",
+    "w": 379,
+    "h": 252
+   },
+   {
+    "src": "https://scale.com/_next/image?url=%2Fstatic%2Fimages%2Fpages%2Fautomotive%2Fimg-improvement-phase.webp&w=640&q=75&dpl=dpl_AUbkoinF",
+    "alt": "Improvement Phase",
+    "w": 379,
+    "h": 252
+   },
+   {
+    "src": "https://scale.com/_next/image?url=%2Fstatic%2Fimages%2Fpages%2Fautomotive%2Fimg-target-phase.webp&w=640&q=75&dpl=dpl_AUbkoinF8sHbK",
+    "alt": "Target Phase",
+    "w": 379,
+    "h": 252
+   }
+  ]
+ },
+ "tech": {
+  "gsap": false,
+  "ScrollTrigger": false,
+  "THREE": false,
+  "Lenis": true,
+  "next": true,
+  "framerMotion": false,
+  "lottie": false,
+  "rive": false,
+  "spline": false,
+  "webgl": false,
+  "videos": []
+ }
+}

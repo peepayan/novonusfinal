@@ -1,0 +1,841 @@
+{
+ "name": "enterprise",
+ "url": "https://scale.com/enterprise",
+ "finalUrl": "https://scale.com/enterprise",
+ "pageHeight": 15403,
+ "styles": {
+  "title": "Agentic Solutions for Enterprise | Scale AI",
+  "bodyBg": "rgb(255, 255, 255)",
+  "bodyFont": "aeonik, \"aeonik Fallback\", ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Seg",
+  "pageHeight": 15403,
+  "h1": [
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", -apple-system, Arial, sans-serif",
+    "fontSize": "64px",
+    "fontWeight": "400",
+    "lineHeight": "64px",
+    "letterSpacing": "-0.64px",
+    "textTransform": "none",
+    "color": "rgb(0, 0, 0)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "Reliable AI for the decisions your business runs o",
+    "cls": "AnimatedText header2 oml:header4-regular text-balance max-sm:text-[1.75rem] max-",
+    "radius": "0px",
+    "border": "0px solid rgb(0, 0, 0)",
+    "padding": "0px"
+   },
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", -apple-system, Arial, sans-serif",
+    "fontSize": "116px",
+    "fontWeight": "400",
+    "lineHeight": "116px",
+    "letterSpacing": "-1.16px",
+    "textTransform": "none",
+    "color": "rgb(255, 255, 255)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "Reliable AI for the world\u2019s most important decisio",
+    "cls": "col-span-full header1 md:text-[7.25rem] leading-none oml:text-[4rem]",
+    "radius": "0px",
+    "border": "0px solid rgb(255, 255, 255)",
+    "padding": "0px"
+   }
+  ],
+  "h2": [
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", -apple-system, Arial, sans-serif",
+    "fontSize": "40px",
+    "fontWeight": "400",
+    "lineHeight": "44px",
+    "letterSpacing": "-0.4px",
+    "textTransform": "none",
+    "color": "rgb(255, 255, 255)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "Real customers, real results.",
+    "cls": "AnimatedText max-sm:mx-auto mb-[48px] text-inherit xl:mb-16 w-4/5 md:w-full oml:",
+    "radius": "0px",
+    "border": "0px solid rgb(255, 255, 255)",
+    "padding": "0px"
+   },
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", -apple-system, Arial, sans-serif",
+    "fontSize": "40px",
+    "fontWeight": "400",
+    "lineHeight": "44px",
+    "letterSpacing": "-0.4px",
+    "textTransform": "none",
+    "color": "rgb(255, 255, 255)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "93%",
+    "cls": "header2",
+    "radius": "0px",
+    "border": "0px solid rgb(255, 255, 255)",
+    "padding": "0px"
+   },
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", -apple-system, Arial, sans-serif",
+    "fontSize": "40px",
+    "fontWeight": "400",
+    "lineHeight": "44px",
+    "letterSpacing": "-0.4px",
+    "textTransform": "none",
+    "color": "rgb(255, 255, 255)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "$64M+",
+    "cls": "header2",
+    "radius": "0px",
+    "border": "0px solid rgb(255, 255, 255)",
+    "padding": "0px"
+   },
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", -apple-system, Arial, sans-serif",
+    "fontSize": "40px",
+    "fontWeight": "400",
+    "lineHeight": "44px",
+    "letterSpacing": "-0.4px",
+    "textTransform": "none",
+    "color": "rgb(255, 255, 255)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "100%",
+    "cls": "header2",
+    "radius": "0px",
+    "border": "0px solid rgb(255, 255, 255)",
+    "padding": "0px"
+   }
+  ],
+  "h3": [
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", -apple-system, Arial, sans-serif",
+    "fontSize": "40px",
+    "fontWeight": "400",
+    "lineHeight": "50px",
+    "letterSpacing": "-0.4px",
+    "textTransform": "none",
+    "color": "rgb(255, 255, 255)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "Most AI initiatives never make it past pilot.",
+    "cls": "AnimatedText isnt-visible header3-regular pl-[12.5%] pr-[12.5%] [&_.word]:text-s",
+    "radius": "0px",
+    "border": "0px solid rgb(255, 255, 255)",
+    "padding": "0px 174px"
+   },
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", -apple-system, Arial, sans-serif",
+    "fontSize": "40px",
+    "fontWeight": "400",
+    "lineHeight": "50px",
+    "letterSpacing": "-0.4px",
+    "textTransform": "none",
+    "color": "rgb(255, 255, 255)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "We turn models into reliable systems",
+    "cls": "AnimatedText header3-regular pl-[12.5%] pr-[12.5%] [&_.word]:text-shadow-lg [&_.",
+    "radius": "0px",
+    "border": "0px solid rgb(255, 255, 255)",
+    "padding": "0px 174px"
+   },
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", -apple-system, Arial, sans-serif",
+    "fontSize": "32px",
+    "fontWeight": "400",
+    "lineHeight": "40px",
+    "letterSpacing": "-0.96px",
+    "textTransform": "none",
+    "color": "rgb(255, 255, 255)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "Scale bridges the gap between AI models & business",
+    "cls": "AnimatedText text-center md:text-left header4-regular leading-7 md:leading-10 te",
+    "radius": "0px",
+    "border": "0px solid rgb(255, 255, 255)",
+    "padding": "0px"
+   },
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", -apple-system, Arial, sans-serif",
+    "fontSize": "40px",
+    "fontWeight": "400",
+    "lineHeight": "50px",
+    "letterSpacing": "-0.4px",
+    "textTransform": "none",
+    "color": "rgb(0, 0, 0)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "Your experts, amplified. Your limits, redefined.",
+    "cls": "AnimatedText header3-regular is-visible",
+    "radius": "0px",
+    "border": "0px solid rgb(0, 0, 0)",
+    "padding": "0px"
+   }
+  ],
+  "h4": [
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", -apple-system, Arial, sans-serif",
+    "fontSize": "32px",
+    "fontWeight": "400",
+    "lineHeight": "36px",
+    "letterSpacing": "-0.96px",
+    "textTransform": "none",
+    "color": "rgb(0, 0, 0)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "Everyone is using AI. But only",
+    "cls": "header4-regular leading-9",
+    "radius": "0px",
+    "border": "0px solid rgb(0, 0, 0)",
+    "padding": "0px"
+   },
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", -apple-system, Arial, sans-serif",
+    "fontSize": "32px",
+    "fontWeight": "400",
+    "lineHeight": "36px",
+    "letterSpacing": "-0.96px",
+    "textTransform": "none",
+    "color": "rgb(0, 0, 0)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "Scale makes it uniquely yours.",
+    "cls": "header4-regular leading-9",
+    "radius": "0px",
+    "border": "0px solid rgb(0, 0, 0)",
+    "padding": "0px"
+   }
+  ],
+  "p": [
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", -apple-system, Arial, sans-serif",
+    "fontSize": "16px",
+    "fontWeight": "400",
+    "lineHeight": "24px",
+    "letterSpacing": "-0.16px",
+    "textTransform": "none",
+    "color": "rgb(0, 0, 0)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "Enterprises trust Scale to build, deploy and",
+    "cls": "",
+    "radius": "0px",
+    "border": "0px solid rgb(0, 0, 0)",
+    "padding": "0px"
+   },
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", -apple-system, Arial, sans-serif",
+    "fontSize": "16px",
+    "fontWeight": "400",
+    "lineHeight": "24px",
+    "letterSpacing": "-0.16px",
+    "textTransform": "none",
+    "color": "rgb(0, 0, 0)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "operate AI systems that perform in production.",
+    "cls": "",
+    "radius": "0px",
+    "border": "0px solid rgb(0, 0, 0)",
+    "padding": "0px"
+   },
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", -apple-system, Arial, sans-serif",
+    "fontSize": "14px",
+    "fontWeight": "500",
+    "lineHeight": "21px",
+    "letterSpacing": "0.35px",
+    "textTransform": "none",
+    "color": "rgb(0, 0, 0)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "Scroll to explore",
+    "cls": "AnimatedText hidden font-medium tracking-wide body3 md:block is-visible",
+    "radius": "0px",
+    "border": "0px solid rgb(0, 0, 0)",
+    "padding": "0px"
+   },
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", -apple-system, Arial, sans-serif",
+    "fontSize": "40px",
+    "fontWeight": "400",
+    "lineHeight": "50px",
+    "letterSpacing": "-0.4px",
+    "textTransform": "none",
+    "color": "rgb(114, 206, 123)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "Most AI initiatives never make it past pilot.",
+    "cls": "",
+    "radius": "0px",
+    "border": "0px solid rgb(114, 206, 123)",
+    "padding": "0px"
+   }
+  ],
+  "eyebrows": [
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", -apple-system, Arial, sans-serif",
+    "fontSize": "12px",
+    "fontWeight": "400",
+    "lineHeight": "18px",
+    "letterSpacing": "0.6px",
+    "textTransform": "uppercase",
+    "color": "lab(100 -0.0000298023 0.0000119209 / 0.8)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "TRUSTED BY",
+    "cls": "text-[0.625rem] md:text-xs font-aeonik tracking-wider uppercase text-white/80",
+    "radius": "0px",
+    "border": "0px solid lab(100 -0.0000298023 0.0000119209 / 0.8)",
+    "padding": "0px"
+   },
+   {
+    "fontFamily": "mono, \"mono Fallback\", -apple-system, Arial, sans-serif",
+    "fontSize": "11px",
+    "fontWeight": "400",
+    "lineHeight": "11px",
+    "letterSpacing": "0.55px",
+    "textTransform": "uppercase",
+    "color": "rgb(255, 255, 255)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "ENTERPRISE",
+    "cls": "flex min-h-[26px] min-w-0 flex-1 items-center self-center truncate detail-mono t",
+    "radius": "0px",
+    "border": "0px solid rgb(255, 255, 255)",
+    "padding": "0px"
+   },
+   {
+    "fontFamily": "mono, \"mono Fallback\", -apple-system, Arial, sans-serif",
+    "fontSize": "11px",
+    "fontWeight": "400",
+    "lineHeight": "11px",
+    "letterSpacing": "0.55px",
+    "textTransform": "uppercase",
+    "color": "rgb(255, 255, 255)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "RESEARCH",
+    "cls": "flex min-h-[26px] min-w-0 flex-1 items-center self-center truncate detail-mono t",
+    "radius": "0px",
+    "border": "0px solid rgb(255, 255, 255)",
+    "padding": "0px"
+   },
+   {
+    "fontFamily": "mono, \"mono Fallback\", -apple-system, Arial, sans-serif",
+    "fontSize": "11px",
+    "fontWeight": "400",
+    "lineHeight": "11px",
+    "letterSpacing": "0.55px",
+    "textTransform": "uppercase",
+    "color": "rgb(255, 255, 255)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "COMPANY",
+    "cls": "flex min-h-[26px] min-w-0 flex-1 items-center self-center truncate detail-mono t",
+    "radius": "0px",
+    "border": "0px solid rgb(255, 255, 255)",
+    "padding": "0px"
+   },
+   {
+    "fontFamily": "mono, \"mono Fallback\", -apple-system, Arial, sans-serif",
+    "fontSize": "11px",
+    "fontWeight": "400",
+    "lineHeight": "11px",
+    "letterSpacing": "0.55px",
+    "textTransform": "uppercase",
+    "color": "rgb(255, 255, 255)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "ENTERPRISE",
+    "cls": "flex min-h-[26px] min-w-0 flex-1 items-center self-center truncate detail-mono t",
+    "radius": "0px",
+    "border": "0px solid rgb(255, 255, 255)",
+    "padding": "0px"
+   },
+   {
+    "fontFamily": "mono, \"mono Fallback\", -apple-system, Arial, sans-serif",
+    "fontSize": "11px",
+    "fontWeight": "400",
+    "lineHeight": "11px",
+    "letterSpacing": "0.55px",
+    "textTransform": "uppercase",
+    "color": "rgb(255, 255, 255)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "HEALTHCARE",
+    "cls": "flex min-h-[26px] min-w-0 flex-1 items-center self-center truncate detail-mono t",
+    "radius": "0px",
+    "border": "0px solid rgb(255, 255, 255)",
+    "padding": "0px"
+   }
+  ],
+  "buttons": [
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Seg",
+    "fontSize": "16px",
+    "fontWeight": "400",
+    "lineHeight": "24px",
+    "letterSpacing": "normal",
+    "textTransform": "none",
+    "color": "rgb(0, 0, 0)",
+    "background": "rgb(234, 234, 234)",
+    "text": "Book demo",
+    "cls": "CMSLink focus:outline-1 relative focus:outline-scale-skyblue w-max group/link Fl",
+    "radius": "6px",
+    "border": "0px solid rgba(0, 0, 0, 0)",
+    "padding": "0px 24px"
+   },
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", \"system-ui\", -apple-system, Arial, \"sans-serif\"",
+    "fontSize": "14px",
+    "fontWeight": "400",
+    "lineHeight": "24px",
+    "letterSpacing": "0.14px",
+    "textTransform": "none",
+    "color": "rgb(255, 255, 255)",
+    "background": "rgba(255, 255, 255, 0.2)",
+    "text": "Cookie Preferences",
+    "cls": "",
+    "radius": "8px",
+    "border": "0px none rgb(255, 255, 255)",
+    "padding": "4px 12px"
+   },
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", \"system-ui\", -apple-system, Arial, \"sans-serif\"",
+    "fontSize": "14px",
+    "fontWeight": "400",
+    "lineHeight": "24px",
+    "letterSpacing": "0.14px",
+    "textTransform": "none",
+    "color": "rgb(255, 255, 255)",
+    "background": "rgba(255, 255, 255, 0.2)",
+    "text": "Reject Cookies",
+    "cls": "",
+    "radius": "8px",
+    "border": "0px none rgb(255, 255, 255)",
+    "padding": "4px 12px"
+   },
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", \"system-ui\", -apple-system, Arial, \"sans-serif\"",
+    "fontSize": "14px",
+    "fontWeight": "400",
+    "lineHeight": "24px",
+    "letterSpacing": "0.14px",
+    "textTransform": "none",
+    "color": "rgb(0, 0, 0)",
+    "background": "rgb(255, 255, 255)",
+    "text": "Accept Cookies",
+    "cls": "",
+    "radius": "8px",
+    "border": "0px none rgb(0, 0, 0)",
+    "padding": "4px 28px 4px 12px"
+   },
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Seg",
+    "fontSize": "12px",
+    "fontWeight": "700",
+    "lineHeight": "12px",
+    "letterSpacing": "0.96px",
+    "textTransform": "none",
+    "color": "rgb(255, 255, 255)",
+    "background": "rgb(0, 0, 0)",
+    "text": "Allow All",
+    "cls": "",
+    "radius": "2px",
+    "border": "1px solid rgb(0, 0, 0)",
+    "padding": "12px 30px"
+   },
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Seg",
+    "fontSize": "12px",
+    "fontWeight": "700",
+    "lineHeight": "12px",
+    "letterSpacing": "0.96px",
+    "textTransform": "none",
+    "color": "rgb(255, 255, 255)",
+    "background": "rgb(0, 0, 0)",
+    "text": "Apply",
+    "cls": "",
+    "radius": "2px",
+    "border": "1px solid rgb(0, 0, 0)",
+    "padding": "12px 30px"
+   },
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Seg",
+    "fontSize": "12px",
+    "fontWeight": "700",
+    "lineHeight": "12px",
+    "letterSpacing": "0.96px",
+    "textTransform": "none",
+    "color": "rgb(255, 255, 255)",
+    "background": "rgb(0, 0, 0)",
+    "text": "Cancel",
+    "cls": "",
+    "radius": "2px",
+    "border": "1px solid rgb(0, 0, 0)",
+    "padding": "12px 30px"
+   },
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Seg",
+    "fontSize": "12px",
+    "fontWeight": "700",
+    "lineHeight": "12px",
+    "letterSpacing": "0.96px",
+    "textTransform": "none",
+    "color": "rgb(255, 255, 255)",
+    "background": "rgb(0, 0, 0)",
+    "text": "Confirm My Choices",
+    "cls": "save-preference-btn-handler onetrust-close-btn-handler",
+    "radius": "2px",
+    "border": "1px solid rgb(0, 0, 0)",
+    "padding": "12px 30px"
+   }
+  ],
+  "sections": [
+   {
+    "tag": "DIV",
+    "cls": "relative overflow-x-hidden",
+    "top": 39,
+    "h": 14486,
+    "bg": "rgba(0, 0, 0, 0)",
+    "bgImage": ""
+   },
+   {
+    "tag": "DIV",
+    "cls": "CMSSliceRenderer relative rootPageRenderer",
+    "top": 39,
+    "h": 14486,
+    "bg": "rgba(0, 0, 0, 0)",
+    "bgImage": ""
+   },
+   {
+    "tag": "SECTION",
+    "cls": "w-full h-full px-4 pt-0 pb-4 bg-white BlogPreview3D md:pt-16 md:pb-40",
+    "top": 5785,
+    "h": 786,
+    "bg": "rgb(255, 255, 255)",
+    "bgImage": ""
+   },
+   {
+    "tag": "SECTION",
+    "cls": "CardGrid [&_.Card]:max-xl:!rounded-[8px] [&_.Card>div]:max-xl:!p-[24px",
+    "top": 7381,
+    "h": 852,
+    "bg": "rgba(0, 0, 0, 0)",
+    "bgImage": ""
+   },
+   {
+    "tag": "SECTION",
+    "cls": "TwoColumnTextWithVideo relative bg-white text-black TwoColumnTextWithV",
+    "top": 9067,
+    "h": 1058,
+    "bg": "rgb(255, 255, 255)",
+    "bgImage": ""
+   },
+   {
+    "tag": "SECTION",
+    "cls": "EnterprisePillars py-24 oml:py-10 bg-white text-black",
+    "top": 10125,
+    "h": 894,
+    "bg": "rgb(255, 255, 255)",
+    "bgImage": ""
+   },
+   {
+    "tag": "SECTION",
+    "cls": "EnterprisePoweredBy bg-scale-gray-90 text-black py-16 md:py-24 oml:py-",
+    "top": 11019,
+    "h": 1334,
+    "bg": "rgb(234, 234, 234)",
+    "bgImage": ""
+   },
+   {
+    "tag": "SECTION",
+    "cls": "EnterpriseBuiltToBeTrusted bg-white text-black pt-16",
+    "top": 12353,
+    "h": 1356,
+    "bg": "rgb(255, 255, 255)",
+    "bgImage": ""
+   },
+   {
+    "tag": "SECTION",
+    "cls": "text-black bg-white FullBleedMediaSection rounded-3xl overflow-hidden ",
+    "top": 13774,
+    "h": 720,
+    "bg": "rgb(255, 255, 255)",
+    "bgImage": ""
+   },
+   {
+    "tag": "FOOTER",
+    "cls": "flex flex-col gap-12 pt-8 pb-6 text-white bg-black md:gap-32 md:pt-40 ",
+    "top": 14526,
+    "h": 878,
+    "bg": "rgb(0, 0, 0)",
+    "bgImage": ""
+   }
+  ],
+  "containers": {
+   "1472px": 1,
+   "1440px": 2,
+   "1920px": 1,
+   "896px": 1,
+   "1152px": 1,
+   "1216px": 1,
+   "480px": 1,
+   "325px": 1
+  },
+  "topColors": [
+   [
+    "#000000",
+    1826
+   ],
+   [
+    "#ffffff",
+    1046
+   ],
+   [
+    "#72ce7b",
+    382
+   ],
+   [
+    "#212121",
+    158
+   ],
+   [
+    "#929292",
+    96
+   ],
+   [
+    "#c7c7c7",
+    77
+   ],
+   [
+    "#839cb2",
+    75
+   ],
+   [
+    "#010101",
+    64
+   ],
+   [
+    "#696969",
+    62
+   ],
+   [
+    "#555555",
+    33
+   ],
+   [
+    "#575757",
+    25
+   ],
+   [
+    "#525252",
+    11
+   ],
+   [
+    "#eaeaea",
+    9
+   ],
+   [
+    "#193a29",
+    8
+   ],
+   [
+    "#27455c",
+    8
+   ],
+   [
+    "#3860be",
+    6
+   ],
+   [
+    "#e9e9e9",
+    5
+   ],
+   [
+    "#656565",
+    4
+   ],
+   [
+    "#eaeaea @0.2",
+    3
+   ],
+   [
+    "#f2f2f2",
+    3
+   ],
+   [
+    "#d5e9ff",
+    3
+   ],
+   [
+    "#a8927c",
+    2
+   ],
+   [
+    "#ffffff @0.2",
+    2
+   ],
+   [
+    "#d8d8d8",
+    2
+   ],
+   [
+    "#f5f5f5",
+    1
+   ],
+   [
+    "#a78955",
+    1
+   ],
+   [
+    "#a37757",
+    1
+   ],
+   [
+    "#548ca4",
+    1
+   ]
+  ],
+  "fonts": [
+   "aeonik 400",
+   "aeonik Fallback normal",
+   "mono normal",
+   "mono Fallback normal",
+   "IBMPlexSansVar 100 900",
+   "Neue Montreal 400",
+   "Neue Montreal 500",
+   "Roboto Flex 100 900",
+   "DM Mono 400",
+   "New Forest 500",
+   "Test Manuka 500",
+   "TRJN DaVinci Display 400",
+   "PP Supply Mono 200",
+   "PP Supply Mono 400",
+   "PP Supply Mono 500",
+   "PP Supply Mono 700"
+  ],
+  "gradients": [
+   "linear-gradient(rgba(0, 0, 0, 0) 45.1%, rgba(0, 0, 0, 0.6) 100%)",
+   "linear-gradient(rgba(0, 0, 0, 0) 0%, rgb(0, 0, 0) 100%)"
+  ],
+  "nav": {
+   "fontFamily": "aeonik, \"aeonik Fallback\", ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Seg",
+   "fontSize": "16px",
+   "fontWeight": "400",
+   "lineHeight": "24px",
+   "letterSpacing": "normal",
+   "textTransform": "none",
+   "color": "rgb(0, 0, 0)",
+   "background": "rgba(0, 0, 0, 0)",
+   "text": "Products Solutions Research Resources Log In Book ",
+   "cls": "fixed left-0 right-0 z-50 transition-colors duration-300 top-[var(--announcement",
+   "radius": "0px",
+   "border": "0px solid rgb(0, 0, 0)",
+   "padding": "0px",
+   "position": "fixed",
+   "height": 88,
+   "backdrop": "none"
+  },
+  "videoCount": 4,
+  "canvasCount": 2,
+  "svgCount": 59,
+  "imgSample": [
+   {
+    "src": "https://cdn.sanity.io/images/50zba0eo/production/f07cc59697da46d30258fc3aca7785e9e9b76de9-3000x2000.jpg?w=1920&auto=format&width=1",
+    "alt": "",
+    "w": 156,
+    "h": 156
+   },
+   {
+    "src": "https://cdn.sanity.io/images/50zba0eo/production/fe78dbb9f90a7b701474fcfdae6ce552480326cf-4500x3000.jpg?w=1920&auto=format&width=1",
+    "alt": "",
+    "w": 102,
+    "h": 102
+   },
+   {
+    "src": "https://cdn.sanity.io/images/50zba0eo/production/035e9f70e7fd4a85fd4f8ce35bcdb3b4a90c7a44-6000x4000.jpg?w=1920&auto=format&width=1",
+    "alt": "",
+    "w": 134,
+    "h": 134
+   },
+   {
+    "src": "https://cdn.sanity.io/images/50zba0eo/production/a05938430cbd6eaabd3ad921bd3ce1c99c8f739b-3840x2160.jpg?w=1920&auto=format&width=1",
+    "alt": "",
+    "w": 108,
+    "h": 108
+   },
+   {
+    "src": "https://cdn.sanity.io/images/50zba0eo/production/4dc45ff15f8319ec0c51dadac757a2ffc1c058bd-3992x2992.jpg?w=1920&auto=format&width=1",
+    "alt": "",
+    "w": 123,
+    "h": 123
+   },
+   {
+    "src": "https://cdn.sanity.io/images/50zba0eo/production/ef1610f302e3b4a9e097a10f8a0883f2c11e1fb0-3872x2592.jpg?w=1920&auto=format&width=1",
+    "alt": "",
+    "w": 158,
+    "h": 158
+   },
+   {
+    "src": "https://cdn.sanity.io/images/50zba0eo/production/c97cd3419b4b42e04914b425011caf04da2c01ca-3456x1940.png?w=1920&auto=format&width=1",
+    "alt": "",
+    "w": 108,
+    "h": 108
+   },
+   {
+    "src": "https://cdn.sanity.io/images/50zba0eo/production/3e1cd1673e46fee8fbd142f658dd6d17b21be408-298x148.svg?w=140&h=56&fm=png&crop=cente",
+    "alt": "",
+    "w": 57,
+    "h": 28
+   },
+   {
+    "src": "https://cdn.sanity.io/images/50zba0eo/production/c47da44df5fdfa654b9c02be759434e29b8c5051-728x800.png?w=140&h=56&fm=png&crop=cente",
+    "alt": "",
+    "w": 26,
+    "h": 28
+   },
+   {
+    "src": "https://cdn.sanity.io/images/50zba0eo/production/8ee4b8bc14e6ce4d1d8190ffb61f326e4657153f-59x64.svg?w=140&h=56&fm=png&crop=center",
+    "alt": "",
+    "w": 26,
+    "h": 28
+   },
+   {
+    "src": "https://cdn.sanity.io/images/50zba0eo/production/867c11d8e5b89db69cc3c013c6b1b392d45a9624-145x36.svg?w=140&h=56&fm=png&crop=center",
+    "alt": "",
+    "w": 70,
+    "h": 18
+   },
+   {
+    "src": "https://cdn.sanity.io/images/50zba0eo/production/3ec903da806f7a97913a0986dc16abf99f735a49-728x800.png?w=140&h=56&fm=png&crop=cente",
+    "alt": "",
+    "w": 26,
+    "h": 28
+   }
+  ]
+ },
+ "tech": {
+  "gsap": false,
+  "ScrollTrigger": false,
+  "THREE": false,
+  "Lenis": true,
+  "next": true,
+  "framerMotion": false,
+  "lottie": false,
+  "rive": false,
+  "spline": false,
+  "webgl": true,
+  "videos": [
+   {
+    "src": "https://cdn.sanity.io/files/50zba0eo/production/4332b6ccc19e48ac472e3dae267a2b29eb2ff009.webm",
+    "auto": false,
+    "loop": true,
+    "muted": true,
+    "poster": "https://cdn.sanity.io/images/50zba0eo/production/6442a1568a3ef5a2949da53e6ac29b1ad064c4b8-1080x1080."
+   },
+   {
+    "src": "https://cdn.sanity.io/files/50zba0eo/production/75dfdbb0f9dc1c6ca473108db7cb1cf52e31dfc8.mp4",
+    "auto": true,
+    "loop": true,
+    "muted": true,
+    "poster": ""
+   },
+   {
+    "src": "https://cdn.sanity.io/files/50zba0eo/production/281930b6df9c0938f41b0b067a71f98ad7104bcd.mp4",
+    "auto": true,
+    "loop": true,
+    "muted": true,
+    "poster": ""
+   },
+   {
+    "src": "https://scale.com/static/assets/videos/Istock-1433448278.mp4",
+    "auto": true,
+    "loop": true,
+    "muted": true,
+    "poster": ""
+   }
+  ]
+ }
+}

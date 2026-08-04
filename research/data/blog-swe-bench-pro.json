@@ -1,0 +1,646 @@
+{
+ "name": "blog-swe-bench-pro",
+ "url": "https://scale.com/blog/swe-bench-pro",
+ "finalUrl": "https://scale.com/blog/swe-bench-pro",
+ "pageHeight": 8383,
+ "styles": {
+  "title": "SWE-Bench Pro: Raising the Bar for Agentic Coding | Scale AI",
+  "bodyBg": "rgb(255, 255, 255)",
+  "bodyFont": "aeonik, \"aeonik Fallback\", ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Seg",
+  "pageHeight": 8189,
+  "h1": [
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", -apple-system, Arial, sans-serif",
+    "fontSize": "64px",
+    "fontWeight": "400",
+    "lineHeight": "80px",
+    "letterSpacing": "-0.64px",
+    "textTransform": "none",
+    "color": "rgb(0, 0, 0)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "SWE-Bench Pro: Raising the Bar for Agentic Coding",
+    "cls": "header2 text-black text-balance leading-tight",
+    "radius": "0px",
+    "border": "0px solid rgb(0, 0, 0)",
+    "padding": "0px"
+   },
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", -apple-system, Arial, sans-serif",
+    "fontSize": "116px",
+    "fontWeight": "400",
+    "lineHeight": "116px",
+    "letterSpacing": "-1.16px",
+    "textTransform": "none",
+    "color": "rgb(255, 255, 255)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "Reliable AI for the world\u2019s most important decisio",
+    "cls": "col-span-full header1 md:text-[7.25rem] leading-none oml:text-[4rem]",
+    "radius": "0px",
+    "border": "0px solid rgb(255, 255, 255)",
+    "padding": "0px"
+   }
+  ],
+  "h2": [
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", -apple-system, Arial, sans-serif",
+    "fontSize": "24px",
+    "fontWeight": "600",
+    "lineHeight": "31.9999px",
+    "letterSpacing": "-0.24px",
+    "textTransform": "none",
+    "color": "rgb(16, 16, 16)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "A Benchmark to Meet Today\u2019s Coding Needs",
+    "cls": "text-2xl md:text-3xl font-aeonik font-semibold text-black w-full max-w-[624px] m",
+    "radius": "0px",
+    "border": "0px solid rgb(16, 16, 16)",
+    "padding": "0px"
+   },
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", -apple-system, Arial, sans-serif",
+    "fontSize": "24px",
+    "fontWeight": "600",
+    "lineHeight": "31.9999px",
+    "letterSpacing": "-0.24px",
+    "textTransform": "none",
+    "color": "rgb(16, 16, 16)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "Results: SWE-Bench Verified vs. SWE-Bench Pro",
+    "cls": "text-2xl md:text-3xl font-aeonik font-semibold text-black w-full max-w-[624px] m",
+    "radius": "0px",
+    "border": "0px solid rgb(16, 16, 16)",
+    "padding": "0px"
+   },
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", -apple-system, Arial, sans-serif",
+    "fontSize": "24px",
+    "fontWeight": "600",
+    "lineHeight": "31.9999px",
+    "letterSpacing": "-0.24px",
+    "textTransform": "none",
+    "color": "rgb(16, 16, 16)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "What SWE-Bench Pro Results Mean",
+    "cls": "text-2xl md:text-3xl font-aeonik font-semibold text-black w-full max-w-[624px] m",
+    "radius": "0px",
+    "border": "0px solid rgb(16, 16, 16)",
+    "padding": "0px"
+   },
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", -apple-system, Arial, sans-serif",
+    "fontSize": "24px",
+    "fontWeight": "600",
+    "lineHeight": "31.9999px",
+    "letterSpacing": "-0.24px",
+    "textTransform": "none",
+    "color": "rgb(16, 16, 16)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "Learn More",
+    "cls": "text-2xl md:text-3xl font-aeonik font-semibold text-black w-full max-w-[624px] m",
+    "radius": "0px",
+    "border": "0px solid rgb(16, 16, 16)",
+    "padding": "0px"
+   }
+  ],
+  "h3": [
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Seg",
+    "fontSize": "18px",
+    "fontWeight": "700",
+    "lineHeight": "21.6px",
+    "letterSpacing": "normal",
+    "textTransform": "none",
+    "color": "rgb(105, 105, 105)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "Manage Consent Preferences",
+    "cls": "",
+    "radius": "0px",
+    "border": "0px none rgb(105, 105, 105)",
+    "padding": "0px 0px 10px"
+   },
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Seg",
+    "fontSize": "16px",
+    "fontWeight": "700",
+    "lineHeight": "20.8px",
+    "letterSpacing": "normal",
+    "textTransform": "none",
+    "color": "rgb(105, 105, 105)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "Back",
+    "cls": "",
+    "radius": "0px",
+    "border": "0px none rgb(105, 105, 105)",
+    "padding": "0px"
+   },
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Seg",
+    "fontSize": "12.96px",
+    "fontWeight": "700",
+    "lineHeight": "18.144px",
+    "letterSpacing": "normal",
+    "textTransform": "none",
+    "color": "rgb(105, 105, 105)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "",
+    "cls": "ot-host-name",
+    "radius": "0px",
+    "border": "0px none rgb(105, 105, 105)",
+    "padding": "0px"
+   }
+  ],
+  "h4": [
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Seg",
+    "fontSize": "14.08px",
+    "fontWeight": "700",
+    "lineHeight": "19.712px",
+    "letterSpacing": "normal",
+    "textTransform": "none",
+    "color": "rgb(105, 105, 105)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "Strictly Necessary Cookies",
+    "cls": "ot-cat-header",
+    "radius": "0px",
+    "border": "0px none rgb(105, 105, 105)",
+    "padding": "0px"
+   },
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Seg",
+    "fontSize": "14.08px",
+    "fontWeight": "700",
+    "lineHeight": "19.712px",
+    "letterSpacing": "normal",
+    "textTransform": "none",
+    "color": "rgb(105, 105, 105)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "Performance Cookies",
+    "cls": "ot-cat-header",
+    "radius": "0px",
+    "border": "0px none rgb(105, 105, 105)",
+    "padding": "0px"
+   }
+  ],
+  "p": [
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", -apple-system, Arial, sans-serif",
+    "fontSize": "16px",
+    "fontWeight": "400",
+    "lineHeight": "26px",
+    "letterSpacing": "-0.16px",
+    "textTransform": "none",
+    "color": "lab(0 0 0 / 0.7)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "AI agents for software engineering are rapidly adv",
+    "cls": "max-w-[624px] w-full text-black/70 leading-relaxed mx-auto",
+    "radius": "0px",
+    "border": "0px solid lab(0 0 0 / 0.7)",
+    "padding": "0px"
+   },
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", -apple-system, Arial, sans-serif",
+    "fontSize": "16px",
+    "fontWeight": "400",
+    "lineHeight": "26px",
+    "letterSpacing": "-0.16px",
+    "textTransform": "none",
+    "color": "lab(0 0 0 / 0.7)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "SWE-Bench Pro was designed to accurately measure t",
+    "cls": "max-w-[624px] w-full text-black/70 leading-relaxed mx-auto",
+    "radius": "0px",
+    "border": "0px solid lab(0 0 0 / 0.7)",
+    "padding": "0px"
+   },
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", -apple-system, Arial, sans-serif",
+    "fontSize": "16px",
+    "fontWeight": "400",
+    "lineHeight": "26px",
+    "letterSpacing": "-0.16px",
+    "textTransform": "none",
+    "color": "lab(0 0 0 / 0.7)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "SWE-Bench Pro solves several key challenges in eva",
+    "cls": "max-w-[624px] w-full text-black/70 leading-relaxed mx-auto",
+    "radius": "0px",
+    "border": "0px solid lab(0 0 0 / 0.7)",
+    "padding": "0px"
+   },
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", -apple-system, Arial, sans-serif",
+    "fontSize": "16px",
+    "fontWeight": "400",
+    "lineHeight": "26px",
+    "letterSpacing": "-0.16px",
+    "textTransform": "none",
+    "color": "lab(0 0 0 / 0.7)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "",
+    "cls": "max-w-[624px] w-full text-black/70 leading-relaxed mx-auto",
+    "radius": "0px",
+    "border": "0px solid lab(0 0 0 / 0.7)",
+    "padding": "0px"
+   }
+  ],
+  "eyebrows": [
+   {
+    "fontFamily": "mono, \"mono Fallback\", -apple-system, Arial, sans-serif",
+    "fontSize": "11px",
+    "fontWeight": "400",
+    "lineHeight": "11px",
+    "letterSpacing": "0.55px",
+    "textTransform": "uppercase",
+    "color": "rgb(0, 0, 0)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "TESTING & EVALS",
+    "cls": "flex min-h-[26px] min-w-0 flex-1 items-center self-center truncate detail-mono t",
+    "radius": "0px",
+    "border": "0px solid rgb(0, 0, 0)",
+    "padding": "0px"
+   }
+  ],
+  "buttons": [
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Seg",
+    "fontSize": "16px",
+    "fontWeight": "400",
+    "lineHeight": "24px",
+    "letterSpacing": "normal",
+    "textTransform": "none",
+    "color": "rgb(0, 0, 0)",
+    "background": "rgb(234, 234, 234)",
+    "text": "Book demo",
+    "cls": "CMSLink focus:outline-1 relative focus:outline-scale-skyblue w-max group/link Fl",
+    "radius": "6px",
+    "border": "0px solid rgba(0, 0, 0, 0)",
+    "padding": "0px 24px"
+   },
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Seg",
+    "fontSize": "12px",
+    "fontWeight": "700",
+    "lineHeight": "12px",
+    "letterSpacing": "0.96px",
+    "textTransform": "none",
+    "color": "rgb(255, 255, 255)",
+    "background": "rgb(0, 0, 0)",
+    "text": "Allow All",
+    "cls": "",
+    "radius": "2px",
+    "border": "1px solid rgb(0, 0, 0)",
+    "padding": "12px 30px"
+   },
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Seg",
+    "fontSize": "12px",
+    "fontWeight": "700",
+    "lineHeight": "12px",
+    "letterSpacing": "0.96px",
+    "textTransform": "none",
+    "color": "rgb(255, 255, 255)",
+    "background": "rgb(0, 0, 0)",
+    "text": "Apply",
+    "cls": "",
+    "radius": "2px",
+    "border": "1px solid rgb(0, 0, 0)",
+    "padding": "12px 30px"
+   },
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Seg",
+    "fontSize": "12px",
+    "fontWeight": "700",
+    "lineHeight": "12px",
+    "letterSpacing": "0.96px",
+    "textTransform": "none",
+    "color": "rgb(255, 255, 255)",
+    "background": "rgb(0, 0, 0)",
+    "text": "Cancel",
+    "cls": "",
+    "radius": "2px",
+    "border": "1px solid rgb(0, 0, 0)",
+    "padding": "12px 30px"
+   },
+   {
+    "fontFamily": "aeonik, \"aeonik Fallback\", ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Seg",
+    "fontSize": "12px",
+    "fontWeight": "700",
+    "lineHeight": "12px",
+    "letterSpacing": "0.96px",
+    "textTransform": "none",
+    "color": "rgb(255, 255, 255)",
+    "background": "rgb(0, 0, 0)",
+    "text": "Confirm My Choices",
+    "cls": "save-preference-btn-handler onetrust-close-btn-handler",
+    "radius": "2px",
+    "border": "1px solid rgb(0, 0, 0)",
+    "padding": "12px 30px"
+   }
+  ],
+  "sections": [
+   {
+    "tag": "DIV",
+    "cls": "pt-14 md:pt-20",
+    "top": 39,
+    "h": 1071,
+    "bg": "rgba(0, 0, 0, 0)",
+    "bgImage": ""
+   },
+   {
+    "tag": "DIV",
+    "cls": "bg-white py-3 md:py-4 flex flex-col",
+    "top": 119,
+    "h": 991,
+    "bg": "rgb(255, 255, 255)",
+    "bgImage": ""
+   },
+   {
+    "tag": "DIV",
+    "cls": "bg-white",
+    "top": 1110,
+    "h": 5450,
+    "bg": "rgb(255, 255, 255)",
+    "bgImage": ""
+   },
+   {
+    "tag": "DIV",
+    "cls": "w-full",
+    "top": 1110,
+    "h": 5450,
+    "bg": "rgba(0, 0, 0, 0)",
+    "bgImage": ""
+   },
+   {
+    "tag": "DIV",
+    "cls": "pb-8",
+    "top": 6560,
+    "h": 752,
+    "bg": "rgba(0, 0, 0, 0)",
+    "bgImage": ""
+   },
+   {
+    "tag": "DIV",
+    "cls": "ClipScrollSection isolate relative w-full bg-white grid-layout-mobile ",
+    "top": 6560,
+    "h": 720,
+    "bg": "rgb(255, 255, 255)",
+    "bgImage": ""
+   },
+   {
+    "tag": "SECTION",
+    "cls": "text-black bg-white FullBleedMediaSection rounded-3xl overflow-hidden ",
+    "top": 6560,
+    "h": 720,
+    "bg": "rgb(255, 255, 255)",
+    "bgImage": ""
+   },
+   {
+    "tag": "FOOTER",
+    "cls": "flex flex-col gap-12 pt-8 pb-6 text-white bg-black md:gap-32 md:pt-40 ",
+    "top": 7312,
+    "h": 878,
+    "bg": "rgb(0, 0, 0)",
+    "bgImage": ""
+   }
+  ],
+  "containers": {
+   "1472px": 1,
+   "1200px": 2,
+   "860px": 1,
+   "1152px": 1,
+   "480px": 1,
+   "325px": 1
+  },
+  "topColors": [
+   [
+    "#ffffff",
+    539
+   ],
+   [
+    "#000000",
+    482
+   ],
+   [
+    "#696969",
+    62
+   ],
+   [
+    "#555555",
+    31
+   ],
+   [
+    "#101010",
+    28
+   ],
+   [
+    "#575757",
+    24
+   ],
+   [
+    "#929292",
+    16
+   ],
+   [
+    "#79648c",
+    10
+   ],
+   [
+    "#27455c",
+    8
+   ],
+   [
+    "#3860be",
+    6
+   ],
+   [
+    "#e9e9e9",
+    5
+   ],
+   [
+    "#212121",
+    4
+   ],
+   [
+    "#656565",
+    4
+   ],
+   [
+    "#d5e9ff",
+    3
+   ],
+   [
+    "#d8d8d8",
+    2
+   ],
+   [
+    "#c7c7c7",
+    1
+   ],
+   [
+    "#eaeaea",
+    1
+   ],
+   [
+    "#f5f5f5",
+    1
+   ],
+   [
+    "#525252",
+    1
+   ],
+   [
+    "#193a29",
+    1
+   ],
+   [
+    "#000000 @0.7",
+    1
+   ],
+   [
+    "#000000 @0.5",
+    1
+   ],
+   [
+    "#d1d1d1",
+    1
+   ],
+   [
+    "#bbbbbb",
+    1
+   ],
+   [
+    "#f4f4f4",
+    1
+   ]
+  ],
+  "fonts": [
+   "aeonik 400",
+   "aeonik Fallback normal",
+   "mono normal",
+   "mono Fallback normal",
+   "IBMPlexSansVar 100 900",
+   "Neue Montreal 400",
+   "Neue Montreal 500",
+   "Roboto Flex 100 900",
+   "DM Mono 400",
+   "New Forest 500",
+   "Test Manuka 500",
+   "TRJN DaVinci Display 400",
+   "PP Supply Mono 200",
+   "PP Supply Mono 400",
+   "PP Supply Mono 500",
+   "PP Supply Mono 700"
+  ],
+  "gradients": [
+   "linear-gradient(rgba(0, 0, 0, 0) 0%, rgb(0, 0, 0) 100%)"
+  ],
+  "nav": {
+   "fontFamily": "aeonik, \"aeonik Fallback\", ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Seg",
+   "fontSize": "16px",
+   "fontWeight": "400",
+   "lineHeight": "24px",
+   "letterSpacing": "normal",
+   "textTransform": "none",
+   "color": "rgb(0, 0, 0)",
+   "background": "rgba(0, 0, 0, 0)",
+   "text": "Products Solutions Research Resources Log In Book ",
+   "cls": "fixed left-0 right-0 z-50 transition-colors duration-300 top-[var(--announcement",
+   "radius": "0px",
+   "border": "0px solid rgb(0, 0, 0)",
+   "padding": "0px",
+   "position": "fixed",
+   "height": 88,
+   "backdrop": "none"
+  },
+  "videoCount": 0,
+  "canvasCount": 0,
+  "svgCount": 13,
+  "imgSample": [
+   {
+    "src": "https://scale.com/_next/image?url=https%3A%2F%2Fcdn.sanity.io%2Fimages%2F50zba0eo%2Fproduction%2Fad4bbe74c67ad5b6effa672824da7b0cc",
+    "alt": "SWE-Bench Pro: Raising the Bar for Agentic Coding",
+    "w": 1152,
+    "h": 648
+   },
+   {
+    "src": "https://scale.com/_next/image?url=https%3A%2F%2Fcdn.sanity.io%2Fimages%2F50zba0eo%2Fproduction%2F7071cacb1d30e5880a3db9cb23b306bf3",
+    "alt": "",
+    "w": 800,
+    "h": 247
+   },
+   {
+    "src": "https://scale.com/_next/image?url=https%3A%2F%2Fcdn.sanity.io%2Fimages%2F50zba0eo%2Fproduction%2F4c6aa96a30c55cf9b04024eef494d975d",
+    "alt": "",
+    "w": 800,
+    "h": 459
+   },
+   {
+    "src": "https://scale.com/_next/image?url=https%3A%2F%2Fcdn.sanity.io%2Fimages%2F50zba0eo%2Fproduction%2F83efd8800caa1e1444a5425d4590ec815",
+    "alt": "",
+    "w": 800,
+    "h": 544
+   },
+   {
+    "src": "https://scale.com/_next/image?url=https%3A%2F%2Fcdn.sanity.io%2Fimages%2F50zba0eo%2Fproduction%2F8e871c9b6ec17cee5d9af9f5cd8aec148",
+    "alt": "",
+    "w": 800,
+    "h": 462
+   },
+   {
+    "src": "https://scale.com/static/img/reskin/prefooter.jpg?dpl=dpl_AUbkoinF8sHbKwcuj1FmrHfM3WJQ",
+    "alt": "",
+    "w": 1408,
+    "h": 720
+   },
+   {
+    "src": "https://cdn.sanity.io/images/50zba0eo/production/777236d99c2ab67069cdd0a29117dd5a47366ec7-16x16.svg?auto=format&w=640&width=640",
+    "alt": "",
+    "w": 16,
+    "h": 16
+   },
+   {
+    "src": "https://cdn.sanity.io/images/50zba0eo/production/6ce2239ab36209947167f2ccac45d8eebfe7fe9f-16x16.svg?auto=format&w=640&width=640",
+    "alt": "",
+    "w": 16,
+    "h": 16
+   },
+   {
+    "src": "https://bat.bing.com/action/0?ti=56380884&tm=gtm002&Ver=2&mid=40293d33-6d40-4240-935e-117225004e1d&bo=1&sid=41eda9e08f6011f1ba71e5",
+    "alt": "",
+    "w": 0,
+    "h": 0
+   },
+   {
+    "src": "https://t.co/i/adsct?bci=3&dv=America%2FLos_Angeles%26en-US%26Google%20Inc.%26Win32%26255%261440%26900%2620%2624%261440%26900%260%",
+    "alt": "",
+    "w": 1,
+    "h": 1
+   },
+   {
+    "src": "https://analytics.twitter.com/i/adsct?bci=3&dv=America%2FLos_Angeles%26en-US%26Google%20Inc.%26Win32%26255%261440%26900%2620%2624%",
+    "alt": "",
+    "w": 1,
+    "h": 1
+   },
+   {
+    "src": "https://cdn.cookielaw.org/logos/static/powered_by_logo.svg",
+    "alt": "Powered by Onetrust",
+    "w": 568,
+    "h": 53
+   }
+  ]
+ },
+ "tech": {
+  "gsap": false,
+  "ScrollTrigger": false,
+  "THREE": false,
+  "Lenis": true,
+  "next": true,
+  "framerMotion": false,
+  "lottie": false,
+  "rive": false,
+  "spline": false,
+  "webgl": false,
+  "videos": []
+ }
+}

@@ -1,0 +1,532 @@
+{
+ "name": "leaderboard",
+ "url": "https://labs.scale.com/leaderboard",
+ "finalUrl": "https://labs.scale.com/leaderboard",
+ "pageHeight": 4673,
+ "styles": {
+  "title": "AI Model Leaderboards & Benchmarks | Scale Labs",
+  "bodyBg": "rgb(255, 255, 255)",
+  "bodyFont": "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", ",
+  "pageHeight": 4673,
+  "h1": [
+   {
+    "fontFamily": "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", ",
+    "fontSize": "60px",
+    "fontWeight": "300",
+    "lineHeight": "75px",
+    "letterSpacing": "-3px",
+    "textTransform": "none",
+    "color": "rgb(17, 17, 17)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "testing the limits of AI.",
+    "cls": "text-4xl sm:text-5xl md:text-6xl font-light tracking-tighter text-ink mb-6 text-",
+    "radius": "0px",
+    "border": "0px solid rgb(217, 217, 217)",
+    "padding": "0px"
+   }
+  ],
+  "h2": [
+   {
+    "fontFamily": "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", ",
+    "fontSize": "12px",
+    "fontWeight": "500",
+    "lineHeight": "18px",
+    "letterSpacing": "0.3px",
+    "textTransform": "uppercase",
+    "color": "rgb(17, 17, 17)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "[LEADERBOARDS]",
+    "cls": "text-xs font-mono font-medium text-ink tracking-wide uppercase mb-10",
+    "radius": "0px",
+    "border": "0px solid rgb(217, 217, 217)",
+    "padding": "0px"
+   },
+   {
+    "fontFamily": "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", ",
+    "fontSize": "14px",
+    "fontWeight": "500",
+    "lineHeight": "21px",
+    "letterSpacing": "0.35px",
+    "textTransform": "none",
+    "color": "rgb(17, 17, 17)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "Frontier AI Model Evaluations & Benchmarks",
+    "cls": "mb-3 text-sm font-mono font-medium text-ink tracking-wide",
+    "radius": "0px",
+    "border": "0px solid rgb(217, 217, 217)",
+    "padding": "0px"
+   },
+   {
+    "fontFamily": "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", ",
+    "fontSize": "14px",
+    "fontWeight": "500",
+    "lineHeight": "21px",
+    "letterSpacing": "0.35px",
+    "textTransform": "none",
+    "color": "rgb(17, 17, 17)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "Scaling with Human Expertise",
+    "cls": "mb-3 text-sm font-mono font-medium text-ink tracking-wide",
+    "radius": "0px",
+    "border": "0px solid rgb(217, 217, 217)",
+    "padding": "0px"
+   },
+   {
+    "fontFamily": "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", ",
+    "fontSize": "14px",
+    "fontWeight": "500",
+    "lineHeight": "21px",
+    "letterSpacing": "0.35px",
+    "textTransform": "none",
+    "color": "rgb(17, 17, 17)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "Robust Datasets for Reliable AI Benchmarks",
+    "cls": "mb-3 text-sm font-mono font-medium text-ink tracking-wide",
+    "radius": "0px",
+    "border": "0px solid rgb(217, 217, 217)",
+    "padding": "0px"
+   }
+  ],
+  "h3": [
+   {
+    "fontFamily": "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", ",
+    "fontSize": "14px",
+    "fontWeight": "500",
+    "lineHeight": "21px",
+    "letterSpacing": "normal",
+    "textTransform": "none",
+    "color": "rgb(17, 17, 17)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "DrugDiscoveryBench",
+    "cls": "text-sm font-mono font-medium text-ink transition-colors",
+    "radius": "0px",
+    "border": "0px solid rgb(217, 217, 217)",
+    "padding": "0px"
+   },
+   {
+    "fontFamily": "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", ",
+    "fontSize": "14px",
+    "fontWeight": "500",
+    "lineHeight": "21px",
+    "letterSpacing": "normal",
+    "textTransform": "none",
+    "color": "rgb(17, 17, 17)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "SWE Atlas - Refactoring",
+    "cls": "text-sm font-mono font-medium text-ink transition-colors",
+    "radius": "0px",
+    "border": "0px solid rgb(217, 217, 217)",
+    "padding": "0px"
+   },
+   {
+    "fontFamily": "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", ",
+    "fontSize": "14px",
+    "fontWeight": "500",
+    "lineHeight": "21px",
+    "letterSpacing": "normal",
+    "textTransform": "none",
+    "color": "rgb(17, 17, 17)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "SWE Atlas - Test Writing",
+    "cls": "text-sm font-mono font-medium text-ink transition-colors",
+    "radius": "0px",
+    "border": "0px solid rgb(217, 217, 217)",
+    "padding": "0px"
+   },
+   {
+    "fontFamily": "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", ",
+    "fontSize": "14px",
+    "fontWeight": "500",
+    "lineHeight": "21px",
+    "letterSpacing": "normal",
+    "textTransform": "none",
+    "color": "rgb(17, 17, 17)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "SWE Atlas - Codebase QnA",
+    "cls": "text-sm font-mono font-medium text-ink transition-colors",
+    "radius": "0px",
+    "border": "0px solid rgb(217, 217, 217)",
+    "padding": "0px"
+   }
+  ],
+  "h4": [],
+  "p": [
+   {
+    "fontFamily": "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", ",
+    "fontSize": "12px",
+    "fontWeight": "400",
+    "lineHeight": "21.6px",
+    "letterSpacing": "normal",
+    "textTransform": "none",
+    "color": "rgb(82, 82, 82)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "Benchmarks for frontier, agentic, and safety capab",
+    "cls": "text-xs font-mono text-neutral-600 leading-[1.8] max-w-lg mb-8",
+    "radius": "0px",
+    "border": "0px solid rgb(217, 217, 217)",
+    "padding": "0px"
+   },
+   {
+    "fontFamily": "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", ",
+    "fontSize": "12px",
+    "fontWeight": "400",
+    "lineHeight": "20.4px",
+    "letterSpacing": "normal",
+    "textTransform": "none",
+    "color": "rgb(82, 82, 82)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "Including benchmarks on agentic coding, frontier r",
+    "cls": "text-xs font-mono text-neutral-600 leading-[1.7] mt-2",
+    "radius": "0px",
+    "border": "0px solid rgb(217, 217, 217)",
+    "padding": "0px"
+   },
+   {
+    "fontFamily": "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", ",
+    "fontSize": "12px",
+    "fontWeight": "400",
+    "lineHeight": "20.4px",
+    "letterSpacing": "normal",
+    "textTransform": "none",
+    "color": "rgb(82, 82, 82)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "From leading AI labs including OpenAI, Anthropic, ",
+    "cls": "text-xs font-mono text-neutral-600 leading-[1.7] mt-2",
+    "radius": "0px",
+    "border": "0px solid rgb(217, 217, 217)",
+    "padding": "0px"
+   },
+   {
+    "fontFamily": "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", ",
+    "fontSize": "12px",
+    "fontWeight": "400",
+    "lineHeight": "19.5px",
+    "letterSpacing": "normal",
+    "textTransform": "none",
+    "color": "rgb(82, 82, 82)",
+    "background": "rgba(0, 0, 0, 0)",
+    "text": "DrugDiscoveryBench: 82 expert-curated tasks evalua",
+    "cls": "text-xs font-mono text-neutral-600 leading-relaxed",
+    "radius": "0px",
+    "border": "0px solid rgb(217, 217, 217)",
+    "padding": "0px"
+   }
+  ],
+  "eyebrows": [
+   {
+    "fontFamily": "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", ",
+    "fontSize": "12px",
+    "fontWeight": "600",
+    "lineHeight": "18px",
+    "letterSpacing": "1.2px",
+    "textTransform": "uppercase",
+    "color": "rgb(82, 82, 82)",
+    "background": "rgb(229, 229, 229)",
+    "text": "NEW",
+    "cls": "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold",
+    "radius": "3.35544e+07px",
+    "border": "1px solid rgb(217, 217, 217)",
+    "padding": "2px 10px"
+   },
+   {
+    "fontFamily": "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", ",
+    "fontSize": "12px",
+    "fontWeight": "600",
+    "lineHeight": "18px",
+    "letterSpacing": "1.2px",
+    "textTransform": "uppercase",
+    "color": "rgb(82, 82, 82)",
+    "background": "rgb(229, 229, 229)",
+    "text": "NEW",
+    "cls": "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold",
+    "radius": "3.35544e+07px",
+    "border": "1px solid rgb(217, 217, 217)",
+    "padding": "2px 10px"
+   },
+   {
+    "fontFamily": "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", ",
+    "fontSize": "12px",
+    "fontWeight": "600",
+    "lineHeight": "18px",
+    "letterSpacing": "1.2px",
+    "textTransform": "uppercase",
+    "color": "rgb(82, 82, 82)",
+    "background": "rgb(229, 229, 229)",
+    "text": "NEW",
+    "cls": "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold",
+    "radius": "3.35544e+07px",
+    "border": "1px solid rgb(217, 217, 217)",
+    "padding": "2px 10px"
+   },
+   {
+    "fontFamily": "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", ",
+    "fontSize": "12px",
+    "fontWeight": "600",
+    "lineHeight": "18px",
+    "letterSpacing": "1.2px",
+    "textTransform": "uppercase",
+    "color": "rgb(82, 82, 82)",
+    "background": "rgb(229, 229, 229)",
+    "text": "NEW",
+    "cls": "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold",
+    "radius": "3.35544e+07px",
+    "border": "1px solid rgb(217, 217, 217)",
+    "padding": "2px 10px"
+   },
+   {
+    "fontFamily": "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", ",
+    "fontSize": "12px",
+    "fontWeight": "600",
+    "lineHeight": "18px",
+    "letterSpacing": "1.2px",
+    "textTransform": "uppercase",
+    "color": "rgb(82, 82, 82)",
+    "background": "rgb(229, 229, 229)",
+    "text": "NEW",
+    "cls": "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold",
+    "radius": "3.35544e+07px",
+    "border": "1px solid rgb(217, 217, 217)",
+    "padding": "2px 10px"
+   },
+   {
+    "fontFamily": "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", ",
+    "fontSize": "12px",
+    "fontWeight": "600",
+    "lineHeight": "18px",
+    "letterSpacing": "1.2px",
+    "textTransform": "uppercase",
+    "color": "rgb(82, 82, 82)",
+    "background": "rgb(229, 229, 229)",
+    "text": "NEW",
+    "cls": "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold",
+    "radius": "3.35544e+07px",
+    "border": "1px solid rgb(217, 217, 217)",
+    "padding": "2px 10px"
+   }
+  ],
+  "buttons": [
+   {
+    "fontFamily": "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", ",
+    "fontSize": "12px",
+    "fontWeight": "500",
+    "lineHeight": "18px",
+    "letterSpacing": "0.6px",
+    "textTransform": "uppercase",
+    "color": "rgb(255, 255, 255)",
+    "background": "rgb(17, 17, 17)",
+    "text": "START EXPLORING",
+    "cls": "inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium ring",
+    "radius": "0px",
+    "border": "0px solid rgb(217, 217, 217)",
+    "padding": "8px 16px"
+   },
+   {
+    "fontFamily": "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", ",
+    "fontSize": "12px",
+    "fontWeight": "500",
+    "lineHeight": "18px",
+    "letterSpacing": "normal",
+    "textTransform": "none",
+    "color": "rgb(255, 255, 255)",
+    "background": "rgb(17, 17, 17)",
+    "text": "All",
+    "cls": "inline-flex items-center justify-center whitespace-nowrap px-3 py-1.5 font-mediu",
+    "radius": "0px",
+    "border": "0px solid rgb(217, 217, 217)",
+    "padding": "6px 12px"
+   },
+   {
+    "fontFamily": "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", ",
+    "fontSize": "12px",
+    "fontWeight": "500",
+    "lineHeight": "18px",
+    "letterSpacing": "0.6px",
+    "textTransform": "uppercase",
+    "color": "rgb(255, 255, 255)",
+    "background": "rgb(17, 17, 17)",
+    "text": "EVALUATE YOUR MODEL",
+    "cls": "inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium ring",
+    "radius": "0px",
+    "border": "0px solid rgb(217, 217, 217)",
+    "padding": "8px 16px"
+   }
+  ],
+  "sections": [
+   {
+    "tag": "SECTION",
+    "cls": "w-full border-b border-hairline",
+    "top": 57,
+    "h": 576,
+    "bg": "rgba(0, 0, 0, 0)",
+    "bgImage": ""
+   },
+   {
+    "tag": "SECTION",
+    "cls": "w-full scroll-m-16 pb-16",
+    "top": 722,
+    "h": 3058,
+    "bg": "rgba(0, 0, 0, 0)",
+    "bgImage": ""
+   },
+   {
+    "tag": "SECTION",
+    "cls": "w-full py-16 border-t border-hairline",
+    "top": 3780,
+    "h": 276,
+    "bg": "rgba(0, 0, 0, 0)",
+    "bgImage": ""
+   },
+   {
+    "tag": "SECTION",
+    "cls": "w-full py-16 border-t border-hairline",
+    "top": 4144,
+    "h": 355,
+    "bg": "rgba(0, 0, 0, 0)",
+    "bgImage": ""
+   }
+  ],
+  "containers": {
+   "1400px": 8,
+   "672px": 1
+  },
+  "topColors": [
+   [
+    "#d9d9d9",
+    1834
+   ],
+   [
+    "#111111",
+    1600
+   ],
+   [
+    "#525252",
+    325
+   ],
+   [
+    "#ffffff",
+    113
+   ],
+   [
+    "#000000",
+    96
+   ],
+   [
+    "#f5f5f5",
+    81
+   ],
+   [
+    "#e27553",
+    24
+   ],
+   [
+    "#09090b",
+    22
+   ],
+   [
+    "#e5e5e5",
+    21
+   ],
+   [
+    "#65c2b9",
+    17
+   ],
+   [
+    "#6fcbef",
+    16
+   ],
+   [
+    "#598dd2",
+    14
+   ],
+   [
+    "#a3a3a3",
+    9
+   ],
+   [
+    "#9acd32",
+    5
+   ],
+   [
+    "#999999",
+    2
+   ],
+   [
+    "#d1b745",
+    2
+   ],
+   [
+    "#71717a",
+    1
+   ]
+  ],
+  "fonts": [
+   "KaTeX_AMS 400",
+   "KaTeX_Caligraphic 700",
+   "KaTeX_Caligraphic 400",
+   "KaTeX_Fraktur 700",
+   "KaTeX_Fraktur 400",
+   "KaTeX_Main 700",
+   "KaTeX_Main 400",
+   "KaTeX_Math 700",
+   "KaTeX_Math 400",
+   "KaTeX_SansSerif 700",
+   "KaTeX_SansSerif 400",
+   "KaTeX_Script 400",
+   "KaTeX_Size1 400",
+   "KaTeX_Size2 400",
+   "KaTeX_Size3 400",
+   "KaTeX_Size4 400",
+   "KaTeX_Typewriter 400",
+   "GeistMono 100 900",
+   "Inter 100 900",
+   "Inter Fallback normal",
+   "aeonik 400",
+   "aeonik 500",
+   "aeonik 700",
+   "aeonik 300"
+  ],
+  "gradients": [],
+  "nav": {
+   "fontFamily": "GeistMono, ui-monospace, SFMono-Regular, \"Roboto Mono\", Menlo, Monaco, \"Liberation Mono\", ",
+   "fontSize": "12px",
+   "fontWeight": "400",
+   "lineHeight": "18px",
+   "letterSpacing": "normal",
+   "textTransform": "none",
+   "color": "rgb(17, 17, 17)",
+   "background": "oklab(0.999994 0.0000455677 0.0000200868 / 0.7)",
+   "text": "[PAPERS] [BLOG] [LEADERBOARDS] [SHOWDOWN] \u2318K",
+   "cls": "sticky top-0 z-30 w-full bg-white/70 backdrop-blur-xl border-b border-hairline",
+   "radius": "0px",
+   "border": "",
+   "padding": "0px",
+   "position": "sticky",
+   "height": 57,
+   "backdrop": "blur(24px)"
+  },
+  "videoCount": 0,
+  "canvasCount": 0,
+  "svgCount": 21,
+  "imgSample": [
+   {
+    "src": "https://labs.scale.com/images/logo-scale-labs.svg?v=2",
+    "alt": "Scale Labs",
+    "w": 140,
+    "h": 19
+   }
+  ]
+ },
+ "tech": {
+  "gsap": false,
+  "ScrollTrigger": false,
+  "THREE": false,
+  "Lenis": false,
+  "next": true,
+  "framerMotion": false,
+  "lottie": false,
+  "rive": false,
+  "spline": false,
+  "webgl": false,
+  "videos": []
+ }
+}

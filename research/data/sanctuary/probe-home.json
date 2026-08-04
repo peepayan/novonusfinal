@@ -1,0 +1,329 @@
+{
+ "geometry": {
+  "headerInner": {
+   "x": 48,
+   "y": 0,
+   "w": 1344,
+   "h": 88,
+   "radius": "0px",
+   "bg": "rgba(0, 0, 0, 0)",
+   "border": "0px solid rgb(255, 255, 255)",
+   "shadow": "none",
+   "pad": "16px 0px 0px",
+   "font": "cofo-sans-variable 16px/24px 400",
+   "ls": "normal",
+   "tt": "none",
+   "color": "rgb(255, 255, 255)",
+   "cls": "header container pt-4 wp-block-takt-header"
+  },
+  "header": {
+   "x": 0,
+   "y": 0,
+   "w": 1440,
+   "h": 88,
+   "radius": "0px",
+   "bg": "rgba(0, 0, 0, 0)",
+   "border": "0px solid rgb(255, 255, 255)",
+   "shadow": "none",
+   "pad": "0px",
+   "font": "cofo-sans-variable 16px/24px 400",
+   "ls": "normal",
+   "tt": "none",
+   "color": "rgb(255, 255, 255)",
+   "cls": "wp-block-template-part"
+  },
+  "sheets": [
+   {
+    "cls": "max-w-(--breakpoint-3xl) relative mx-auto flex items-center gap-6 rounded-2xl bg-white p-4 shadow-[0",
+    "radius": "16px",
+    "bg": "rgb(255, 255, 255)",
+    "w": 1344
+   },
+   {
+    "cls": "relative aspect-video w-full overflow-hidden rounded-2xl lg:rounded-3xl",
+    "radius": "24px",
+    "bg": "rgba(0, 0, 0, 0)",
+    "w": 1280
+   }
+  ],
+  "chips": [
+   {
+    "t": "PHYSICAL AI EMBODIMENT ROADMAP",
+    "pad": "8px 16px",
+    "radius": "8px",
+    "bg": "rgb(230, 140, 36)",
+    "border": "0px solid rgb(0, 0, 0)",
+    "font": "16px/400",
+    "ls": "0.8px",
+    "before": "none"
+   },
+   {
+    "t": "CAREERS",
+    "pad": "8px 16px",
+    "radius": "8px",
+    "bg": "rgba(0, 0, 0, 0)",
+    "border": "1px solid rgb(0, 0, 0)",
+    "font": "16px/400",
+    "ls": "0.8px",
+    "before": "none"
+   },
+   {
+    "t": "COMMERCIAL INQUIRIES",
+    "pad": "8px 16px",
+    "radius": "8px",
+    "bg": "rgb(230, 140, 36)",
+    "border": "0px solid rgb(0, 0, 0)",
+    "font": "16px/400",
+    "ls": "0.8px",
+    "before": "none"
+   },
+   {
+    "t": "PHYSICAL AI EMBODIMENT ROADMAP",
+    "pad": "8px 16px",
+    "radius": "8px",
+    "bg": "rgb(230, 140, 36)",
+    "border": "0px solid rgb(0, 0, 0)",
+    "font": "16px/400",
+    "ls": "0.8px",
+    "before": "none"
+   },
+   {
+    "t": "DEPLOYMENT-READY SOLUTIONS",
+    "pad": "8px 16px",
+    "radius": "8px",
+    "bg": "rgb(230, 140, 36)",
+    "border": "0px solid rgb(0, 0, 0)",
+    "font": "16px/400",
+    "ls": "0.8px",
+    "before": "none"
+   },
+   {
+    "t": "PHYSICAL AI EMBODIMENT ROADMAP",
+    "pad": "8px 16px",
+    "radius": "8px",
+    "bg": "rgba(0, 0, 0, 0)",
+    "border": "1px solid rgb(255, 255, 255)",
+    "font": "16px/400",
+    "ls": "0.8px",
+    "before": "none"
+   },
+   {
+    "t": "WATCH",
+    "pad": "8px 10px",
+    "radius": "3.35544e+07px",
+    "bg": "rgb(255, 255, 255)",
+    "border": "0px solid rgb(0, 0, 0)",
+    "font": "16px/400",
+    "ls": "normal",
+    "before": "none"
+   },
+   {
+    "t": "WATCH",
+    "pad": "8px 10px",
+    "radius": "3.35544e+07px",
+    "bg": "rgb(255, 255, 255)",
+    "border": "0px solid rgb(0, 0, 0)",
+    "font": "16px/400",
+    "ls": "normal",
+    "before": "none"
+   },
+   {
+    "t": "PRESS RELEASE",
+    "pad": "4px 12px",
+    "radius": "3.35544e+07px",
+    "bg": "rgb(255, 255, 255)",
+    "border": "0px solid rgb(0, 0, 0)",
+    "font": "12px/400",
+    "ls": "normal",
+    "before": "none"
+   },
+   {
+    "t": "PRODUCT UPDATES",
+    "pad": "4px 12px",
+    "radius": "3.35544e+07px",
+    "bg": "rgb(255, 255, 255)",
+    "border": "0px solid rgb(0, 0, 0)",
+    "font": "12px/400",
+    "ls": "normal",
+    "before": "none"
+   },
+   {
+    "t": "CORPORATE NEWS",
+    "pad": "4px 12px",
+    "radius": "3.35544e+07px",
+    "bg": "rgb(255, 255, 255)",
+    "border": "0px solid rgb(0, 0, 0)",
+    "font": "12px/400",
+    "ls": "normal",
+    "before": "none"
+   },
+   {
+    "t": "PRESS RELEASE",
+    "pad": "4px 12px",
+    "radius": "3.35544e+07px",
+    "bg": "rgb(255, 255, 255)",
+    "border": "0px solid rgb(0, 0, 0)",
+    "font": "12px/400",
+    "ls": "normal",
+    "before": "none"
+   }
+  ],
+  "buttons": [
+   {
+    "t": "CAREERS",
+    "pad": "8px 16px",
+    "radius": "8px",
+    "bg": "rgba(0, 0, 0, 0)",
+    "border": "1px solid rgb(0, 0, 0)",
+    "color": "rgb(0, 0, 0)",
+    "fs": "16px",
+    "ls": "0.8px",
+    "transition": "color 0.15s, background-color 0.15s, border-color 0.15s"
+   },
+   {
+    "t": "COMMERCIAL INQUIRIES",
+    "pad": "8px 16px",
+    "radius": "8px",
+    "bg": "rgb(230, 140, 36)",
+    "border": "0px solid rgb(0, 0, 0)",
+    "color": "rgb(0, 0, 0)",
+    "fs": "16px",
+    "ls": "0.8px",
+    "transition": "color 0.15s, background-color 0.15s, border-color 0.15s"
+   },
+   {
+    "t": "CAREERS",
+    "pad": "0px",
+    "radius": "0px",
+    "bg": "rgba(0, 0, 0, 0)",
+    "border": "0px solid rgb(255, 255, 255)",
+    "color": "rgb(255, 255, 255)",
+    "fs": "14px",
+    "ls": "normal",
+    "transition": "opacity 0.15s cubic-bezier(0.4, 0, 0.2, 1)"
+   }
+  ],
+  "scrollPuck": {
+   "x": 1296,
+   "y": 692,
+   "w": 96,
+   "h": 96,
+   "radius": "3.35544e+07px",
+   "bg": "rgb(217, 223, 234)",
+   "border": "0px solid rgb(255, 255, 255)",
+   "shadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0",
+   "pad": "0px",
+   "font": "cofo-sans-variable 16px/24px 400",
+   "ls": "normal",
+   "tt": "none",
+   "color": "rgb(255, 255, 255)",
+   "cls": "bg-blue ml-auto hidden size-24 shrink-0 cursor-pointer flex-col items-center justify-center gap-2 rounded-full shadow-[4"
+  },
+  "radialGradientClass": "relative overflow-visible py-6 has-radial-gradient-left",
+  "radialGradient": {
+   "bg": "none",
+   "before": "radial-gradient(50% 50%, rgb(230, 140, 36), rgba(230, 140, 36, 0))"
+  },
+  "ticker": {
+   "cls": "wp-block-takt-press-ticker",
+   "anim": "none"
+  },
+  "cursorEl": "flex w-full cursor-pointer items-center justify-between border-none bg-transparent py-6 font-mono text-base uppercase te",
+  "hairlines": [
+   [
+    "oklab(0 0 0 / 0.5)|1px",
+    3
+   ],
+   [
+    "rgb(255, 255, 255)|1px",
+    1
+   ]
+  ],
+  "rhythm": [
+   {
+    "cls": "hero relative min-h-screen pb-8 lg:pb-20 flex flex-col takt:",
+    "h": 900,
+    "mt": "0px",
+    "mb": "0px",
+    "pt": "0px",
+    "pb": "80px",
+    "bg": "rgba(0, 0, 0, 0)",
+    "radius": "0px"
+   },
+   {
+    "cls": "media-content takt:media-content",
+    "h": 628,
+    "mt": "0px",
+    "mb": "0px",
+    "pt": "0px",
+    "pb": "0px",
+    "bg": "rgba(0, 0, 0, 0)",
+    "radius": "0px"
+   },
+   {
+    "cls": "media-content takt:media-content",
+    "h": 628,
+    "mt": "0px",
+    "mb": "0px",
+    "pt": "0px",
+    "pb": "0px",
+    "bg": "rgba(0, 0, 0, 0)",
+    "radius": "0px"
+   },
+   {
+    "cls": "video-carousel takt:video-carousel",
+    "h": 1437,
+    "mt": "0px",
+    "mb": "0px",
+    "pt": "0px",
+    "pb": "0px",
+    "bg": "rgba(0, 0, 0, 0)",
+    "radius": "0px"
+   },
+   {
+    "cls": "media-content takt:media-content",
+    "h": 628,
+    "mt": "0px",
+    "mb": "0px",
+    "pt": "0px",
+    "pb": "0px",
+    "bg": "rgba(0, 0, 0, 0)",
+    "radius": "0px"
+   },
+   {
+    "cls": "post-carousel takt:post-carousel",
+    "h": 1265,
+    "mt": "0px",
+    "mb": "0px",
+    "pt": "0px",
+    "pb": "0px",
+    "bg": "rgba(0, 0, 0, 0)",
+    "radius": "0px"
+   },
+   {
+    "cls": "takt:press-ticker",
+    "h": 292,
+    "mt": "0px",
+    "mb": "0px",
+    "pt": "0px",
+    "pb": "0px",
+    "bg": "rgba(0, 0, 0, 0)",
+    "radius": "0px"
+   },
+   {
+    "cls": "call-to-action relative lg:min-h-[600px] has-radial-gradient",
+    "h": 600,
+    "mt": "0px",
+    "mb": "0px",
+    "pt": "0px",
+    "pb": "0px",
+    "bg": "rgba(0, 0, 0, 0)",
+    "radius": "0px"
+   }
+  ]
+ },
+ "amberBtnHover": {
+  "rest": "rgb(230, 140, 36) / rgb(0, 0, 0)",
+  "hover": "rgb(230, 140, 36) / rgb(0, 0, 0)"
+ }
+}

@@ -1,0 +1,11 @@
+{
+ "accordion": {
+  "h": 567,
+  "borderTop": "0px solid rgb(0, 0, 0)",
+  "pad": "0px 0px 32px",
+  "transition": "all"
+ },
+ "slideDeck": {
+  "cls": "video-carousel wp-block-takt-video-carousel"
+ }
+}

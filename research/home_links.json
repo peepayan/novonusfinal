@@ -1,0 +1,398 @@
+[
+ {
+  "href": "https://scale.com/blog/scale-appoints-new-ceo",
+  "text": "Learn more",
+  "inNav": false,
+  "inFooter": false
+ },
+ {
+  "href": "/",
+  "text": "",
+  "inNav": true,
+  "inFooter": false
+ },
+ {
+  "href": "https://dashboard.scale.com/login",
+  "text": "Log In",
+  "inNav": true,
+  "inFooter": false
+ },
+ {
+  "href": "/demo",
+  "text": "Book Demo",
+  "inNav": true,
+  "inFooter": false
+ },
+ {
+  "href": "/demo",
+  "text": "Book demo",
+  "inNav": true,
+  "inFooter": false
+ },
+ {
+  "href": "/enterprise/agentic-solutions",
+  "text": "",
+  "inNav": false,
+  "inFooter": false
+ },
+ {
+  "href": "/data-engine",
+  "text": "",
+  "inNav": false,
+  "inFooter": false
+ },
+ {
+  "href": "/demo",
+  "text": "Get Started",
+  "inNav": false,
+  "inFooter": false
+ },
+ {
+  "href": "https://labs.scale.com/",
+  "text": "",
+  "inNav": false,
+  "inFooter": false
+ },
+ {
+  "href": "/physical-ai",
+  "text": "",
+  "inNav": false,
+  "inFooter": false
+ },
+ {
+  "href": "/enterprise/healthcare",
+  "text": "",
+  "inNav": false,
+  "inFooter": false
+ },
+ {
+  "href": "/enterprise",
+  "text": "",
+  "inNav": false,
+  "inFooter": false
+ },
+ {
+  "href": "/enterprise",
+  "text": "",
+  "inNav": false,
+  "inFooter": false
+ },
+ {
+  "href": "/global-public-sector",
+  "text": "",
+  "inNav": false,
+  "inFooter": false
+ },
+ {
+  "href": "/physical-ai",
+  "text": "",
+  "inNav": false,
+  "inFooter": false
+ },
+ {
+  "href": "/public-sector",
+  "text": "",
+  "inNav": false,
+  "inFooter": false
+ },
+ {
+  "href": "/public-sector-data-engine",
+  "text": "",
+  "inNav": false,
+  "inFooter": false
+ },
+ {
+  "href": "/enterprise/healthcare",
+  "text": "",
+  "inNav": false,
+  "inFooter": false
+ },
+ {
+  "href": "/automotive",
+  "text": "",
+  "inNav": false,
+  "inFooter": false
+ },
+ {
+  "href": "/public-sector",
+  "text": "",
+  "inNav": false,
+  "inFooter": false
+ },
+ {
+  "href": "/customers/time",
+  "text": "Powering an interactive AI experience that brings a century ",
+  "inNav": false,
+  "inFooter": false
+ },
+ {
+  "href": "/customers/time",
+  "text": "Powering an interactive AI experience that brings a century ",
+  "inNav": false,
+  "inFooter": false
+ },
+ {
+  "href": "/customers/time",
+  "text": "Powering an interactive AI experience that brings a century ",
+  "inNav": false,
+  "inFooter": false
+ },
+ {
+  "href": "/customers/time",
+  "text": "Powering an interactive AI experience that brings a century ",
+  "inNav": false,
+  "inFooter": false
+ },
+ {
+  "href": "/about",
+  "text": "10 years powering the world's biggest AI breakthroughs. Sinc",
+  "inNav": false,
+  "inFooter": false
+ },
+ {
+  "href": "https://labs.scale.com/leaderboard",
+  "text": "The standard every frontier model is measured against. Our l",
+  "inNav": false,
+  "inFooter": false
+ },
+ {
+  "href": "/generative-ai-data-engine",
+  "text": "Behind the model. Behind the mission. Behind it all. Only Sc",
+  "inNav": false,
+  "inFooter": false
+ },
+ {
+  "href": "/blog/scale-labs",
+  "text": "Introducing Scale Labs",
+  "inNav": false,
+  "inFooter": false
+ },
+ {
+  "href": "/blog/mayo-clinic-scale",
+  "text": "Mayo Clinic + Scale: Reliable AI for Better Healthcare",
+  "inNav": false,
+  "inFooter": false
+ },
+ {
+  "href": "/blog/hitl-ep13-ai-evals-in-practice",
+  "text": "COMPANY How Morgan Stanley deploys AI that actually works (h",
+  "inNav": false,
+  "inFooter": false
+ },
+ {
+  "href": "/blog/next-phase-us-ai-policy",
+  "text": "PUBLIC SECTOR The Next Phase of U.S. AI Policy: Governance, ",
+  "inNav": false,
+  "inFooter": false
+ },
+ {
+  "href": "/blog/scale-bae-modernize-tactical-edge",
+  "text": "PUBLIC SECTOR Scale AI and BAE Systems Combine Forces to Mod",
+  "inNav": false,
+  "inFooter": false
+ },
+ {
+  "href": "/blog/swe-bench-pro",
+  "text": "RESEARCH SWE-Bench Pro: Raising the Bar for Agentic Coding",
+  "inNav": false,
+  "inFooter": false
+ },
+ {
+  "href": "/blog/mcit-scale",
+  "text": "COMPANY MCIT & Scale AI: Paving the Way for Qatar\u2019s Digital ",
+  "inNav": false,
+  "inFooter": false
+ },
+ {
+  "href": "/blog/physical-ai",
+  "text": "PRODUCT Expanding Our Data Engine for Physical AI",
+  "inNav": false,
+  "inFooter": false
+ },
+ {
+  "href": "/demo",
+  "text": "Get Started",
+  "inNav": false,
+  "inFooter": false
+ },
+ {
+  "href": "/data-engine",
+  "text": "Scale Data Engine",
+  "inNav": false,
+  "inFooter": true
+ },
+ {
+  "href": "/genai-platform",
+  "text": "Scale GenAI Platform",
+  "inNav": false,
+  "inFooter": true
+ },
+ {
+  "href": "/donovan",
+  "text": "Scale Donovan",
+  "inNav": false,
+  "inFooter": true
+ },
+ {
+  "href": "/enterprise/agentic-solutions",
+  "text": "Enterprise",
+  "inNav": false,
+  "inFooter": true
+ },
+ {
+  "href": "/enterprise/insurance",
+  "text": "Insurance",
+  "inNav": false,
+  "inFooter": true
+ },
+ {
+  "href": "/enterprise/healthcare",
+  "text": "Healthcare",
+  "inNav": false,
+  "inFooter": true
+ },
+ {
+  "href": "/public-sector",
+  "text": "US Public Sector",
+  "inNav": false,
+  "inFooter": true
+ },
+ {
+  "href": "/global-public-sector",
+  "text": "Global Public Sector",
+  "inNav": false,
+  "inFooter": true
+ },
+ {
+  "href": "/about",
+  "text": "About",
+  "inNav": false,
+  "inFooter": true
+ },
+ {
+  "href": "/careers",
+  "text": "Careers",
+  "inNav": false,
+  "inFooter": true
+ },
+ {
+  "href": "/security",
+  "text": "Security",
+  "inNav": false,
+  "inFooter": true
+ },
+ {
+  "href": "/legal/terms",
+  "text": "Terms",
+  "inNav": false,
+  "inFooter": true
+ },
+ {
+  "href": "/legal/privacy",
+  "text": "Privacy",
+  "inNav": false,
+  "inFooter": true
+ },
+ {
+  "href": "/legal/modern-slavery-statement",
+  "text": "Modern Slavery Statement",
+  "inNav": false,
+  "inFooter": true
+ },
+ {
+  "href": "/blog",
+  "text": "Blog",
+  "inNav": false,
+  "inFooter": true
+ },
+ {
+  "href": "/demo",
+  "text": "Contact Us",
+  "inNav": false,
+  "inFooter": true
+ },
+ {
+  "href": "/events",
+  "text": "Events",
+  "inNav": false,
+  "inFooter": true
+ },
+ {
+  "href": "/docs",
+  "text": "Documentation",
+  "inNav": false,
+  "inFooter": true
+ },
+ {
+  "href": "/data-partnership",
+  "text": "Data Partnerships",
+  "inNav": false,
+  "inFooter": true
+ },
+ {
+  "href": "https://brand.scale.com/",
+  "text": "Brand Guidelines",
+  "inNav": false,
+  "inFooter": true
+ },
+ {
+  "href": "/guides/data-labeling-annotation-guide",
+  "text": "Data Labeling",
+  "inNav": false,
+  "inFooter": true
+ },
+ {
+  "href": "/guides/model-training-building",
+  "text": "ML Model Training",
+  "inNav": false,
+  "inFooter": true
+ },
+ {
+  "href": "/guides/diffusion-models-guide",
+  "text": "Diffusion Models",
+  "inNav": false,
+  "inFooter": true
+ },
+ {
+  "href": "/guides/ai-for-ecommerce",
+  "text": "Guide To AI For ECommerce",
+  "inNav": false,
+  "inFooter": true
+ },
+ {
+  "href": "/guides/computer-vision",
+  "text": "Computer Vision Applications",
+  "inNav": false,
+  "inFooter": true
+ },
+ {
+  "href": "/guides/large-language-models",
+  "text": "Large Language Models",
+  "inNav": false,
+  "inFooter": true
+ },
+ {
+  "href": "https://www.linkedin.com/company/scaleai",
+  "text": "",
+  "inNav": false,
+  "inFooter": true
+ },
+ {
+  "href": "https://x.com/scale_ai",
+  "text": "",
+  "inNav": false,
+  "inFooter": true
+ },
+ {
+  "href": "/legal/terms",
+  "text": "TERMS OF USE",
+  "inNav": false,
+  "inFooter": true
+ },
+ {
+  "href": "/legal/privacy",
+  "text": "PRIVACY POLICY",
+  "inNav": false,
+  "inFooter": true
+ }
+]

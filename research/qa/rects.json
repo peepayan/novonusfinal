@@ -1,0 +1,3410 @@
+{
+ "p010": {
+  "viewBox": [
+   0,
+   0,
+   960,
+   720
+  ],
+  "svgRect": {
+   "l": 660.53125,
+   "t": 246.6875,
+   "w": 639.46875,
+   "h": 474.59375
+  },
+  "els": {
+   ".w-conveyor": {
+    "svgBox": [
+     11.8,
+     577,
+     967.7,
+     583
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-parts": {
+    "svgBox": [
+     183.1,
+     564,
+     577,
+     578
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-bench": {
+    "svgBox": [
+     88.1,
+     512,
+     420.6,
+     576
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-rig": {
+    "svgBox": [
+     113.9,
+     405.5,
+     394.9,
+     494
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-hand": {
+    "svgBox": [
+     105.4,
+     461.4,
+     142.2,
+     472.6
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-hand-path": {
+    "svgBox": [
+     123.8,
+     418.2,
+     392.9,
+     468
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-force": {
+    "svgBox": [
+     177.3,
+     396,
+     325.6,
+     452
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-wave": {
+    "svgBox": [
+     94.1,
+     610,
+     420.6,
+     660
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-ghosts": {
+    "svgBox": [
+     123.8,
+     340.2,
+     412.7,
+     442
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-skill-unit": {
+    "svgBox": [
+     458.2,
+     238,
+     693.7,
+     400
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-block": {
+    "svgBox": [
+     470.1,
+     250,
+     618.5,
+     360
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-grip": {
+    "svgBox": [
+     625.4,
+     285.4,
+     665.9,
+     319.3
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-checks": {
+    "svgBox": [
+     482,
+     384,
+     561.1,
+     400
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-block-ring": {
+    "svgBox": [
+     458.2,
+     238,
+     693.7,
+     378
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-gate": {
+    "svgBox": [
+     337.5,
+     178,
+     586.9,
+     244
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-chips": {
+    "svgBox": [
+     240.5,
+     294,
+     470.1,
+     316
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-lib-1": {
+    "svgBox": [
+     107.9,
+     150,
+     202.9,
+     204
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-lib-2": {
+    "svgBox": [
+     107.9,
+     218,
+     202.9,
+     272
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-lib-3": {
+    "svgBox": [
+     107.9,
+     286,
+     202.9,
+     340
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-cmp-1": {
+    "svgBox": [
+     202.9,
+     177,
+     470.1,
+     268
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-cmp-2": {
+    "svgBox": [
+     202.9,
+     245,
+     470.1,
+     296
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-cmp-3": {
+    "svgBox": [
+     202.9,
+     313,
+     470.1,
+     324
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-exit": {
+    "svgBox": [
+     697.7,
+     236,
+     697.7,
+     376
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-cloud": {
+    "svgBox": [
+     645.1,
+     49.3,
+     789.8,
+     118
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-version": {
+    "svgBox": [
+     696.7,
+     128,
+     748.2,
+     148
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-version-2": {
+    "svgBox": [
+     696.7,
+     128,
+     748.2,
+     148
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-shelf": {
+    "svgBox": [
+     634.4,
+     130,
+     674,
+     146
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-wire": {
+    "svgBox": [
+     722.4,
+     152,
+     722.4,
+     428
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-edge": {
+    "svgBox": [
+     688.8,
+     428,
+     756.1,
+     476
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-edge-ring": {
+    "svgBox": [
+     688.8,
+     418,
+     756.1,
+     486
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-arm": {
+    "svgBox": [
+     808.5,
+     436,
+     896.6,
+     576
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-robohand": {
+    "svgBox": [
+     765,
+     419.4,
+     830.3,
+     474
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-replay": {
+    "svgBox": [
+     759.1,
+     498,
+     820.4,
+     518.9
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-bar": {
+    "svgBox": [
+     618.5,
+     642,
+     915.4,
+     654
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-call": {
+    "svgBox": [
+     723.4,
+     490,
+     725.4,
+     640
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-return": {
+    "svgBox": [
+     737.3,
+     490,
+     741.2,
+     640
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-ruler": {
+    "svgBox": [
+     98.5,
+     241.4,
+     301.9,
+     297
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-eye": {
+    "svgBox": [
+     420.6,
+     500,
+     484,
+     524
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-chart": {
+    "svgBox": [
+     88.1,
+     60,
+     295.9,
+     180
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-chart-dots": {
+    "svgBox": [
+     114.4,
+     102.5,
+     244,
+     129.5
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-alarm": {
+    "svgBox": [
+     220.7,
+     96,
+     260.3,
+     124
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-moon": {
+    "svgBox": [
+     312.8,
+     45,
+     326.6,
+     59
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-loop": {
+    "svgBox": [
+     299.9,
+     23,
+     650.2,
+     70
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-human": {
+    "svgBox": [
+     458.2,
+     13,
+     485.9,
+     44
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-approve": {
+    "svgBox": [
+     493.9,
+     23,
+     510.7,
+     35
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-roll": {
+    "svgBox": [
+     808.5,
+     96,
+     827.7,
+     134
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   }
+  }
+ },
+ "p030": {
+  "viewBox": [
+   0,
+   0,
+   960,
+   720
+  ],
+  "svgRect": {
+   "l": 660.53125,
+   "t": 246.6875,
+   "w": 639.46875,
+   "h": 474.59375
+  },
+  "els": {
+   ".w-conveyor": {
+    "svgBox": [
+     -5.1,
+     577,
+     950.8,
+     583
+    ],
+    "op": 0.25,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-parts": {
+    "svgBox": [
+     183.1,
+     564,
+     577,
+     578
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-bench": {
+    "svgBox": [
+     88.1,
+     512,
+     420.6,
+     576
+    ],
+    "op": 0.22,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-rig": {
+    "svgBox": [
+     113.9,
+     405.5,
+     394.9,
+     494
+    ],
+    "op": 0.22,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-hand": {
+    "svgBox": [
+     105.4,
+     461.4,
+     142.2,
+     472.6
+    ],
+    "op": 0.14,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-hand-path": {
+    "svgBox": [
+     123.8,
+     418.2,
+     392.9,
+     468
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-force": {
+    "svgBox": [
+     175.2,
+     396,
+     325.6,
+     452
+    ],
+    "op": 0.18,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-wave": {
+    "svgBox": [
+     341.5,
+     189,
+     576.6,
+     225
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-ghosts": {
+    "svgBox": [
+     518.9,
+     268.5,
+     611.3,
+     284.5
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 1,
+    "leafVis": "hidden"
+   },
+   ".w-skill-unit": {
+    "svgBox": [
+     458.2,
+     238,
+     693.7,
+     400
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-block": {
+    "svgBox": [
+     470.1,
+     250,
+     618.5,
+     360
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-grip": {
+    "svgBox": [
+     625.4,
+     285.4,
+     665.9,
+     319.3
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-checks": {
+    "svgBox": [
+     482,
+     384,
+     561.1,
+     400
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-block-ring": {
+    "svgBox": [
+     458.2,
+     238,
+     693.7,
+     378
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-gate": {
+    "svgBox": [
+     337.5,
+     178,
+     586.9,
+     244
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-chips": {
+    "svgBox": [
+     240.5,
+     294,
+     470.1,
+     316
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-lib-1": {
+    "svgBox": [
+     107.9,
+     150,
+     202.9,
+     204
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-lib-2": {
+    "svgBox": [
+     107.9,
+     218,
+     202.9,
+     272
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-lib-3": {
+    "svgBox": [
+     107.9,
+     286,
+     202.9,
+     340
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-cmp-1": {
+    "svgBox": [
+     202.9,
+     177,
+     470.1,
+     268
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-cmp-2": {
+    "svgBox": [
+     202.9,
+     245,
+     470.1,
+     296
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-cmp-3": {
+    "svgBox": [
+     202.9,
+     313,
+     470.1,
+     324
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-exit": {
+    "svgBox": [
+     697.7,
+     236,
+     697.7,
+     376
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-cloud": {
+    "svgBox": [
+     645.1,
+     49.3,
+     789.8,
+     118
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-version": {
+    "svgBox": [
+     696.7,
+     128,
+     748.2,
+     148
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-version-2": {
+    "svgBox": [
+     696.7,
+     128,
+     748.2,
+     148
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-shelf": {
+    "svgBox": [
+     634.4,
+     130,
+     674,
+     146
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-wire": {
+    "svgBox": [
+     722.4,
+     152,
+     722.4,
+     428
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-edge": {
+    "svgBox": [
+     688.8,
+     428,
+     756.1,
+     476
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-edge-ring": {
+    "svgBox": [
+     688.8,
+     418,
+     756.1,
+     486
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-arm": {
+    "svgBox": [
+     808.5,
+     436,
+     896.6,
+     576
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-robohand": {
+    "svgBox": [
+     765,
+     419.4,
+     830.3,
+     474
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-replay": {
+    "svgBox": [
+     759.1,
+     498,
+     820.4,
+     518.9
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-bar": {
+    "svgBox": [
+     618.5,
+     642,
+     915.4,
+     654
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-call": {
+    "svgBox": [
+     723.4,
+     490,
+     725.4,
+     640
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-return": {
+    "svgBox": [
+     737.3,
+     490,
+     741.2,
+     640
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-ruler": {
+    "svgBox": [
+     98.5,
+     241.4,
+     301.9,
+     297
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-eye": {
+    "svgBox": [
+     420.6,
+     500,
+     484,
+     524
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-chart": {
+    "svgBox": [
+     88.1,
+     60,
+     295.9,
+     180
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-chart-dots": {
+    "svgBox": [
+     114.4,
+     102.5,
+     244,
+     129.5
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-alarm": {
+    "svgBox": [
+     220.7,
+     96,
+     260.3,
+     124
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-moon": {
+    "svgBox": [
+     312.8,
+     45,
+     326.6,
+     59
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-loop": {
+    "svgBox": [
+     299.9,
+     23,
+     650.2,
+     70
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-human": {
+    "svgBox": [
+     458.2,
+     13,
+     485.9,
+     44
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-approve": {
+    "svgBox": [
+     493.9,
+     23,
+     510.7,
+     35
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-roll": {
+    "svgBox": [
+     808.5,
+     96,
+     827.7,
+     134
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   }
+  }
+ },
+ "p050": {
+  "viewBox": [
+   0,
+   0,
+   960,
+   720
+  ],
+  "svgRect": {
+   "l": 660.53125,
+   "t": 246.6875,
+   "w": 639.46875,
+   "h": 474.59375
+  },
+  "els": {
+   ".w-conveyor": {
+    "svgBox": [
+     38.6,
+     577,
+     994.5,
+     583
+    ],
+    "op": 0.25,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-parts": {
+    "svgBox": [
+     183.1,
+     564,
+     577,
+     578
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-bench": {
+    "svgBox": [
+     88.1,
+     512,
+     420.6,
+     576
+    ],
+    "op": 0.22,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-rig": {
+    "svgBox": [
+     113.9,
+     405.5,
+     394.9,
+     494
+    ],
+    "op": 0.22,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-hand": {
+    "svgBox": [
+     105.4,
+     461.4,
+     142.2,
+     472.6
+    ],
+    "op": 0.14,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-hand-path": {
+    "svgBox": [
+     123.8,
+     418.2,
+     392.9,
+     468
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-force": {
+    "svgBox": [
+     175.2,
+     396,
+     325.6,
+     452
+    ],
+    "op": 0.18,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-wave": {
+    "svgBox": [
+     341.5,
+     189,
+     576.6,
+     225
+    ],
+    "op": 0.18,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-ghosts": {
+    "svgBox": [
+     518.9,
+     268.5,
+     611.3,
+     284.5
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 1,
+    "leafVis": "hidden"
+   },
+   ".w-skill-unit": {
+    "svgBox": [
+     636.4,
+     238,
+     871.9,
+     400
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-block": {
+    "svgBox": [
+     648.2,
+     250,
+     796.7,
+     360
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-grip": {
+    "svgBox": [
+     803.5,
+     285.4,
+     844,
+     319.3
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-checks": {
+    "svgBox": [
+     660.1,
+     384,
+     739.3,
+     400
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-block-ring": {
+    "svgBox": [
+     636.4,
+     238,
+     871.9,
+     378
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-gate": {
+    "svgBox": [
+     337.5,
+     178,
+     586.9,
+     244
+    ],
+    "op": 0.18,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-chips": {
+    "svgBox": [
+     294,
+     294,
+     471.1,
+     316
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 1,
+    "leafVis": "hidden"
+   },
+   ".w-lib-1": {
+    "svgBox": [
+     107.9,
+     150,
+     202.9,
+     204
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-lib-2": {
+    "svgBox": [
+     107.9,
+     218,
+     202.9,
+     272
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-lib-3": {
+    "svgBox": [
+     107.9,
+     286,
+     202.9,
+     340
+    ],
+    "op": 0.15,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-cmp-1": {
+    "svgBox": [
+     202.9,
+     177,
+     470.1,
+     268
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-cmp-2": {
+    "svgBox": [
+     202.9,
+     245,
+     470.1,
+     296
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-cmp-3": {
+    "svgBox": [
+     202.9,
+     313,
+     470.1,
+     324
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-exit": {
+    "svgBox": [
+     697.7,
+     236,
+     697.7,
+     376
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-cloud": {
+    "svgBox": [
+     645.1,
+     49.3,
+     789.8,
+     118
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-version": {
+    "svgBox": [
+     696.7,
+     128,
+     748.2,
+     148
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-version-2": {
+    "svgBox": [
+     696.7,
+     128,
+     748.2,
+     148
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-shelf": {
+    "svgBox": [
+     634.4,
+     130,
+     674,
+     146
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-wire": {
+    "svgBox": [
+     722.4,
+     152,
+     722.4,
+     428
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-edge": {
+    "svgBox": [
+     688.8,
+     428,
+     756.1,
+     476
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-edge-ring": {
+    "svgBox": [
+     688.8,
+     418,
+     756.1,
+     486
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-arm": {
+    "svgBox": [
+     808.5,
+     436,
+     896.6,
+     576
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-robohand": {
+    "svgBox": [
+     765,
+     419.4,
+     830.3,
+     474
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-replay": {
+    "svgBox": [
+     759.1,
+     498,
+     820.4,
+     518.9
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-bar": {
+    "svgBox": [
+     618.5,
+     642,
+     915.4,
+     654
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-call": {
+    "svgBox": [
+     723.4,
+     490,
+     725.4,
+     640
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-return": {
+    "svgBox": [
+     737.3,
+     490,
+     741.2,
+     640
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-ruler": {
+    "svgBox": [
+     98.5,
+     241.4,
+     301.9,
+     297
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-eye": {
+    "svgBox": [
+     420.6,
+     500,
+     484,
+     524
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-chart": {
+    "svgBox": [
+     88.1,
+     60,
+     295.9,
+     180
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-chart-dots": {
+    "svgBox": [
+     114.4,
+     102.5,
+     244,
+     129.5
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-alarm": {
+    "svgBox": [
+     220.7,
+     96,
+     260.3,
+     124
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-moon": {
+    "svgBox": [
+     312.8,
+     45,
+     326.6,
+     59
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-loop": {
+    "svgBox": [
+     299.9,
+     23,
+     650.2,
+     70
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-human": {
+    "svgBox": [
+     458.2,
+     13,
+     485.9,
+     44
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-approve": {
+    "svgBox": [
+     493.9,
+     23,
+     510.7,
+     35
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-roll": {
+    "svgBox": [
+     808.5,
+     96,
+     827.7,
+     134
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   }
+  }
+ },
+ "p068": {
+  "viewBox": [
+   0,
+   0,
+   960,
+   720
+  ],
+  "svgRect": {
+   "l": 660.53125,
+   "t": 246.6875,
+   "w": 639.46875,
+   "h": 474.59375
+  },
+  "els": {
+   ".w-conveyor": {
+    "svgBox": [
+     22.8,
+     577,
+     978.7,
+     583
+    ],
+    "op": 0.25,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-parts": {
+    "svgBox": [
+     183.1,
+     564,
+     577,
+     578
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-bench": {
+    "svgBox": [
+     88.1,
+     512,
+     420.6,
+     576
+    ],
+    "op": 0.5,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-rig": {
+    "svgBox": [
+     113.9,
+     405.5,
+     394.9,
+     494
+    ],
+    "op": 0.22,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-hand": {
+    "svgBox": [
+     105.4,
+     461.4,
+     142.2,
+     472.6
+    ],
+    "op": 0.14,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-hand-path": {
+    "svgBox": [
+     123.8,
+     418.2,
+     392.9,
+     468
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-force": {
+    "svgBox": [
+     175.2,
+     396,
+     325.6,
+     452
+    ],
+    "op": 0.18,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-wave": {
+    "svgBox": [
+     341.5,
+     189,
+     576.6,
+     225
+    ],
+    "op": 0.18,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-ghosts": {
+    "svgBox": [
+     518.9,
+     268.5,
+     611.3,
+     284.5
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 1,
+    "leafVis": "hidden"
+   },
+   ".w-skill-unit": {
+    "svgBox": [
+     704.6,
+     70,
+     803.6,
+     138
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-block": {
+    "svgBox": [
+     709.6,
+     75,
+     772,
+     121.2
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-grip": {
+    "svgBox": [
+     774.9,
+     89.9,
+     791.9,
+     104.1
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-checks": {
+    "svgBox": [
+     714.6,
+     131.3,
+     747.9,
+     138
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-block-ring": {
+    "svgBox": [
+     704.6,
+     70,
+     803.6,
+     128.8
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-gate": {
+    "svgBox": [
+     337.5,
+     178,
+     586.9,
+     244
+    ],
+    "op": 0.18,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-chips": {
+    "svgBox": [
+     294,
+     294,
+     471.1,
+     316
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 1,
+    "leafVis": "hidden"
+   },
+   ".w-lib-1": {
+    "svgBox": [
+     107.9,
+     150,
+     202.9,
+     204
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-lib-2": {
+    "svgBox": [
+     107.9,
+     218,
+     202.9,
+     272
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-lib-3": {
+    "svgBox": [
+     107.9,
+     286,
+     202.9,
+     340
+    ],
+    "op": 0.15,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-cmp-1": {
+    "svgBox": [
+     202.9,
+     177,
+     470.1,
+     268
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-cmp-2": {
+    "svgBox": [
+     202.9,
+     245,
+     470.1,
+     296
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-cmp-3": {
+    "svgBox": [
+     202.9,
+     313,
+     470.1,
+     324
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-exit": {
+    "svgBox": [
+     697.7,
+     236,
+     697.7,
+     376
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-cloud": {
+    "svgBox": [
+     645.1,
+     49.3,
+     789.8,
+     118
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-version": {
+    "svgBox": [
+     696.7,
+     128,
+     748.2,
+     148
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-version-2": {
+    "svgBox": [
+     696.7,
+     128,
+     748.2,
+     148
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-shelf": {
+    "svgBox": [
+     634.4,
+     130,
+     674,
+     146
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-wire": {
+    "svgBox": [
+     722.4,
+     152,
+     722.4,
+     428
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-edge": {
+    "svgBox": [
+     688.8,
+     428,
+     756.1,
+     476
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-edge-ring": {
+    "svgBox": [
+     688.8,
+     418,
+     756.1,
+     486
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-arm": {
+    "svgBox": [
+     808.5,
+     436,
+     896.6,
+     576
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-robohand": {
+    "svgBox": [
+     765,
+     419.4,
+     830.3,
+     474
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-replay": {
+    "svgBox": [
+     759.1,
+     498,
+     820.4,
+     518.9
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-bar": {
+    "svgBox": [
+     618.5,
+     642,
+     915.4,
+     654
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-call": {
+    "svgBox": [
+     723.4,
+     490,
+     725.4,
+     640
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-return": {
+    "svgBox": [
+     737.3,
+     490,
+     741.2,
+     640
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-ruler": {
+    "svgBox": [
+     98.5,
+     241.4,
+     301.9,
+     297
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-eye": {
+    "svgBox": [
+     420.6,
+     500,
+     484,
+     524
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-chart": {
+    "svgBox": [
+     88.1,
+     60,
+     295.9,
+     180
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-chart-dots": {
+    "svgBox": [
+     114.4,
+     102.5,
+     244,
+     129.5
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-alarm": {
+    "svgBox": [
+     220.7,
+     96,
+     260.3,
+     124
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-moon": {
+    "svgBox": [
+     312.8,
+     45,
+     326.6,
+     59
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-loop": {
+    "svgBox": [
+     299.9,
+     23,
+     650.2,
+     70
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-human": {
+    "svgBox": [
+     458.2,
+     13,
+     485.9,
+     44
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-approve": {
+    "svgBox": [
+     493.9,
+     23,
+     510.7,
+     35
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-roll": {
+    "svgBox": [
+     808.5,
+     96,
+     827.7,
+     134
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   }
+  }
+ },
+ "p088": {
+  "viewBox": [
+   0,
+   0,
+   960,
+   720
+  ],
+  "svgRect": {
+   "l": 660.53125,
+   "t": 246.6875,
+   "w": 639.46875,
+   "h": 474.59375
+  },
+  "els": {
+   ".w-conveyor": {
+    "svgBox": [
+     7.1,
+     577,
+     963,
+     583
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-parts": {
+    "svgBox": [
+     183.1,
+     564,
+     577,
+     578
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-bench": {
+    "svgBox": [
+     88.1,
+     512,
+     420.6,
+     576
+    ],
+    "op": 0.5,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-rig": {
+    "svgBox": [
+     113.9,
+     405.5,
+     394.9,
+     494
+    ],
+    "op": 0.22,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-hand": {
+    "svgBox": [
+     105.4,
+     461.4,
+     142.2,
+     472.6
+    ],
+    "op": 0.14,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-hand-path": {
+    "svgBox": [
+     123.8,
+     418.2,
+     392.9,
+     468
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-force": {
+    "svgBox": [
+     175.2,
+     396,
+     325.6,
+     452
+    ],
+    "op": 0.18,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-wave": {
+    "svgBox": [
+     341.5,
+     189,
+     576.6,
+     225
+    ],
+    "op": 0.18,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-ghosts": {
+    "svgBox": [
+     518.9,
+     268.5,
+     611.3,
+     284.5
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 1,
+    "leafVis": "hidden"
+   },
+   ".w-skill-unit": {
+    "svgBox": [
+     704.6,
+     70,
+     803.6,
+     138
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-block": {
+    "svgBox": [
+     709.6,
+     75,
+     772,
+     121.2
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-grip": {
+    "svgBox": [
+     774.9,
+     89.9,
+     791.9,
+     104.1
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-checks": {
+    "svgBox": [
+     714.6,
+     131.3,
+     747.9,
+     138
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-block-ring": {
+    "svgBox": [
+     704.6,
+     70,
+     803.6,
+     128.8
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-gate": {
+    "svgBox": [
+     337.5,
+     178,
+     586.9,
+     244
+    ],
+    "op": 0.18,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-chips": {
+    "svgBox": [
+     294,
+     294,
+     471.1,
+     316
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 1,
+    "leafVis": "hidden"
+   },
+   ".w-lib-1": {
+    "svgBox": [
+     107.9,
+     150,
+     202.9,
+     204
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-lib-2": {
+    "svgBox": [
+     107.9,
+     218,
+     202.9,
+     272
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-lib-3": {
+    "svgBox": [
+     107.9,
+     286,
+     202.9,
+     340
+    ],
+    "op": 0.15,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-cmp-1": {
+    "svgBox": [
+     202.9,
+     177,
+     470.1,
+     268
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-cmp-2": {
+    "svgBox": [
+     202.9,
+     245,
+     470.1,
+     296
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-cmp-3": {
+    "svgBox": [
+     202.9,
+     313,
+     470.1,
+     324
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-exit": {
+    "svgBox": [
+     697.7,
+     236,
+     697.7,
+     376
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-cloud": {
+    "svgBox": [
+     645.1,
+     49.3,
+     789.8,
+     118
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-version": {
+    "svgBox": [
+     696.7,
+     128,
+     748.2,
+     148
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-version-2": {
+    "svgBox": [
+     696.7,
+     128,
+     748.2,
+     148
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-shelf": {
+    "svgBox": [
+     634.4,
+     130,
+     674,
+     146
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-wire": {
+    "svgBox": [
+     722.4,
+     152,
+     722.4,
+     428
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-edge": {
+    "svgBox": [
+     688.8,
+     428,
+     756.1,
+     476
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-edge-ring": {
+    "svgBox": [
+     688.8,
+     418,
+     756.1,
+     486
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-arm": {
+    "svgBox": [
+     808.5,
+     436,
+     896.6,
+     576
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-robohand": {
+    "svgBox": [
+     765,
+     419.4,
+     830.3,
+     474
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-replay": {
+    "svgBox": [
+     759.1,
+     498,
+     820.4,
+     518.9
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-bar": {
+    "svgBox": [
+     618.5,
+     642,
+     915.4,
+     654
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-call": {
+    "svgBox": [
+     723.4,
+     490,
+     725.4,
+     640
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-return": {
+    "svgBox": [
+     737.3,
+     490,
+     741.2,
+     640
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-ruler": {
+    "svgBox": [
+     98.5,
+     241.4,
+     151.5,
+     297
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 1,
+    "leafVis": "hidden"
+   },
+   ".w-eye": {
+    "svgBox": [
+     420.6,
+     500,
+     484,
+     524
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-chart": {
+    "svgBox": [
+     88.1,
+     60,
+     295.9,
+     180
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-chart-dots": {
+    "svgBox": [
+     114.4,
+     102.5,
+     244,
+     129.5
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-alarm": {
+    "svgBox": [
+     220.7,
+     96,
+     260.3,
+     124
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-moon": {
+    "svgBox": [
+     312.8,
+     45,
+     326.6,
+     59
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-loop": {
+    "svgBox": [
+     299.9,
+     23,
+     650.2,
+     70
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-human": {
+    "svgBox": [
+     458.2,
+     13,
+     485.9,
+     44
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-approve": {
+    "svgBox": [
+     493.9,
+     23,
+     510.7,
+     35
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-roll": {
+    "svgBox": [
+     808.5,
+     96,
+     827.7,
+     134
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   }
+  }
+ },
+ "p099": {
+  "viewBox": [
+   -40,
+   -30,
+   1040,
+   800
+  ],
+  "svgRect": {
+   "l": 660.53125,
+   "t": 246.6875,
+   "w": 639.46875,
+   "h": 474.59375
+  },
+  "els": {
+   ".w-conveyor": {
+    "svgBox": [
+     3.6,
+     577,
+     935.6,
+     583
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-parts": {
+    "svgBox": [
+     190.6,
+     564,
+     574.6,
+     578
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-bench": {
+    "svgBox": [
+     97.9,
+     512,
+     422.1,
+     576
+    ],
+    "op": 0.5,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-rig": {
+    "svgBox": [
+     123,
+     405.5,
+     397,
+     494
+    ],
+    "op": 0.22,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-hand": {
+    "svgBox": [
+     114.7,
+     461.4,
+     150.6,
+     472.6
+    ],
+    "op": 0.14,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-hand-path": {
+    "svgBox": [
+     132.7,
+     418.2,
+     395.1,
+     468
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-force": {
+    "svgBox": [
+     182.8,
+     396,
+     329.5,
+     452
+    ],
+    "op": 0.18,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-wave": {
+    "svgBox": [
+     344.9,
+     189,
+     574.2,
+     225
+    ],
+    "op": 0.18,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-ghosts": {
+    "svgBox": [
+     517.9,
+     268.5,
+     608.1,
+     284.5
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 1,
+    "leafVis": "hidden"
+   },
+   ".w-skill-unit": {
+    "svgBox": [
+     699,
+     70,
+     795.5,
+     138
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-block": {
+    "svgBox": [
+     703.9,
+     75,
+     764.7,
+     121.2
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-grip": {
+    "svgBox": [
+     767.5,
+     89.9,
+     784.1,
+     104.1
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-checks": {
+    "svgBox": [
+     708.8,
+     131.3,
+     741.2,
+     138
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-block-ring": {
+    "svgBox": [
+     699,
+     70,
+     795.5,
+     128.8
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-gate": {
+    "svgBox": [
+     341.1,
+     178,
+     584.2,
+     244
+    ],
+    "op": 0.18,
+    "vis": "visible",
+    "leafOp": 0,
+    "leafVis": "hidden"
+   },
+   ".w-chips": {
+    "svgBox": [
+     298.6,
+     294,
+     471.3,
+     316
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 1,
+    "leafVis": "hidden"
+   },
+   ".w-lib-1": {
+    "svgBox": [
+     117.2,
+     150,
+     209.9,
+     204
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-lib-2": {
+    "svgBox": [
+     117.2,
+     218,
+     209.9,
+     272
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-lib-3": {
+    "svgBox": [
+     117.2,
+     286,
+     209.9,
+     340
+    ],
+    "op": 0.15,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-cmp-1": {
+    "svgBox": [
+     209.9,
+     177,
+     470.4,
+     268
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-cmp-2": {
+    "svgBox": [
+     209.9,
+     245,
+     470.4,
+     296
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-cmp-3": {
+    "svgBox": [
+     209.9,
+     313,
+     470.4,
+     324
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-exit": {
+    "svgBox": [
+     692.3,
+     236,
+     692.3,
+     376
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-cloud": {
+    "svgBox": [
+     640.9,
+     49.3,
+     782,
+     118
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-version": {
+    "svgBox": [
+     691.3,
+     122,
+     741.5,
+     142
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 1,
+    "leafVis": "hidden"
+   },
+   ".w-version-2": {
+    "svgBox": [
+     691.3,
+     128,
+     741.5,
+     148
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-shelf": {
+    "svgBox": [
+     630.5,
+     130,
+     669.1,
+     146
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-wire": {
+    "svgBox": [
+     716.4,
+     152,
+     716.4,
+     428
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-edge": {
+    "svgBox": [
+     683.6,
+     428,
+     749.2,
+     476
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-edge-ring": {
+    "svgBox": [
+     683.6,
+     418,
+     749.2,
+     486
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-arm": {
+    "svgBox": [
+     800.3,
+     436,
+     886.2,
+     576
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-robohand": {
+    "svgBox": [
+     757.9,
+     419.4,
+     821.5,
+     474
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-replay": {
+    "svgBox": [
+     752.1,
+     498,
+     811.9,
+     518.9
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-bar": {
+    "svgBox": [
+     615.1,
+     642,
+     904.5,
+     654
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-call": {
+    "svgBox": [
+     717.3,
+     490,
+     719.3,
+     640
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-return": {
+    "svgBox": [
+     730.9,
+     490,
+     734.7,
+     640
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-ruler": {
+    "svgBox": [
+     107.9,
+     241.9,
+     159.7,
+     297.4
+    ],
+    "op": 0,
+    "vis": "hidden",
+    "leafOp": 1,
+    "leafVis": "hidden"
+   },
+   ".w-eye": {
+    "svgBox": [
+     422.1,
+     500,
+     483.9,
+     524
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-chart": {
+    "svgBox": [
+     97.9,
+     60,
+     300.5,
+     180
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-chart-dots": {
+    "svgBox": [
+     123.5,
+     102.5,
+     249.9,
+     129.5
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-alarm": {
+    "svgBox": [
+     227.2,
+     96,
+     265.8,
+     124
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-moon": {
+    "svgBox": [
+     316.9,
+     45,
+     330.5,
+     59
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-loop": {
+    "svgBox": [
+     304.4,
+     23,
+     645.9,
+     70
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-human": {
+    "svgBox": [
+     458.8,
+     13,
+     485.8,
+     44
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-approve": {
+    "svgBox": [
+     493.5,
+     23,
+     509.9,
+     35
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   },
+   ".w-roll": {
+    "svgBox": [
+     800.3,
+     96,
+     819,
+     134
+    ],
+    "op": 1,
+    "vis": "visible",
+    "leafOp": 1,
+    "leafVis": "visible"
+   }
+  }
+ }
+}

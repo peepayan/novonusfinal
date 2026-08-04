@@ -1,0 +1,76 @@
+{
+ "globals": {
+  "gsap": false,
+  "ScrollTrigger": false,
+  "THREE": false,
+  "Lenis": true,
+  "next": true,
+  "react": false,
+  "nuxt": false,
+  "framer": false,
+  "spline": false,
+  "rive": false,
+  "lottie": false,
+  "webflow": false
+ },
+ "scriptSrcs": [
+  "https://scale.com/_next/static/chunks/1ze7x4knconm6.js?dpl=dpl_AUbkoinF8sHbKwcuj1FmrHfM3WJQ",
+  "https://scale.com/_next/static/chunks/119r37ulfhbk3.js?dpl=dpl_AUbkoinF8sHbKwcuj1FmrHfM3WJQ",
+  "https://scale.com/_next/static/chunks/30fofq5cejy8y.js?dpl=dpl_AUbkoinF8sHbKwcuj1FmrHfM3WJQ",
+  "https://scale.com/_next/static/chunks/325m1xy7rjsw4.js?dpl=dpl_AUbkoinF8sHbKwcuj1FmrHfM3WJQ",
+  "https://scale.com/_next/static/chunks/turbopack-33_o5jxtdgvjk.js?dpl=dpl_AUbkoinF8sHbKwcuj1FmrHfM3WJQ",
+  "https://scale.com/_next/static/chunks/3zuoh8km7yiv8.js?dpl=dpl_AUbkoinF8sHbKwcuj1FmrHfM3WJQ",
+  "https://scale.com/_next/static/chunks/00uggmhdw2il8.js?dpl=dpl_AUbkoinF8sHbKwcuj1FmrHfM3WJQ",
+  "https://scale.com/_next/static/chunks/2bjp6ck638huq.js?dpl=dpl_AUbkoinF8sHbKwcuj1FmrHfM3WJQ",
+  "https://scale.com/_next/static/chunks/2y4a0uyilwzeu.js?dpl=dpl_AUbkoinF8sHbKwcuj1FmrHfM3WJQ",
+  "https://scale.com/_next/static/chunks/3esf2rtjkvjxm.js?dpl=dpl_AUbkoinF8sHbKwcuj1FmrHfM3WJQ",
+  "https://scale.com/_next/static/chunks/2dqwqf2agsbub.js?dpl=dpl_AUbkoinF8sHbKwcuj1FmrHfM3WJQ",
+  "https://scale.com/_next/static/chunks/1h-nktqotvq9o.js?dpl=dpl_AUbkoinF8sHbKwcuj1FmrHfM3WJQ",
+  "https://scale.com/_next/static/chunks/058lqrxt2uxao.js?dpl=dpl_AUbkoinF8sHbKwcuj1FmrHfM3WJQ",
+  "https://scale.com/_next/static/chunks/3rwenc2msoz08.js?dpl=dpl_AUbkoinF8sHbKwcuj1FmrHfM3WJQ",
+  "https://scale.com/_next/static/chunks/220x12az1z-7-.js?dpl=dpl_AUbkoinF8sHbKwcuj1FmrHfM3WJQ",
+  "https://scale.com/_next/static/chunks/2h95cdrwef5jx.js?dpl=dpl_AUbkoinF8sHbKwcuj1FmrHfM3WJQ",
+  "https://scale.com/_next/static/chunks/32ku5m29t5qz7.js?dpl=dpl_AUbkoinF8sHbKwcuj1FmrHfM3WJQ",
+  "https://scale.com/_next/static/chunks/0l0-ur_w84dhb.js?dpl=dpl_AUbkoinF8sHbKwcuj1FmrHfM3WJQ",
+  "https://scale.com/_next/static/chunks/1kk0bm0mep66x.js?dpl=dpl_AUbkoinF8sHbKwcuj1FmrHfM3WJQ",
+  "https://scale.com/_next/static/chunks/2q1tlmqk-w3pd.js?dpl=dpl_AUbkoinF8sHbKwcuj1FmrHfM3WJQ",
+  "https://scale.com/_next/static/chunks/3pq7b8ftt9m6s.js?dpl=dpl_AUbkoinF8sHbKwcuj1FmrHfM3WJQ",
+  "https://scale.com/_next/static/chunks/3r7e5df2x98yx.js?dpl=dpl_AUbkoinF8sHbKwcuj1FmrHfM3WJQ",
+  "https://scale.com/_next/static/chunks/3qxvu1_ipdwn2.js?dpl=dpl_AUbkoinF8sHbKwcuj1FmrHfM3WJQ",
+  "https://scale.com/_next/static/chunks/3m48e5cpb4877.js?dpl=dpl_AUbkoinF8sHbKwcuj1FmrHfM3WJQ",
+  "https://scale.com/_next/static/chunks/1wu0gf-jr42rw.js?dpl=dpl_AUbkoinF8sHbKwcuj1FmrHfM3WJQ",
+  "https://scale.com/_next/static/chunks/3v9644d93j3l9.js?dpl=dpl_AUbkoinF8sHbKwcuj1FmrHfM3WJQ",
+  "https://scale.com/_next/static/chunks/1eydtu0bwqoht.js?dpl=dpl_AUbkoinF8sHbKwcuj1FmrHfM3WJQ",
+  "https://scale.com/_next/static/chunks/0cz1d0mv5g_q7.js?dpl=dpl_AUbkoinF8sHbKwcuj1FmrHfM3WJQ",
+  "https://scale.com/_next/static/chunks/1cf2811wjp4nq.js?dpl=dpl_AUbkoinF8sHbKwcuj1FmrHfM3WJQ",
+  "https://scale.com/_next/static/chunks/2e6u9_upi30z2.js?dpl=dpl_AUbkoinF8sHbKwcuj1FmrHfM3WJQ",
+  "https://scale.com/_next/static/chunks/0rxgojpd1-3gk.js?dpl=dpl_AUbkoinF8sHbKwcuj1FmrHfM3WJQ",
+  "https://scale.com/7564ce1d8f3f09bb/script.js",
+  "https://scale.com/081a60a83494f0f1/script.js",
+  "https://scale.com/_next/static/chunks/1bx771g20xncj.js?dpl=dpl_AUbkoinF8sHbKwcuj1FmrHfM3WJQ",
+  "https://scale.com/_next/static/chunks/1760bbo5a7g96.js?dpl=dpl_AUbkoinF8sHbKwcuj1FmrHfM3WJQ",
+  "https://scale.com/_next/static/chunks/3d_kl-nud67uu.js?dpl=dpl_AUbkoinF8sHbKwcuj1FmrHfM3WJQ",
+  "https://scale.com/_next/static/chunks/143taqw2xrqvz.js?dpl=dpl_AUbkoinF8sHbKwcuj1FmrHfM3WJQ",
+  "https://scale.com/_next/static/chunks/0nqj35xk6vdh2.js?dpl=dpl_AUbkoinF8sHbKwcuj1FmrHfM3WJQ",
+  "https://scale.com/_next/static/chunks/06y67m5e-e4h_.js?dpl=dpl_AUbkoinF8sHbKwcuj1FmrHfM3WJQ",
+  "https://scale.com/_next/static/chunks/0p4hjgytkz9zh.js?dpl=dpl_AUbkoinF8sHbKwcuj1FmrHfM3WJQ"
+ ],
+ "canvases": 1,
+ "videos": [
+  {
+   "src": "https://cdn.sanity.io/files/50zba0eo/production/97c3da76fd2ebdb89834e10e0aed5f090a2754e1.mp4",
+   "autoplay": true,
+   "loop": true
+  },
+  {
+   "src": "https://cdn.sanity.io/files/50zba0eo/production/f431eed439caa66dbb64280b91c889e837da570e.mp4",
+   "autoplay": true,
+   "loop": true
+  },
+  {
+   "src": "https://scale.com/static/assets/videos/Packed.mp4",
+   "autoplay": true,
+   "loop": true
+  }
+ ]
+}
