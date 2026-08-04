@@ -558,7 +558,9 @@ function BrandLockup() {
               <path d="M1.5 1.2v8.6a.6.6 0 0 0 .92.5l7-4.3a.6.6 0 0 0 0-1.02l-7-4.3A.6.6 0 0 0 1.5 1.2z" />
             </svg>
           </span>
-          Demo Video
+          {/* Label hidden on mobile — the narrow bar can't fit it next to
+              the centered lockup; the play icon + aria-label remain. */}
+          <span className="hidden md:inline">Demo Video</span>
         </motion.button>
       )}
 
@@ -745,7 +747,7 @@ function BrandLockup() {
    SIDEBAR
    ========================================================================== */
 
-const NAV_ITEMS = ["System", "Markets", "Insights", "Resources", "About"];
+const NAV_ITEMS = ["System", "Markets", "About"];
 
 function Sidebar({ onContactClick }: { onContactClick?: () => void }) {
   const { phase } = useIntro();
@@ -1856,13 +1858,22 @@ function TopographicalDots({
       if (safari) return; // cursor effects disabled on Safari to reduce per-frame JS work
       /* Use HOST's rect — the canvas may be CSS-transformed for the
          card tilt, which would shift `canvas.getBoundingClientRect`
-         and silently break cursor coords. The host stays untransformed. */
+         and silently break cursor coords. The host stays untransformed.
+         Listening on window (with a bounds check) rather than on host
+         keeps the ripple alive while the cursor is over the selectable
+         text layers stacked above the canvas. */
       const rect = host.getBoundingClientRect();
-      cursor.x = e.clientX - rect.left;
-      cursor.y = e.clientY - rect.top;
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      if (x < 0 || y < 0 || x > rect.width || y > rect.height) {
+        cursor.has = false;
+        return;
+      }
+      cursor.x = x;
+      cursor.y = y;
       if (!cursor.has) {
-        prev.x = cursor.x;
-        prev.y = cursor.y;
+        prev.x = x;
+        prev.y = y;
         cursor.has = true;
       }
     };
@@ -1870,7 +1881,7 @@ function TopographicalDots({
       cursor.has = false;
     };
 
-    host.addEventListener("pointermove", onMove);
+    window.addEventListener("pointermove", onMove, { passive: true });
     host.addEventListener("pointerleave", onLeave);
     const ro = new ResizeObserver(resize);
     ro.observe(host);
@@ -2249,7 +2260,7 @@ function TopographicalDots({
       disposed = true;
       cancelAnimationFrame(raf);
       visObs.disconnect();
-      host.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointermove", onMove);
       host.removeEventListener("pointerleave", onLeave);
       ro.disconnect();
     };
@@ -2305,7 +2316,7 @@ function TopographicalDots({
    colour-blending letters always trails the head. Smooth feel.
    ========================================================================== */
 const SLIDE2_TEXT =
-  "Modern robotics has been training on the wrong data.";
+  "Contact-rich assembly still gets programmed the hard way.";
 
 function RevealChar({
   char,
@@ -2558,60 +2569,72 @@ function staggerWindows(
    sit on different lines than the white base, misaligning the
    colored wipe. */
 const MODERN_TELEOP_SUBTITLE_TOKENS = [
-  "It's", "reactive", "by", "nature.",
-  "It", "takes", "weeks", "to", "collect,",
-  "gets", "latency-corrupted", "at", "capture,",
-  "and", "only", "captures", "kinematics,",
-  "never", "force.", "Built", "for", "trajectory",
-  "replay,", "not", "contact-rich", "manipulation,",
-  "the", "signal", "that", "decides", "whether",
-  "fragile", "parts", "survive", "was", "never",
-  "in", "the", "data.",
+  "Teach-pendant", "and", "teleoperation", "methods",
+  "stop", "the", "line", "and", "tie", "up", "a",
+  "specialist.", "Teaching", "a", "single", "complex",
+  "part", "can", "cost", "on", "the", "order", "of",
+  "16", "hours", "of", "robot", "downtime.¹", "And",
+  "integration", "runs", "an", "estimated", "4–6×",
+  "the", "price", "of", "the", "robot", "itself,²",
+  "with", "programming", "and", "integration",
+  "together", "making", "up", "50–70%", "of", "what",
+  "a", "robot", "application", "costs.³",
 ] as const;
 
 const ERODING_SUBTITLE_TOKENS = [
-  "79%", "of", "US", "manufacturers", "cite", "skilled",
-  "labor", "as", "their", "top", "constraint,", "with",
-  "50", "million", "manufacturing", "jobs", "projected",
-  "unfilled", "by", "2030.", "Modern", "assembly", "demands",
-  "more", "precision", "than", "ever,", "but", "training",
-  "takes", "6-12", "months", "and", "fewer", "workers",
-  "are", "entering", "the", "trade.",
+  "Up", "to", "1.9", "million", "US", "manufacturing",
+  "jobs", "could", "go", "unfilled", "by", "2033.⁴",
+  "The", "people", "who", "can", "feel", "when", "a",
+  "connector", "seats", "or", "a", "cable", "is",
+  "about", "to", "jam", "take", "months", "to",
+  "train —", "and", "fewer", "are", "entering",
+  "the", "trade.",
 ] as const;
 
 const HERO_TITLE_TOKENS = [
-  "Training", "Robots", "using", "Brain-Muscle", "signals",
+  "Infrastructure", "for", "Training",
+  "Robots", "in", "Manufacturing",
 ] as const;
 
 const HERO_SUBTITLE_TOKENS = [
-  "We", "capture", "muscle", "signals", "from", "human",
-  "operators", "during", "demonstration,", "close", "the",
-  "sim-to-real", "gap", "on", "contact", "dynamics,", "and",
-  "produce", "industrial", "robots", "that", "inherit",
-  "human", "force", "intuition", "for", "contact-rich",
-  "assembly", "tasks", "vision-only", "and",
-  "teleoperation-based", "systems", "cannot", "solve.",
+  "Integration", "costs", "five", "times", "the",
+  "robot", "arm,", "Novonus", "takes", "care", "of",
+  "it.", "Workers", "perform", "the", "task", "in",
+  "our", "sensor", "rig,", "we", "process", "it",
+  "and", "robots", "run", "it", "in", "hours,",
+  "not", "weeks.", "Skills", "live", "in", "the",
+  "cloud", "so", "they're",
+  "never", "lost", "and", "deployable", "any", "time.",
 ] as const;
 
+/* Count of trailing accent tokens in the hero subtitle — the
+   "never lost and deployable any time." phrase.
+   Shared by the base render and both colour overlays so the
+   bolded spans always wrap at identical points. */
+const HERO_SUBTITLE_ACCENT_COUNT = 6;
+
 const MODERN_TELEOP_TITLE_TOKENS = [
-  "Current", "Teleoperation", "systems", "are", "outdated",
+  "Programming", "takes", "the", "robot —", "and",
+  "an", "expert —", "offline",
 ] as const;
 
 const ERODING_TITLE_TOKENS = [
-  "The", "skilled", "labor", "base", "is", "eroding",
+  "The", "hands", "that", "know", "how", "hard",
+  "to", "press", "are", "getting", "scarce",
 ] as const;
 
 const GAP_TITLE_TOKENS = [
-  "The", "sim-to-real", "gap", "is", "still", "wide",
+  "Vision", "alone", "plateaus", "on", "contact",
 ] as const;
 
 const GAP_SUBTITLE_TOKENS = [
-  "Visual", "and", "kinematic", "accuracy", "have", "been",
-  "advancing,", "but", "contact", "dynamics", "remain",
-  "unsolved.", "No", "simulator", "can", "model", "the",
-  "friction,", "deformation,", "and", "multi-point",
-  "interactions", "that", "determine", "whether", "industrial",
-  "assembly", "automation", "succeeds.",
+  "A", "camera", "sees", "where", "a", "part", "goes;",
+  "it", "can't", "feel", "the", "force", "that",
+  "decides", "whether", "it", "seats", "or", "binds.",
+  "Simulators", "still", "can't", "reliably", "model",
+  "the", "friction,", "deformation,", "and",
+  "multi-point", "contact", "that", "determine",
+  "whether", "the", "task", "actually", "succeeds.",
 ] as const;
 
 /* Shared initial/final states for the text-block entrance animations.
@@ -2664,6 +2687,7 @@ function Hero() {
   const { phase, skipIntroAnim } = useIntro();
   const openContact = useContext(ContactModalCtx);
   const isSafari = useContext(SafariCtx);
+  const isMobile = useIsMobile();
   /* Heading reveal is gated on `done` — the dark page sits empty while
      the logo finishes docking, then the text smoothly fades in. */
   const textReady = phase === "done";
@@ -2686,11 +2710,12 @@ function Hero() {
      Skilled labor → Sim-to-real gap, with all the morphs). */
   const [deepDive, setDeepDive] = useState(false);
 
-  /* Abrupt cut to Current Teleop when Learn More is clicked. NOT a
-     smooth scroll — the user should feel like the page snaps to a
-     different room. scrollYProgress 0.51 (≈4.0 viewports into the
-     section) lands just after visionReady triggers, so the Current
-     Teleop title is on screen the instant the new mode commits. */
+  /* Abrupt cut to the first problem slide when Learn More is clicked.
+     NOT a smooth scroll — the user should feel like the page snaps to
+     a different room. 4.75 viewports = scrollYProgress ≈ 0.61 of the
+     880svh pin, just past the visionReady cue (0.594), so the
+     "Programming takes the robot — and an expert — offline" slide is
+     on screen the instant the new mode commits. */
   const handleLearnMore = () => {
     setDeepDive(true);
     requestAnimationFrame(() => {
@@ -2699,7 +2724,7 @@ function Hero() {
         if (!sec) return;
         const rect = sec.getBoundingClientRect();
         const sectionTop = rect.top + window.scrollY;
-        const targetY = sectionTop + window.innerHeight * 4.0;
+        const targetY = sectionTop + window.innerHeight * 4.75;
         window.scrollTo({ top: targetY, behavior: "instant" as ScrollBehavior });
       });
     });
@@ -2740,8 +2765,14 @@ function Hero() {
     let endY = 0;
     const updateBounds = () => {
       const sectionTop = sec.getBoundingClientRect().top + window.scrollY;
-      startY = sectionTop + window.innerHeight * 3.9;
-      endY = sectionTop + window.innerHeight * 6.4;
+      /* 4.75 viewports matches the Learn More entry snap — the first
+         problem slide is the floor of the room, so scrolling up never
+         reveals the textless morph run-in. */
+      startY = sectionTop + window.innerHeight * 4.75;
+      /* 7.8 viewports = scrollYProgress 1.0 of the 880svh pin — the end
+         of the cliff sequence, so the third problem (Sim-to-real Gap)
+         is reachable before the trap clamps. */
+      endY = sectionTop + window.innerHeight * 7.8;
     };
     updateBounds();
 
@@ -2806,6 +2837,11 @@ function Hero() {
   const morphProgress = useTransform(scrollYProgress, [0.177, 0.400], [0, 1]);
   const dotEnterProgress = useTransform(scrollYProgress, [0.080, 0.161], [0, 1]);
   const boxAlphaProgress = useTransform(scrollYProgress, [0.113, 0.161], [1, 0]);
+  /* Once slide 1 has fully faded, drop it from hit-testing and text
+     selection so drags over later beats never grab invisible copy. */
+  const slide1Visibility = useTransform(boxAlphaProgress, (v) =>
+    v > 0.02 ? "visible" : "hidden",
+  );
 
   const dotFillProgress = useTransform(scrollYProgress, [0.113, 0.177], [0, 1]);
   const heroBg = useTransform(invertProgress, [0, 1], ["#f5efe5", "#0f0e0d"]);
@@ -2832,6 +2868,13 @@ function Hero() {
   /* Fade the Current Teleop text out the instant earth morph begins */
   const visionTextExit = useTransform(scrollYProgress, [0.649, 0.669], [1, 0]);
   const erodingTextExit = useTransform(scrollYProgress, [0.799, 0.819], [1, 0]);
+  /* Exited deep-dive text also leaves hit-testing/selection. */
+  const visionTextVisibility = useTransform(visionTextExit, (v) =>
+    v > 0.02 ? "visible" : "hidden",
+  );
+  const erodingTextVisibility = useTransform(erodingTextExit, (v) =>
+    v > 0.02 ? "visible" : "hidden",
+  );
   const earthMorphProgress = useTransform(earthMorphRaw, (v) => (deepDive ? v : 0));
   const earthOffsetProgress = useTransform(earthOffsetRaw, (v) => (deepDive ? v : 0));
   /* Cliffs morph + phase. cliffMorph drives the dot positions from
@@ -2890,6 +2933,9 @@ function Hero() {
   const headlinesTogetherOpacity = useTransform(
     headlinesTogetherRaw,
     (v) => (deepDive ? 0 : v),
+  );
+  const headlinesVisibility = useTransform(headlinesTogetherOpacity, (v) =>
+    v > 0.02 ? "visible" : "hidden",
   );
   const learnMorePointer = useTransform(headlinesTogetherRaw, (v) =>
     !deepDive && v > 0.5 ? "auto" : "none",
@@ -3001,9 +3047,14 @@ function Hero() {
               position: "absolute",
               left: 0,
               right: 0,
-              top: "min(calc(50% + min(42.5vh, 290px) + 1rem), calc(100svh - 5rem))",
+              /* Mobile reserves room for the wrapped second row of CTAs
+                 so "Start a pilot" never clips at the fold. */
+              top: isMobile
+                ? "min(calc(50% + min(42.5vh, 290px) + 1rem), calc(100svh - 9.5rem))"
+                : "min(calc(50% + min(42.5vh, 290px) + 1rem), calc(100svh - 5rem))",
               zIndex: 10,
               opacity: boxAlphaProgress,
+              visibility: slide1Visibility,
               display: "flex",
               justifyContent: "center",
               gap: "0.75rem",
@@ -3011,8 +3062,14 @@ function Hero() {
               padding: "0 1rem",
             }}
           >
-            <a
-              href="https://novonus.com/demo"
+            <button
+              type="button"
+              onClick={() => {
+                const el = document.getElementById("force-grounded");
+                if (!el) return;
+                const top = el.getBoundingClientRect().top + window.scrollY;
+                window.scrollTo({ top, behavior: "smooth" });
+              }}
               style={{
                 fontFamily: "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
                 fontSize: "clamp(0.85rem, 0.95vw, 1rem)",
@@ -3024,16 +3081,15 @@ function Hero() {
                 color: "#0f0e0d",
                 letterSpacing: "0.01em",
                 cursor: "pointer",
-                textDecoration: "none",
                 display: "inline-flex",
                 alignItems: "center",
                 gap: "0.5rem",
                 whiteSpace: "nowrap",
               }}
             >
-              View Demo
-              <span aria-hidden style={{ fontSize: "0.9em" }}>↗</span>
-            </a>
+              See how it works
+              <span aria-hidden style={{ fontSize: "0.9em" }}>↓</span>
+            </button>
             <button
               type="button"
               onClick={openContact}
@@ -3078,7 +3134,7 @@ function Hero() {
                 whiteSpace: "nowrap",
               }}
             >
-              Book a call
+              Start a pilot
             </button>
           </motion.div>
 
@@ -3132,23 +3188,24 @@ function Hero() {
               style={{
                 bottom: "clamp(4rem, 8vh, 7rem)",
                 opacity: headlinesTogetherOpacity,
+                visibility: headlinesVisibility,
               }}
               aria-hidden={deepDive}
             >
               <div className="mx-auto flex max-w-[1320px] flex-col items-center gap-8 px-10 lg:px-14">
-                <div className="pointer-events-none grid w-full grid-cols-3 gap-8 lg:gap-12">
+                <div className="pointer-events-auto grid w-full grid-cols-3 gap-8 lg:gap-12">
                   {[
                     {
                       tokens: MODERN_TELEOP_TITLE_TOKENS,
-                      note: "Vision-only stacks plateau on contact-rich tasks. Tactile force sensors aren't accurate enough for precise manufacturing.",
+                      note: "Teach-pendant and teleoperation methods stop the line and tie up a specialist — around 16 hours of robot downtime to teach one complex part.",
                     },
                     {
                       tokens: ERODING_TITLE_TOKENS,
-                      note: "Skilled labor is really expensive now. 50M manufacturing roles projected unfilled by 2030.",
+                      note: "Up to 1.9M US manufacturing jobs could go unfilled by 2033. The hands that know how hard to press take months to train.",
                     },
                     {
                       tokens: GAP_TITLE_TOKENS,
-                      note: "No simulator yet models friction, deformation, or multi-point contact.",
+                      note: "A camera sees where a part goes; it can't feel the force that decides whether it seats or binds.",
                     },
                   ].map((col, idx) => (
                     <div key={idx} className="flex flex-col">
@@ -3226,7 +3283,7 @@ function Hero() {
           <motion.div
             className="pointer-events-none absolute inset-0 z-[7] hidden items-center md:flex"
             aria-hidden={!visionReady}
-            style={{ opacity: visionTextExit }}
+            style={{ opacity: visionTextExit, visibility: visionTextVisibility }}
           >
             <div
               className="pointer-events-none w-full"
@@ -3255,6 +3312,7 @@ function Hero() {
                   }}
                   style={{
                     position: "relative",
+                    pointerEvents: "auto",
                     fontFamily:
                       "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
                     fontWeight: 600,
@@ -3404,6 +3462,7 @@ function Hero() {
                   }}
                   style={{
                     position: "relative",
+                    pointerEvents: "auto",
                     fontFamily:
                       "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
                     fontWeight: 400,
@@ -3540,7 +3599,7 @@ function Hero() {
           <motion.div
             className="pointer-events-none absolute inset-0 z-[7] hidden items-center md:flex"
             aria-hidden={!erodingReady}
-            style={{ opacity: erodingTextExit }}
+            style={{ opacity: erodingTextExit, visibility: erodingTextVisibility }}
           >
             <div
               className="pointer-events-none w-full"
@@ -3569,6 +3628,7 @@ function Hero() {
                   }}
                   style={{
                     position: "relative",
+                    pointerEvents: "auto",
                     fontFamily:
                       "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
                     fontWeight: 600,
@@ -3700,6 +3760,7 @@ function Hero() {
                   }}
                   style={{
                     position: "relative",
+                    pointerEvents: "auto",
                     fontFamily:
                       "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
                     fontWeight: 400,
@@ -3841,6 +3902,7 @@ function Hero() {
                   }}
                   style={{
                     position: "relative",
+                    pointerEvents: "auto",
                     fontFamily:
                       "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
                     fontWeight: 600,
@@ -3952,6 +4014,7 @@ function Hero() {
                   }}
                   style={{
                     position: "relative",
+                    pointerEvents: "auto",
                     fontFamily:
                       "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif",
                     fontWeight: 400,
@@ -4055,7 +4118,7 @@ function Hero() {
           <motion.div
             aria-hidden
             className="pointer-events-none absolute inset-0 z-[5] flex items-center justify-center"
-            style={{ opacity: boxAlphaProgress }}
+            style={{ opacity: boxAlphaProgress, visibility: slide1Visibility }}
           >
             <div
               className="border border-[rgba(245,239,229,0.18)]"
@@ -4064,7 +4127,7 @@ function Hero() {
           </motion.div>
           <motion.div
             className="pointer-events-none absolute inset-0 z-[5] flex items-center justify-center px-6 md:px-10"
-            style={{ opacity: boxAlphaProgress }}
+            style={{ opacity: boxAlphaProgress, visibility: slide1Visibility }}
           >
             <div className="pointer-events-none flex flex-col items-center justify-center" style={{ width: "min(92vw, 1060px)", height: "min(85svh, 580px)" }}>
               {/* Eyebrow — rises from its overflow-hidden barrier after the title */}
@@ -4076,7 +4139,7 @@ function Hero() {
                 }}
               >
                 <motion.p
-                  className="pointer-events-none"
+                  className="pointer-events-auto"
                   initial={skipIntroAnim ? TEXT_FINAL : TEXT_INITIAL}
                   animate={{
                     y: textReady ? "0%" : "120%",
@@ -4105,13 +4168,11 @@ function Hero() {
                   {(() => {
                     const tokens = [
                       "[",
-                      "training",
-                      "pipeline",
+                      "robot",
+                      "programming",
                       "for",
-                      "robots",
-                      "powered",
-                      "by",
-                      "humans",
+                      "contact-rich",
+                      "assembly",
                       "]",
                     ];
                     const wins = staggerWindows(
@@ -4173,7 +4234,7 @@ function Hero() {
                       pointerEvents: "none",
                     }}
                   >
-                    [ training pipeline for robots powered by humans ]
+                    [ robot programming for contact-rich assembly ]
                   </motion.span>
                   {/* Green overlay — sits on top of the purple, wipes
                       off first so green → purple → normal. */}
@@ -4210,7 +4271,7 @@ function Hero() {
                       pointerEvents: "none",
                     }}
                   >
-                    [ training pipeline for robots powered by humans ]
+                    [ robot programming for contact-rich assembly ]
                   </motion.span>
                 </motion.p>
               </div>
@@ -4221,7 +4282,7 @@ function Hero() {
                 style={{ overflow: "hidden", paddingBottom: "0.2em" }}
               >
                 <motion.h1
-                  className="pointer-events-none text-balance"
+                  className="pointer-events-auto text-balance"
                   initial={
                     skipIntroAnim
                       ? { y: "0%", opacity: 1 }
@@ -4252,11 +4313,12 @@ function Hero() {
                 >
                   {(() => {
                     const tokens = [
+                      "Infrastructure",
+                      "for",
                       "Training",
                       "Robots",
-                      "using",
-                      "Brain-Muscle",
-                      "signals",
+                      "in",
+                      "Manufacturing",
                     ];
                     const wins = staggerWindows(
                       tokens.length,
@@ -4395,7 +4457,7 @@ function Hero() {
                 }}
               >
                 <motion.p
-                  className="pointer-events-none"
+                  className="pointer-events-auto"
                   initial={skipIntroAnim ? TEXT_FINAL : TEXT_INITIAL}
                   animate={{
                     y: textReady ? "0%" : "120%",
@@ -4422,43 +4484,52 @@ function Hero() {
                 >
                   {(() => {
                     const darkTokens = [
-                      "We",
-                      "capture",
-                      "muscle",
-                      "signals",
-                      "from",
-                      "human",
-                      "operators",
-                      "during",
-                      "demonstration,",
-                      "close",
+                      "Integration",
+                      "costs",
+                      "five",
+                      "times",
                       "the",
-                      "sim-to-real",
-                      "gap",
-                      "on",
-                      "contact",
-                      "dynamics,",
+                      "robot",
+                      "arm,",
+                      "Novonus",
+                      "takes",
+                      "care",
+                      "of",
+                      "it.",
+                      "Workers",
+                      "perform",
+                      "the",
+                      "task",
+                      "in",
+                      "our",
+                      "sensor",
+                      "rig,",
+                      "we",
+                      "process",
+                      "it",
                       "and",
-                      "produce",
-                      "industrial",
                       "robots",
-                      "that",
-                      "inherit",
-                      "human",
-                      "force",
-                      "intuition",
-                      "for",
-                      "contact-rich",
-                      "assembly",
-                      "tasks",
+                      "run",
+                      "it",
+                      "in",
+                      "hours,",
+                      "not",
+                      "weeks.",
+                      "Skills",
+                      "live",
+                      "in",
+                      "the",
+                      "cloud",
+                      "so",
+                      "they're",
                     ];
                     const accentTokens = [
-                      "vision-only",
+                      "never",
+                      "lost",
                       "and",
-                      "teleoperation-based",
-                      "systems",
-                      "cannot",
-                      "solve.",
+                      "deployable",
+                      "any",
+                      "time.",
                     ];
                     const tokens = [
                       ...darkTokens.map((t) => ({ t, accent: false })),
@@ -4526,7 +4597,7 @@ function Hero() {
                   >
                     {renderTokenOverlay(HERO_SUBTITLE_TOKENS, {
                       accent: (i) =>
-                        i >= HERO_SUBTITLE_TOKENS.length - 4,
+                        i >= HERO_SUBTITLE_TOKENS.length - HERO_SUBTITLE_ACCENT_COUNT,
                     })}
                   </motion.span>
                   {/* Green overlay — sits on top of purple, wipes off
@@ -4566,7 +4637,7 @@ function Hero() {
                   >
                     {renderTokenOverlay(HERO_SUBTITLE_TOKENS, {
                       accent: (i) =>
-                        i >= HERO_SUBTITLE_TOKENS.length - 4,
+                        i >= HERO_SUBTITLE_TOKENS.length - HERO_SUBTITLE_ACCENT_COUNT,
                     })}
                   </motion.span>
                 </motion.p>
@@ -4643,56 +4714,52 @@ const TERM_PIPELINE: TermItem[] = [
   { kind: "comment", text: "# initializing novonus pipeline...", delayBefore: 0 },
   { kind: "blank", delayBefore: 420 },
 
-  { kind: "command", text: "$ capture --emg --vision --imu --sync", delayBefore: 380 },
-  { kind: "output", text: "  → EMG channels (4): active", delayBefore: 260 },
+  { kind: "command", text: "$ demonstrate --glove --vision --scan", delayBefore: 380 },
+  { kind: "output", text: "  → tactile array: streaming", delayBefore: 260 },
+  { kind: "output", text: "  → flex sensors: hand pose locked", delayBefore: 220 },
+  { kind: "output", text: "  → wrist IMU: orientation locked", delayBefore: 200 },
   { kind: "output", text: "  → RealSense D435i: streaming RGB-D", delayBefore: 220 },
-  { kind: "output", text: "  → IMU: orientation locked", delayBefore: 200 },
-  { kind: "output", text: "  → LSL sync: <1ms drift", delayBefore: 220 },
-  { kind: "status", marker: "OK", text: "all sensors online", delayBefore: 320 },
+  { kind: "output", text: "  → workspace scan: 3D mesh captured", delayBefore: 220 },
+  { kind: "status", marker: "OK", text: "demonstration captured at the bench", delayBefore: 320 },
   { kind: "blank", delayBefore: 240 },
 
-  { kind: "command", text: "$ process --filter --normalize --label", delayBefore: 360 },
-  { kind: "output", text: "  → bandpass 20-450Hz: applied", delayBefore: 240 },
-  { kind: "output", text: "  → mains rejection 60/120/180Hz: applied", delayBefore: 220 },
-  { kind: "output", text: "  → MVC normalization: per-operator calibrated", delayBefore: 220 },
-  { kind: "output", text: "  → LSTM intention estimator: running", delayBefore: 220 },
+  { kind: "command", text: "$ retarget --robot --gripper", delayBefore: 360 },
+  { kind: "output", text: "  → end-effector trajectory: solved", delayBefore: 240 },
+  { kind: "output", text: "  → target force profile: mapped", delayBefore: 220 },
   { kind: "progress", delayBefore: 280 },
-  { kind: "status", marker: "OK", text: "signals cleaned and labeled", delayBefore: 280 },
+  { kind: "status", marker: "OK", text: "demonstration rebuilt for your robot", delayBefore: 280 },
   { kind: "blank", delayBefore: 240 },
 
-  { kind: "command", text: "$ fuse --multimodal", delayBefore: 360 },
-  { kind: "output", text: "  → vision encoder (DINOv2): 384-dim features", delayBefore: 240 },
-  { kind: "output", text: "  → emg encoder (1D-CNN): 128-dim features", delayBefore: 220 },
-  { kind: "output", text: "  → temporal alignment: sub-ms", delayBefore: 220 },
-  { kind: "status", marker: "OK", text: "observation tensor assembled", delayBefore: 300 },
-  { kind: "blank", delayBefore: 240 },
-
-  { kind: "command", text: "$ augment --newton --domain-random", delayBefore: 360 },
-  { kind: "output", text: "  → physics scene compiled", delayBefore: 240 },
-  { kind: "output", text: "  → variations: pose, friction, lighting", delayBefore: 220 },
-  { kind: "output", text: "  → real demos: 50 → synthetic samples: 5000", delayBefore: 220 },
+  { kind: "command", text: "$ verify --against-demo --force-profile", delayBefore: 360 },
+  { kind: "output", text: "  → variations: pose, friction, lighting", delayBefore: 240 },
+  { kind: "output", text: "  → force match: checked per sample", delayBefore: 220 },
+  { kind: "output", text: "  → outside tolerance: discarded", delayBefore: 220 },
   { kind: "progress", delayBefore: 280 },
-  { kind: "status", marker: "OK", text: "dataset expanded 100x", delayBefore: 280 },
+  { kind: "status", marker: "OK", text: "only verified data kept", delayBefore: 280 },
   { kind: "blank", delayBefore: 240 },
 
-  { kind: "command", text: "$ train --diffusion-policy --multimodal", delayBefore: 360 },
-  { kind: "output", text: "  → architecture: Diffusion Policy", delayBefore: 240 },
-  { kind: "output", text: "  → action horizon: 16 frames", delayBefore: 220 },
-  { kind: "output", text: "  → conditioning: vision + emg + state", delayBefore: 220 },
+  { kind: "command", text: "$ train --force-aware", delayBefore: 360 },
+  { kind: "output", text: "  → conditioning: vision + touch + state", delayBefore: 240 },
+  { kind: "output", text: "  → validation pass: on your actual robot", delayBefore: 220 },
   { kind: "progress", delayBefore: 280 },
-  { kind: "status", marker: "OK", text: "policy trained, validation passed", delayBefore: 280 },
+  { kind: "status", marker: "OK", text: "skill trained, validation passed", delayBefore: 280 },
   { kind: "blank", delayBefore: 240 },
 
-  { kind: "command", text: "$ deploy --tensorrt --edge", delayBefore: 360 },
-  { kind: "output", text: "  → model optimized: FP16", delayBefore: 240 },
-  { kind: "output", text: "  → target: Jetson AGX Orin", delayBefore: 220 },
-  { kind: "output", text: "  → middleware: ROS 2 Humble", delayBefore: 220 },
-  { kind: "output", text: "  → safety supervisor: active", delayBefore: 220 },
-  { kind: "status", marker: "DONE", text: "policy deployed to robot", delayBefore: 320 },
+  { kind: "command", text: "$ deploy --runtime --handoff", delayBefore: 360 },
+  { kind: "output", text: "  → robot program handoff: configured", delayBefore: 240 },
+  { kind: "output", text: "  → one-click rollback: armed", delayBefore: 220 },
+  { kind: "status", marker: "DONE", text: "skill live on your line", delayBefore: 320 },
   { kind: "blank", delayBefore: 280 },
 
+  { kind: "command", text: "$ improve --monitor", delayBefore: 360 },
+  { kind: "output", text: "  → independent success check: every cycle", delayBefore: 240 },
+  { kind: "output", text: "  → drift detected → retrain → propose", delayBefore: 220 },
+  { kind: "output", text: "  → your team approves before it ships", delayBefore: 220 },
+  { kind: "status", marker: "OK", text: "improvement loop armed", delayBefore: 280 },
+  { kind: "blank", delayBefore: 240 },
+
   { kind: "comment", text: "# pipeline complete.", delayBefore: 360 },
-  { kind: "comment", text: "# robots inherit human force intuition.", delayBefore: 260 },
+  { kind: "comment", text: "# your best worker's touch, on every shift.", delayBefore: 260 },
   { kind: "promptCursor", delayBefore: 320 },
 ];
 
@@ -5535,7 +5602,7 @@ function SiteFooter() {
     };
   }, []);
 
-  const text = "NOVONUS — THE TRAINING LAYER FOR INDUSTRIAL ROBOTICS — ";
+  const text = "NOVONUS — ROBOT PROGRAMMING FOR CONTACT-RICH ASSEMBLY — ";
   const looped = text.repeat(12);
 
   return (
@@ -5581,6 +5648,16 @@ function SiteFooter() {
       <div
         className="relative mx-auto max-w-[1400px] px-6 py-10 md:px-10 md:py-12"
       >
+        {/* Sources — anchors the ¹²³⁴ markers used in the problem section */}
+        <div
+          className="mb-8 flex flex-col gap-1.5 font-mono text-[9px] uppercase tracking-[0.14em] md:text-[10px]"
+          style={{ color: "rgba(245,239,229,0.45)" }}
+        >
+          <p>¹ Robot downtime to teach one complex part — teach-pendant baseline estimate.</p>
+          <p>² Integration ≈ 4–6× the robot&apos;s cost — Yaskawa via Engineering.com; MIT (Shah) cites 4–5×.</p>
+          <p>³ Programming + integration = 50–70% of a robot application&apos;s cost — International Federation of Robotics.</p>
+          <p>⁴ Up to 1.9M unfilled US manufacturing jobs by 2033 — Deloitte / The Manufacturing Institute, 2024.</p>
+        </div>
         <div
           className="flex flex-col items-start justify-between gap-2 text-[12px] md:flex-row md:items-center md:text-[13px]"
           style={{ color: "rgba(245,239,229,0.62)" }}
@@ -5588,7 +5665,7 @@ function SiteFooter() {
           <p style={{ letterSpacing: "0.01em" }}>
             Novonus{" "}
             <span style={{ color: "rgba(245,239,229,0.18)", margin: "0 0.4em" }}>—</span>
-            The training layer for industrial robotics
+            Robot programming for contact-rich assembly
           </p>
           <p style={{ fontVariantNumeric: "tabular-nums" }}>© 2026</p>
         </div>
@@ -5950,7 +6027,7 @@ function EtymologyEntry() {
             >
               <span style={{ fontWeight: 600, marginRight: "0.5rem" }}>1</span>
               <span style={{ color: muted, marginRight: "0.4rem" }}>:</span>
-              the mind; the intellect; the faculty by which one apprehends.
+              the mind; the intellect; the practical know-how by which one grasps a task.
             </p>
           </article>
         </div>
@@ -5978,7 +6055,7 @@ function EtymologyEntry() {
         >
           <span style={{ fontWeight: 600, marginRight: "0.55rem" }}>1</span>
           <span style={{ color: muted, marginRight: "0.45rem" }}>:</span>
-          the making of a new mind.
+          renewing what your best hands already know.
         </p>
 
         {/* CHEEKY TAILPIECE — sits below the compound definition,
@@ -5998,7 +6075,7 @@ function EtymologyEntry() {
             letterSpacing: "0.005em",
           }}
         >
-          because that&rsquo;s what we help robots do.
+          because that&rsquo;s what we move onto your floor.
         </p>
       </div>
     </div>
@@ -6485,23 +6562,23 @@ function ForceGroundedSection() {
   const steps = [
     {
       num: "01",
-      title: "Capture",
-      body: "The demonstrator wears our rig, capturing the force intuition cameras and teleoperation miss.",
+      title: "Demonstrate",
+      body: "Your skilled worker performs the real task at a bench in our loaned multi-sensor glove — no robot programmer, no line stoppage.",
     },
     {
       num: "02",
-      title: "Learn",
-      body: "We predict force and intent from muscle signals, grounded in real force data.",
+      title: "Verify",
+      body: "We rebuild each demonstration for your robot and generate variations, checking every one against the real force profile. Only verified data trains the skill.",
     },
     {
       num: "03",
-      title: "Ground",
-      body: "We augment demos into thousands of scenarios, keeping only what matches reality.",
+      title: "Deploy",
+      body: "The skill runs on the arms and grippers you already own — your robot's program hands off and takes control back. One-click rollback, any time.",
     },
     {
       num: "04",
-      title: "Deploy",
-      body: "A force-aware policy runs on your existing robots, safety supervisor included.",
+      title: "Improve",
+      body: "An independent success test checks every cycle. When results drift, we retrain and propose an update — your team approves before anything ships.",
     },
   ];
 
@@ -6529,6 +6606,16 @@ function ForceGroundedSection() {
 
   // Pipeline container: fades in at 0.745→0.785, stays
   const pipelineOpacity = useTransform(scrollYProgress, [0.745, 0.785], [0, 1]);
+
+  /* Crossfade phases stack on top of each other; fully-faded phases are
+     also hidden from hit-testing and text selection so dragging a
+     selection only ever grabs the visible phase's copy. */
+  const solutionVisibility = useTransform(solutionOpacity, (v) => (v > 0.02 ? "visible" : "hidden"));
+  const headerVisibility = useTransform(headerOpacity, (v) => (v > 0.02 ? "visible" : "hidden"));
+  const phase3Visibility = useTransform(phase3Opacity, (v) => (v > 0.02 ? "visible" : "hidden"));
+  const whyVisibility = useTransform(whyOpacity, (v) => (v > 0.02 ? "visible" : "hidden"));
+  const phase4Visibility = useTransform(phase4Opacity, (v) => (v > 0.02 ? "visible" : "hidden"));
+  const pipelineVisibility = useTransform(pipelineOpacity, (v) => (v > 0.02 ? "visible" : "hidden"));
 
   const [hasPhase2, setHasPhase2] = useState(false);
   const [hasBox1, setHasBox1] = useState(false);
@@ -6578,7 +6665,9 @@ function ForceGroundedSection() {
     >
       <section
         className="relative overflow-hidden"
-        style={{ position: "sticky", top: 0, height: "100vh" }}
+        /* Solid cream fallback behind the WebGL gradient — if the shader
+           fails to initialize, the ink text stays readable. */
+        style={{ position: "sticky", top: 0, height: "100vh", backgroundColor: "#f0e6d3" }}
       >
         {/* Gradient background — shared across all phases */}
         <MeshGradient
@@ -6601,7 +6690,7 @@ function ForceGroundedSection() {
             gap: "2rem",
             opacity: solutionOpacity,
             y: solutionY,
-            pointerEvents: "none",
+            visibility: solutionVisibility,
           }}
         >
           {/* eyebrow reveal */}
@@ -6675,7 +6764,26 @@ function ForceGroundedSection() {
               maxWidth: "48ch",
             }}
           >
-            Cameras, motion sensors, tactile gloves, and EMG sensors capture the demonstration; our pipeline turns it into deployable robot policies
+            Your worker performs the real task at a bench in our multi-sensor glove — dense touch, finger pose, motion, and vision, captured together. Our pipeline turns those demonstrations into a verified, force-aware skill your robot can run.
+          </motion.p>
+
+          {/* Pull-quote — the section's one-line thesis */}
+          <motion.p
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: hasEntered ? 1 : 0, y: hasEntered ? 0 : 12 }}
+            transition={{ duration: 0.75, delay: 0.72, ease: [0.22, 1, 0.36, 1] }}
+            style={{
+              fontFamily: tight,
+              fontSize: "clamp(1rem, 1.2vw, 1.2rem)",
+              fontWeight: 500,
+              lineHeight: 1.55,
+              letterSpacing: "-0.01em",
+              color: ink,
+              margin: 0,
+              maxWidth: "44ch",
+            }}
+          >
+            Vision-only systems see the task; ours feels it — and it gets better every shift it runs.
           </motion.p>
         </motion.div>
 
@@ -6685,6 +6793,7 @@ function ForceGroundedSection() {
             position: "absolute",
             inset: 0,
             opacity: headerOpacity,
+            visibility: headerVisibility,
             display: "flex",
             flexDirection: "column",
             willChange: "opacity",
@@ -6737,7 +6846,7 @@ function ForceGroundedSection() {
                     margin: 0,
                   }}
                 >
-                  Collect, Train and Deploy With Us
+                  Demonstrate, verify, deploy — with you in the loop.
                 </motion.h2>
               </div>
             </div>
@@ -6770,7 +6879,7 @@ function ForceGroundedSection() {
                       margin: 0,
                     }}
                   >
-                    Force-Grounded Intelligence for Precision Manufacturing
+                    Force-aware skills for contact-rich assembly.
                   </motion.h2>
                 </div>
               </div>
@@ -6790,17 +6899,14 @@ function ForceGroundedSection() {
                     margin: 0,
                   }}
                 >
-                  Novonus is a complete imitation learning pipeline for capturing
-                  human force expertise, training force-aware policies, and
-                  deploying them onto existing industrial robots. It records how
-                  skilled operators apply force during contact-rich tasks, through
-                  muscle signals, force, motion, and vision, and grounds training
-                  in that real human data. This gives robots the force awareness
-                  vision-only systems lack, and closes the sim-to-real gap by
-                  verifying every simulated scenario against real human force. The
-                  result is reliable automation for the fragile, high-precision
-                  assembly current systems can&apos;t handle, turning expert human
-                  touch into robots that keep it.
+                  Novonus is a robot programming company for contact-rich
+                  assembly. Your skilled worker demonstrates the task by hand; we
+                  capture it, verify it against the real demonstration —
+                  especially the force — and deploy a force-aware skill onto the
+                  ordinary arms and grippers you already run. Every skill is
+                  validated on your actual robot before handover — a brief
+                  scheduled pass, not production downtime — and it keeps improving
+                  every shift it runs, with your team approving each change.
                 </motion.p>
               </div>
               )}
@@ -6858,7 +6964,9 @@ function ForceGroundedSection() {
                         transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
                         style={{
                           fontFamily: tight,
-                          fontSize: "clamp(1.5rem, 2vw, 2rem)",
+                          /* Mobile floor keeps "Demonstrate" from clipping
+                             inside the narrow 2-up boxes. */
+                          fontSize: isMobile ? "clamp(1.1rem, 5.4vw, 1.5rem)" : "clamp(1.5rem, 2vw, 2rem)",
                           fontWeight: 700,
                           letterSpacing: "-0.022em",
                           color: ink,
@@ -6897,6 +7005,7 @@ function ForceGroundedSection() {
             position: "absolute",
             inset: 0,
             opacity: phase3Opacity,
+            visibility: phase3Visibility,
             display: "flex",
             flexDirection: "column",
             willChange: "opacity",
@@ -6925,7 +7034,7 @@ function ForceGroundedSection() {
                   transition={{ duration: 0.9, delay: 0.12, ease: [0.16, 1, 0.3, 1] }}
                   style={{ fontFamily: tight, fontSize: "clamp(2.6rem, 4.5vw, 5.5rem)", fontWeight: 300, lineHeight: 1.05, letterSpacing: "-0.025em", color: ink, margin: 0 }}
                 >
-                  Companies needing precise automation for skilled manufacturing
+                  Manufacturers with arms already on the floor and high-mix work to do.
                 </motion.h2>
               </div>
             </div>
@@ -6938,10 +7047,10 @@ function ForceGroundedSection() {
               style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.75rem", flexShrink: 0 }}
             >
               <span style={{ fontFamily: jb, fontSize: "0.72rem", fontWeight: 400, letterSpacing: "0.18em", color: inkGhost, textTransform: "uppercase" }}>
-                Industries targeted
+                Where it fits
               </span>
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap", justifyContent: "center" }}>
-                {["Medical Device Assembly", "Aerospace & Defense", "Semiconductor & Electronics", "Automotive Precision Parts", "Industrial Equipment", "Robotics & Automation"].map((tag, i) => (
+                {["Connector Mating", "Cable & Harness Insertion", "Precise Placement", "Machine Tending with Part-to-Part Variance"].map((tag, i) => (
                   <motion.span
                     key={tag}
                     initial={{ opacity: 0, y: 6 }}
@@ -6955,13 +7064,12 @@ function ForceGroundedSection() {
               </div>
             </motion.div>
 
-            {/* Customer boxes — 2×2 on mobile, 4-col on desktop */}
-            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : "repeat(4, 1fr)", gap: "clamp(0.5rem, 1vw, 1rem)", flexShrink: 0 }}>
+            {/* Customer boxes — 2-col on mobile (third spans full row), 3-col on desktop */}
+            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : "repeat(3, 1fr)", gap: "clamp(0.5rem, 1vw, 1rem)", flexShrink: 0 }}>
               {[
-                { title: "Contract Manufacturers", body: "High-mix, low-volume shops doing connector, harness, and delicate assembly by hand. We automate the force-critical steps they can't staff, without disrupting the lines they already run." },
-                { title: "Precision OEMs", body: "Aerospace, medical, and electronics makers whose fragile assembly still needs skilled human hands. We capture that expertise before it retires and deploy it onto the robots they already own." },
-                { title: "Hardware Startups", body: "Fast-moving teams hand-building delicate prototypes and low-volume products. We give them force-aware automation early, so precision assembly never becomes their bottleneck." },
-                { title: "Robotics Platforms", body: "Companies building the arms and humanoids that need force intelligence to handle contact-rich work. We provide the training layer that teaches their hardware the human touch." },
+                { title: "Contract Manufacturers", body: "High-mix, low-volume shops doing connector, harness, and delicate assembly by hand. We automate the force-critical steps they can't reliably staff, without disrupting the lines they already run." },
+                { title: "Precision OEMs", body: "Aerospace, medical, and electronics makers whose fragile assembly still needs skilled human hands. We capture that expertise and deploy it onto the arms and grippers they already own." },
+                { title: "High-Mix Plants with Idle Arms", body: "Teams that bought robots for one job and can't justify re-programming them for the next. We stand up new skills between cycles, so an underused arm earns its keep across changeovers." },
               ].map((card, i) => (
                 <motion.div
                   key={card.title}
@@ -6976,6 +7084,7 @@ function ForceGroundedSection() {
                     flexDirection: "column",
                     gap: "0.5rem",
                     overflow: "hidden",
+                    gridColumn: isMobile && i === 2 ? "1 / -1" : "auto",
                   }}
                 >
                   <h3 style={{ fontFamily: tight, fontSize: "clamp(1.05rem, 1.3vw, 1.3rem)", fontWeight: 700, letterSpacing: "-0.02em", color: ink, margin: 0 }}>{card.title}</h3>
@@ -6994,14 +7103,14 @@ function ForceGroundedSection() {
               {/* Left: eyebrow + heading, bottom-aligned with paragraph */}
               <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", flexShrink: 0 }}>
                 <span style={{ fontFamily: jb, fontSize: "clamp(0.7rem, 0.85vw, 0.85rem)", fontWeight: 400, letterSpacing: "0.18em", color: "#6d28d9", textTransform: "uppercase" }}>
-                  [ Hardware Agnostic Training ]
+                  [ Runs on What You Already Own ]
                 </span>
-                <h3 style={{ fontFamily: tight, fontSize: "clamp(2.2rem, 3.5vw, 4rem)", fontWeight: 300, letterSpacing: "-0.03em", color: ink, margin: 0, flexShrink: 0, lineHeight: 1.05 }}>
-                  Train on Robots You Rely on
+                <h3 style={{ fontFamily: tight, fontSize: "clamp(2.2rem, 3.5vw, 4rem)", fontWeight: 300, letterSpacing: "-0.03em", color: ink, margin: 0, flexShrink: 0, lineHeight: 1.05, maxWidth: "20ch" }}>
+                  Deploy on the robots you already run.
                 </h3>
               </div>
               <p style={{ fontFamily: tight, fontSize: "clamp(0.88rem, 1vw, 1rem)", fontWeight: 400, lineHeight: 1.72, color: inkMuted, margin: 0 }}>
-                Our Physical AI is built for multi-embodiment, training on human data and not robot specific control, supporting diverse hardware options by retargeting a single set of human demonstrations across robots rather than re-collecting data for each one. Novonus trains the robots you already rely on, no new hardware, no rebuilding your line.
+                Skills are robot-agnostic by design: the output is end-effector motion and a target force the arm realizes through its own motion, not vendor-specific code. Because we capture human demonstrations rather than one robot&apos;s control scheme, a skill trained once can deploy across the arms on your floor. We bring up support for mainstream industrial arms one platform at a time.
               </p>
             </motion.div>}
 
@@ -7014,6 +7123,7 @@ function ForceGroundedSection() {
             position: "absolute",
             inset: 0,
             opacity: whyOpacity,
+            visibility: whyVisibility,
             display: "flex",
             flexDirection: "column",
             willChange: "opacity",
@@ -7051,20 +7161,20 @@ function ForceGroundedSection() {
             <div style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
               {[
                 {
-                  heading: "Beyond sight. Beyond force.",
-                  body: "Cameras can't feel how hard to grip. Force sensors can, but they miss how stiff the hand is — the muscle co-contraction that makes a grip loose or rigid. Two grips with identical force can behave completely differently, and that difference shapes whether a delicate part seats or jams. EMG reads that stiffness straight from the muscle: the compliance skilled hands use that cameras and touch sensors both miss.",
+                  heading: "Force is the missing signal.",
+                  body: "A camera sees where a part goes; it can't feel how hard to press. Contact-rich assembly is decided by forces a vision-only system never sees. Our glove captures that force as your worker performs the task, and the skill we deliver is trained to reproduce it — no force sensor needed on your robot.",
                 },
                 {
                   heading: "Grounded in reality.",
-                  body: "Simulators can't model real contact physics, so robots trained in them fail on real parts. We verify every simulated scenario against real human force, keeping only what holds up. Reality is our filter.",
+                  body: "Simulators can't fully model real contact, so a skill trained only in sim fails on real parts. We verify every generated scenario against the real human demonstration and keep only what holds up — then validate on your actual robot before it ships. Reality is our filter.",
                 },
                 {
                   heading: "Runs on the robots you trust.",
-                  body: "No new hardware, no rebuilding your line. Because we capture human intent rather than robot-specific control, our policies deploy onto the grippers, arms, and humanoids you already own.",
+                  body: "No new hardware on the robot, no rebuilding your line. Because we capture human demonstrations rather than robot-specific code, skills deploy onto the arms and grippers you already own.",
                 },
                 {
                   heading: "Deep where the giants stay shallow.",
-                  body: "General-purpose robotics companies chase broad capability. We go deep on the fragile, force-critical assembly they can't prioritize — building the richest force dataset in the hardest corner of manufacturing.",
+                  body: "General-purpose robotics chases broad capability. We go deep on the fragile, force-critical assembly others skip — building a verified force dataset in the hardest corner of manufacturing.",
                 },
               ].map((item, i) => (
                 <motion.div
@@ -7144,7 +7254,7 @@ function ForceGroundedSection() {
             padding: "0 clamp(2rem, 8vw, 10rem)",
             gap: "2rem",
             opacity: phase4Opacity,
-            pointerEvents: "none",
+            visibility: phase4Visibility,
           }}
         >
           <div style={{ overflow: "hidden", paddingBottom: "0.1em" }}>
@@ -7179,7 +7289,7 @@ function ForceGroundedSection() {
 
         {/* ── PIPELINE PHASES 5–9: single persistent container ── */}
         <motion.div
-          style={{ position: "absolute", inset: 0, opacity: pipelineOpacity, display: "flex", flexDirection: "column", willChange: "opacity" }}
+          style={{ position: "absolute", inset: 0, opacity: pipelineOpacity, visibility: pipelineVisibility, display: "flex", flexDirection: "column", willChange: "opacity" }}
         >
           {/* Static header — renders once, never re-animates between steps */}
           <div style={{ paddingTop: "clamp(6rem, 11vh, 11rem)", display: "flex", flexDirection: "column", alignItems: "center", gap: "0.15rem", flexShrink: 0 }}>
@@ -7204,11 +7314,11 @@ function ForceGroundedSection() {
                 >
                   {(() => {
                     const steps = [
-                      { num: "01", title: "Sync",    body: "All sensor streams, muscle, force, motion, and vision, are locked to a common clock, so every modality aligns to the same instant." },
-                      { num: "02", title: "Process", body: "Each stream is cleaned and normalized: filtering muscle signals, calibrating force to real units, fusing motion, and encoding vision into scene features." },
-                      { num: "03", title: "Learn",   body: "A model predicts force and intent from the multimodal data, grounded against real force sensors so it learns what human touch actually feels like." },
-                      { num: "04", title: "Ground",  body: "Each demonstration is augmented into thousands of simulated scenarios, keeping only those that match real human force, closing the sim-to-real gap." },
-                      { num: "05", title: "Deploy",  body: "The verified data trains a force-aware policy that runs on your existing robots, with a real-time safety supervisor watching contact force." },
+                      { num: "01", title: "Demonstrate", body: "Your skilled worker performs the real task at a bench in our multi-sensor glove — dense touch, finger pose, motion, and vision, captured together while the line keeps running." },
+                      { num: "02", title: "Retarget",    body: "Each demonstration is rebuilt for your specific robot and gripper: end-effector motion plus a target force profile, not vendor-specific code." },
+                      { num: "03", title: "Verify",      body: "We generate variations of every demonstration and check each one against the real human data — especially the force profile. Only verified samples are allowed to train the skill." },
+                      { num: "04", title: "Deploy",      body: "The force-aware skill runs on the arms you already own. Your robot's own program hands off for the contact-rich step and takes control back — one-click rollback, any time." },
+                      { num: "05", title: "Improve",     body: "An independent success test checks every cycle. When results drift, Novonus detects it, retrains, and proposes an update — your team approves before anything ships." },
                     ];
                     const { num, title, body } = steps[pipelineStep];
                     return (
@@ -7281,10 +7391,10 @@ function ContentSections() {
             style={{ padding: pad, borderRight: divider, display: "flex", flexDirection: "column", justifyContent: "center", gap: "1rem" }}
           >
             <div style={{ fontFamily: tight, fontSize: "clamp(4.5rem, 8vw, 8.5rem)", fontWeight: 700, lineHeight: 0.88, letterSpacing: "-0.04em", color: ink }}>
-              0.96<span style={{ fontSize: "0.28em", color: accent, verticalAlign: "super", fontWeight: 700, letterSpacing: "-0.01em" }}>R²</span>
+              100<span style={{ fontSize: "0.28em", color: accent, verticalAlign: "super", fontWeight: 700, letterSpacing: "-0.01em" }}>%</span>
             </div>
             <p style={{ fontFamily: tight, fontSize: "0.63rem", fontWeight: 600, letterSpacing: "0.22em", color: inkGhost, textTransform: "uppercase", margin: 0 }}>
-              Force prediction accuracy
+              Training data verified against the real demonstration
             </p>
           </motion.div>
           <motion.div
@@ -7295,10 +7405,10 @@ function ContentSections() {
             style={{ padding: pad, display: "flex", flexDirection: "column", justifyContent: "center", gap: "1.5rem" }}
           >
             <p style={{ fontFamily: tight, fontSize: "clamp(0.95rem, 1.1vw, 1.1rem)", fontWeight: 400, lineHeight: 1.78, color: inkMuted, margin: 0 }}>
-              That&apos;s how accurately Novonus predicts real grip force from nothing but human muscle signals, measured against a calibrated force sensor, on data it had never seen.
+              Every sample that trains a skill — captured or generated — is checked against the real human demonstration first, especially the force profile. What doesn&apos;t hold up is discarded.
             </p>
             <p style={{ fontFamily: tight, fontSize: "clamp(0.95rem, 1.1vw, 1.1rem)", fontWeight: 400, lineHeight: 1.78, color: inkMuted, margin: 0 }}>
-              The single hardest question in this field — can you actually read force from the body? — already has an answer. The rest is execution.
+              The hardest question in this field isn&apos;t how to collect demonstrations — it&apos;s which training data you can trust. Verification is our answer, built into every skill we ship.
             </p>
           </motion.div>
         </div>
@@ -7405,10 +7515,10 @@ function ContentSections() {
             >
               <p style={{ fontFamily: tight, fontSize: "0.63rem", fontWeight: 600, letterSpacing: "0.2em", color: inkGhost, textTransform: "uppercase", margin: 0 }}>We went to the source</p>
               <p style={{ fontFamily: tight, fontSize: "clamp(0.95rem, 1.1vw, 1.08rem)", fontWeight: 400, lineHeight: 1.78, color: inkMuted, margin: 0 }}>
-                Force captured straight from the muscles of a skilled human, working naturally, before contact even happens. Every step of training grounded in that real human force.
+                Force captured straight from a skilled worker&apos;s hands, doing the real task naturally at a bench. Every step of training grounded in that real human demonstration.
               </p>
               <p style={{ fontFamily: tight, fontSize: "clamp(0.95rem, 1.1vw, 1.08rem)", fontWeight: 600, lineHeight: 1.6, color: ink, margin: 0, borderLeft: `3px solid ${accent}`, paddingLeft: "1rem" }}>
-                Force-aware robots outperform vision-only systems by over 50% on contact-rich tasks. Force was never a feature to add later — it&apos;s the whole game.
+                Contact-rich assembly is decided by forces a vision-only system never sees. Force was never a feature to add later — it&apos;s the whole game.
               </p>
             </motion.div>
           </div>
@@ -7490,12 +7600,12 @@ function ContentSections() {
         >
           <div style={{ padding: pad, display: "flex", flexDirection: "column", justifyContent: "center", borderBottom: isMobile ? divider : "none" }}>
             <h2 style={{ fontFamily: tight, fontSize: "clamp(1.5rem, 2.2vw, 2.6rem)", fontWeight: 700, lineHeight: 1.12, letterSpacing: "-0.025em", color: ink, margin: 0 }}>
-              Let&apos;s put force-aware robots on your line.
+              Bring us one task.
             </h2>
           </div>
           <div style={{ padding: pad, display: "flex", flexDirection: "column", justifyContent: "center", gap: "1.5rem" }}>
             <p style={{ fontFamily: tight, fontSize: "clamp(0.95rem, 1.1vw, 1.08rem)", fontWeight: 400, lineHeight: 1.78, color: inkMuted, margin: 0 }}>
-              A manufacturer working through delicate assembly you can&apos;t automate. An investor. A builder who wants in. We want to hear from you.
+              A connector to mate, a cable to insert, a step that still needs a skilled hand. We&apos;ll scope a paid 4–8 week pilot on your floor, on your robot, and show you a verified skill running before you commit to anything bigger.
             </p>
             <a
               href="mailto:deepayanc10@gmail.com"
@@ -7528,10 +7638,10 @@ function ContentSections() {
    EVIDENCE SECTION — stat cards with count-up animations
    ========================================================================== */
 function EvidenceStatCard({
-  value, display, unit, label, index,
+  value, display, unit, label, index, cols,
   tight, ink, inkMuted, inkGhost, accent, divider,
 }: {
-  value: number; display?: string; unit: string; label: string; index: number;
+  value: number; display?: string; unit: string; label: string; index: number; cols: number;
   tight: string; ink: string; inkMuted: string; inkGhost: string; accent: string; divider: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -7557,7 +7667,8 @@ function EvidenceStatCard({
       transition={{ duration: 0.65, delay: index * 0.1, ease: [0.22, 1, 0.36, 1] }}
       style={{
         padding: "clamp(2rem, 3vw, 3rem)",
-        borderRight: index < 3 ? divider : "none",
+        borderRight: index % cols < cols - 1 ? divider : "none",
+        borderBottom: index < 4 - cols ? divider : "none",
         display: "flex",
         flexDirection: "column",
         gap: "0.75rem",
@@ -7565,9 +7676,11 @@ function EvidenceStatCard({
     >
       <div style={{
         fontFamily: tight,
-        fontSize: "clamp(3rem, 5.5vw, 5.5rem)",
+        /* Word-based stat displays set a step smaller than pure numerals
+           so all four cards share one uniform scale without overflow. */
+        fontSize: display ? "clamp(1.7rem, 2.7vw, 3rem)" : "clamp(3rem, 5.5vw, 5.5rem)",
         fontWeight: 700,
-        lineHeight: 0.9,
+        lineHeight: display ? 1.05 : 0.9,
         letterSpacing: "-0.04em",
         color: ink,
       }}>
@@ -7579,6 +7692,7 @@ function EvidenceStatCard({
 }
 
 function EvidenceSection() {
+  const isMobile = useIsMobile();
   const tight = "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif";
   const ink = "rgba(15, 14, 13, 0.96)";
   const inkMuted = "rgba(15, 14, 13, 0.66)";
@@ -7587,20 +7701,21 @@ function EvidenceSection() {
   const accent = "#6d28d9";
 
   const stats = [
-    { value: 96, display: "0.96", unit: "", label: "R² accuracy predicting grip force from muscle signals alone — validated against a calibrated sensor on unseen data." },
-    { value: 50, display: undefined, unit: "%+", label: "Performance advantage force-aware policies hold over vision-only systems on contact-rich industrial tasks." },
-    { value: 4,  display: undefined, unit: "",   label: "Sensor modalities synchronized in real time: EMG, force, motion, and vision." },
-    { value: 0,  display: "Zero",   unit: "",    label: "Changes needed to your existing robot fleet. We deploy on the arms you already trust." },
+    { value: 0, display: "Off-robot",   unit: "", label: "Capture happens at a bench, not on the line. Your robot keeps producing while the task is demonstrated." },
+    { value: 0, display: "Verified",    unit: "", label: "Every training sample is checked against the real human demonstration before it's allowed to train the skill." },
+    { value: 0, display: "Zero",        unit: "", label: "Changes to your robot fleet. Skills run on the arms and grippers you already own." },
+    { value: 0, display: "You approve", unit: "", label: "The system detects, retrains, and proposes; a person on your team ships the change." },
   ];
 
   return (
     <section className="section-offscreen" style={{ position: "relative", background: "#f0e6d3" }}>
       <div className="relative mx-auto" style={{ width: "80%" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)" }}>
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : "repeat(4, 1fr)" }}>
           {stats.map((s, i) => (
             <EvidenceStatCard
               key={i}
               index={i}
+              cols={isMobile ? 2 : 4}
               value={s.value}
               display={s.display}
               unit={s.unit}
@@ -7620,6 +7735,150 @@ function EvidenceSection() {
 }
 
 /* ============================================================================
+   SCOPE SECTION — static cream band after the pipeline: what Novonus
+   provides versus what the customer's integrator keeps owning. Mirrors
+   the "Runs on what you already own" blurb layout (eyebrow + light
+   display heading on the left, muted paragraph on the right).
+   ========================================================================== */
+function ScopeSection() {
+  const isMobile = useIsMobile();
+  const tight = "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif";
+  const jb = "var(--font-jetbrains-mono), 'JetBrains Mono', 'Fira Code', monospace";
+  const ink = "rgba(15, 14, 13, 0.96)";
+  const inkMuted = "rgba(15, 14, 13, 0.66)";
+  const divider = "1px solid rgba(15, 14, 13, 0.1)";
+  const ease = [0.22, 1, 0.36, 1] as const;
+  const vp = { once: true, margin: "-5%" as const };
+
+  return (
+    <section className="section-offscreen" style={{ position: "relative", background: "#f0e6d3" }}>
+      <div className="relative mx-auto" style={{ width: "80%", paddingTop: "clamp(3.5rem, 7vh, 6rem)", paddingBottom: "clamp(3.5rem, 7vh, 6rem)" }}>
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={vp}
+          transition={{ duration: 0.7, ease }}
+          style={{
+            display: "flex",
+            flexDirection: isMobile ? "column" : "row",
+            gap: isMobile ? "1.25rem" : "clamp(3rem, 6vw, 7rem)",
+            alignItems: isMobile ? "flex-start" : "flex-end",
+            paddingTop: "clamp(2rem, 4vh, 3.5rem)",
+            borderTop: divider,
+          }}
+        >
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", flexShrink: 0 }}>
+            <span style={{ fontFamily: jb, fontSize: "clamp(0.7rem, 0.85vw, 0.85rem)", fontWeight: 400, letterSpacing: "0.18em", color: "#6d28d9", textTransform: "uppercase" }}>
+              [ Scope ]
+            </span>
+            <h3 style={{ fontFamily: tight, fontSize: "clamp(2.2rem, 3.5vw, 4rem)", fontWeight: 300, letterSpacing: "-0.03em", color: ink, margin: 0, lineHeight: 1.05, maxWidth: "16ch" }}>
+              What we bring — and what your integrator does.
+            </h3>
+          </div>
+          <p style={{ fontFamily: tight, fontSize: "clamp(0.88rem, 1vw, 1rem)", fontWeight: 400, lineHeight: 1.72, color: inkMuted, margin: 0 }}>
+            Novonus provides the skill: the capture glove (loaned per project), the verification-and-training pipeline, the on-site skill runtime, and the improvement loop. We deliberately don&apos;t supply the robot, the end-of-arm tooling, the fixturing, or the safety certification — your certified integrator handles those, and we work alongside them. You keep the hardware and the sign-off; we make the hard, force-critical step work.
+          </p>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+/* ============================================================================
+   CLOSING CTA — final cream band between Etymology and the dark footer:
+   the pilot ask ("Bring us one task.") with the two actions. Grid and
+   button treatments mirror the site's existing CTA patterns.
+   ========================================================================== */
+function ClosingCTA() {
+  const isMobile = useIsMobile();
+  const openContact = useContext(ContactModalCtx);
+  const tight = "var(--font-inter-tight), Inter, ui-sans-serif, system-ui, sans-serif";
+  const jb = "var(--font-jetbrains-mono), 'JetBrains Mono', 'Fira Code', monospace";
+  const ink = "rgba(15, 14, 13, 0.96)";
+  const inkMuted = "rgba(15, 14, 13, 0.66)";
+  const divider = "1px solid rgba(15, 14, 13, 0.1)";
+  const pad = "clamp(2rem, 3vw, 3rem)";
+  const ease = [0.22, 1, 0.36, 1] as const;
+  const vp = { once: true, margin: "-5%" as const };
+
+  return (
+    <section className="section-offscreen" style={{ position: "relative", background: "#f0e6d3", zIndex: 60 }}>
+      <div className="relative mx-auto" style={{ width: "80%", paddingTop: "clamp(2rem, 4vh, 3.5rem)", paddingBottom: "clamp(4rem, 8vh, 7rem)" }}>
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={vp}
+          transition={{ duration: 0.8, ease }}
+          style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", borderTop: divider, borderBottom: divider }}
+        >
+          <div style={{ padding: pad, display: "flex", flexDirection: "column", justifyContent: "center", gap: "0.9rem", borderRight: isMobile ? "none" : divider, borderBottom: isMobile ? divider : "none" }}>
+            <span style={{ fontFamily: jb, fontSize: "clamp(0.7rem, 0.85vw, 0.85rem)", fontWeight: 400, letterSpacing: "0.18em", color: "#6d28d9", textTransform: "uppercase" }}>
+              [ Start a Pilot ]
+            </span>
+            <h2 style={{ fontFamily: tight, fontSize: "clamp(2.2rem, 3.4vw, 4rem)", fontWeight: 700, lineHeight: 1.04, letterSpacing: "-0.03em", color: ink, margin: 0 }}>
+              Bring us one task.
+            </h2>
+          </div>
+          <div style={{ padding: pad, display: "flex", flexDirection: "column", justifyContent: "center", gap: "1.5rem" }}>
+            <p style={{ fontFamily: tight, fontSize: "clamp(0.95rem, 1.1vw, 1.08rem)", fontWeight: 400, lineHeight: 1.78, color: inkMuted, margin: 0 }}>
+              A connector to mate, a cable to insert, a placement or machine-tending step with part-to-part variance — the kind of job that still needs a skilled hand. We&apos;ll scope a paid 4–8 week pilot on your floor, on your robot, and show you a verified skill running before you commit to anything bigger.
+            </p>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.9rem", flexWrap: "wrap" }}>
+              <button
+                type="button"
+                data-cal-namespace="deepayan"
+                data-cal-link="deepayan"
+                data-cal-config='{"layout":"month_view"}'
+                style={{
+                  fontFamily: tight,
+                  fontSize: "clamp(0.85rem, 0.95vw, 1rem)",
+                  fontWeight: 600,
+                  padding: "0.8rem 1.8rem",
+                  border: "1px solid rgba(15,14,13,0.9)",
+                  borderRadius: "0.625rem",
+                  backgroundColor: "#0f0e0d",
+                  color: "#f5efe5",
+                  letterSpacing: "0.01em",
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                Start a pilot
+              </button>
+              <button
+                type="button"
+                onClick={openContact}
+                style={{
+                  fontFamily: tight,
+                  fontSize: "clamp(0.85rem, 0.95vw, 1rem)",
+                  fontWeight: 600,
+                  padding: "0.8rem 1.8rem",
+                  border: "1px solid rgba(15,14,13,0.35)",
+                  borderRadius: "0.625rem",
+                  backgroundColor: "transparent",
+                  color: ink,
+                  letterSpacing: "0.01em",
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                Contact
+              </button>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+/* ============================================================================
    PAGE — root export
    ========================================================================== */
 
@@ -7632,7 +7891,7 @@ export default function Home() {
   const openVideo = useCallback(() => setVideoOpen(true), []);
 
   useEffect(() => {
-    // Cal.com popup booking — same feature as the /demo "Book a call" button.
+    // Cal.com popup booking — drives the "Start a pilot" buttons.
     (async () => {
       const cal = await getCalApi({ namespace: "deepayan" });
       cal("ui", { hideEventTypeDetails: false, layout: "month_view" });
@@ -7665,10 +7924,12 @@ export default function Home() {
       <main id="main-content">
         <Hero />
         <ForceGroundedSection />
+        <ScopeSection />
         <EvidenceSection />
         <div className="relative" style={{ background: "#f0e6d3" }}>
           <ScrollSection><EtymologyEntry /></ScrollSection>
         </div>
+        <ClosingCTA />
         <div className="relative z-[60] bg-[#0f0e0d]">
           <SiteFooter />
         </div>

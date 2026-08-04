@@ -910,3 +910,13 @@ html[data-lowfx] .hero-tagline-card {
   -webkit-backdrop-filter: blur(4px) saturate(110%);
 }
 
+
+/* ============================================================================
+   TEXT SELECTION — aria-hidden layers are decorative duplicates (colour-wipe
+   overlays) or not-yet-revealed states; keep them out of selection ranges so
+   copied text never contains doubled or invisible words.
+   ========================================================================== */
+[aria-hidden="true"] {
+  -webkit-user-select: none;
+  user-select: none;
+}

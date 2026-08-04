@@ -186,9 +186,22 @@ const ebGaramond = EB_Garamond({
 });
 
 export const metadata: Metadata = {
-  title: "Novonus",
+  title: "Novonus — Robot programming for contact-rich assembly",
   description:
-    "Novonus captures biological signals from human operators to train industrial robots on contact-rich assembly tasks vision-only systems plateau on. The layer foundation models cannot see.",
+    "Novonus turns your own skilled worker's hand demonstrations into verified, force-aware skills that run on the robot arms you already own — no systems integrator, no robot downtime, no code.",
+  openGraph: {
+    title: "Novonus — Robot programming for contact-rich assembly",
+    description:
+      "Novonus turns your own skilled worker's hand demonstrations into verified, force-aware skills that run on the robot arms you already own — no systems integrator, no robot downtime, no code.",
+    siteName: "Novonus",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "Novonus — Robot programming for contact-rich assembly",
+    description:
+      "Novonus turns your own skilled worker's hand demonstrations into verified, force-aware skills that run on the robot arms you already own — no systems integrator, no robot downtime, no code.",
+  },
   icons: {
     icon: "/novonus-favicon.png",
     apple: "/novonus-favicon.png",
