@@ -191,8 +191,11 @@ export const scope = {
     },
   ],
   pricingLabel: "Pricing",
-  pricing:
-    "Start with a paid pilot on one station with clear success criteria. After that, you pay a one-time fee per trained skill plus a subscription that covers the edge runtime, your cloud skill library, and overnight retraining. The sensor rig stays at your facility as part of the subscription, kept calibrated by us, so retraining is always one shift away. Want to buy the rig instead? You can. Priced so the skill pays for itself within a year.",
+  pricingPoints: [
+    "Start with a paid pilot on one station, with clear success criteria.",
+    "After that, a one-time fee per trained skill plus a subscription that covers the edge runtime, your cloud skill library, and overnight retraining. Priced so the skill pays for itself within a year.",
+    "The sensor rig stays at your facility as part of the subscription, kept calibrated by us, so retraining is always one shift away. Want to buy the rig instead? You can.",
+  ],
   agnosticKicker: "Hardware agnostic",
   agnosticHeading: "Deploy on the robots you already run.",
   agnosticBody:

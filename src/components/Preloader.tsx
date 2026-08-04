@@ -85,12 +85,15 @@ export function Preloader({ onDone }: { onDone: () => void }) {
           const lr = logo.getBoundingClientRect();
           const gr = lockup.getBoundingClientRect();
           const nr = nav?.getBoundingClientRect();
-          const dx = nr ? nr.left + nr.width / 2 - (lr.left + lr.width / 2) : 0;
-          const dy = nr
-            ? nr.top + nr.height / 2 - (lr.top + lr.height / 2)
-            : -(lr.top + lr.height / 2 - 40);
+          /* rects arrive in zoomed visual px, gsap x/y apply in layout px */
+          const z = parseFloat(document.body.style.zoom || "1") || 1;
+          const dx = (nr ? nr.left + nr.width / 2 - (lr.left + lr.width / 2) : 0) / z;
+          const dy =
+            (nr
+              ? nr.top + nr.height / 2 - (lr.top + lr.height / 2)
+              : -(lr.top + lr.height / 2 - 40)) / z;
           const sc = nr ? nr.height / lr.height : 0.16;
-          const originX = lr.left - gr.left + lr.width / 2;
+          const originX = (lr.left - gr.left + lr.width / 2) / z;
           gsap.to(lockup, {
             x: dx,
             y: dy,

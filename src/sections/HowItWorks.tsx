@@ -247,7 +247,10 @@ export function HowItWorks() {
         },
       });
       const wait = (d = 0.6) => tl.to({}, { duration: d });
-      const say = (a: number, s: number) => tl.add(fadeShift(`.s-${a}-${s}`, 0.7), "<");
+      /* the whole act paragraph appears at once on its first beat; later
+         beats keep their timeline positions via matching no-op tweens */
+      const say = (a: number, s: number) =>
+        tl.add(s === 0 ? fadeShift(`.hiw-par-${a}`, 0.7) : gsap.to({}, { duration: 0.7 }), "<");
       const actTitle = (a: number) => {
         if (a > 0) tl.add(fadeOut(`.hiw-act-${a - 1}`, 0.6));
         tl.add(fadeShift(`.hiw-act-title-${a}`, 0.8), a > 0 ? "<0.25" : undefined);
@@ -513,12 +516,12 @@ export function HowItWorks() {
 
   return (
     <section ref={root} id="how">
-      <div className="hiw-pin" style={{ height: `${N * 130}vh`, position: "relative" }}>
+      <div className="hiw-pin" style={{ height: `calc(${N * 130}vh / var(--z, 1))`, position: "relative" }}>
         <div
           style={{
             position: "sticky",
             top: 0,
-            height: "100svh",
+            height: "calc(100svh / var(--z, 1))",
             overflow: "hidden",
             paddingTop: "clamp(5rem, 9vh, 6.5rem)",
             paddingBottom: "clamp(1.8rem, 4vh, 3rem)",
@@ -567,7 +570,7 @@ export function HowItWorks() {
                 }}
               >
                 {/* left: act titles + narration sentences */}
-                <div className="hiw-copy" style={{ position: "relative", height: "clamp(20rem, 48vh, 27rem)" }}>
+                <div className="hiw-copy" style={{ position: "relative", height: "clamp(20rem, calc(48vh / var(--z, 1)), 27rem)" }}>
                   {pipeline.steps.map((s, a) => (
                     <div
                       key={s.n}
@@ -591,16 +594,11 @@ export function HowItWorks() {
                           <path className={`hiw-underline-${a}`} d="M 1 4 L 139 4" stroke={PURPLE} strokeWidth="3" fill="none" />
                         </svg>
                       </div>
-                      <p style={{ marginTop: "1.1rem", maxWidth: "44ch", fontSize: 15, lineHeight: 1.72 }}>
-                        {SENTENCES[a].map((sen, si) => (
-                          <span
-                            key={si}
-                            className={`hiw-sentence s-${a}-${si}`}
-                            style={{ display: "inline-block", color: "var(--mut-dark)", marginRight: "0.35em" }}
-                          >
-                            {sen}
-                          </span>
-                        ))}
+                      <p
+                        className={`hiw-sentence hiw-par-${a}`}
+                        style={{ marginTop: "1.1rem", maxWidth: "44ch", fontSize: 15, lineHeight: 1.72, color: "var(--mut-dark)" }}
+                      >
+                        {SENTENCES[a].join(" ")}
                       </p>
                     </div>
                   ))}
@@ -612,7 +610,7 @@ export function HowItWorks() {
                   style={{
                     position: "relative",
                     aspectRatio: "960 / 720",
-                    maxHeight: "min(64vh, 36rem)",
+                    maxHeight: "min(calc(64vh / var(--z, 1)), 36rem)",
                     justifySelf: "end",
                     width: "100%",
                     padding: 10,

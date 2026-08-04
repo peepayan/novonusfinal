@@ -44,6 +44,40 @@ export function Hero({ ready }: { ready: boolean }) {
     );
   }, []);
 
+  /* Safari refuses autoplay unless the muted ATTRIBUTE is present (React
+     only sets the property) and shows a play-button overlay on the poster
+     frame. Force the attributes and retry playback on readiness and on the
+     first user gesture. */
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v || !armSrc) return;
+    v.muted = true;
+    v.defaultMuted = true;
+    v.setAttribute("muted", "");
+    v.setAttribute("webkit-playsinline", "");
+    const tryPlay = () => {
+      const p = v.play();
+      if (p) p.catch(() => {});
+    };
+    tryPlay();
+    v.addEventListener("canplay", tryPlay);
+    const onFirst = () => {
+      tryPlay();
+      window.removeEventListener("pointerdown", onFirst);
+      window.removeEventListener("touchstart", onFirst);
+      window.removeEventListener("wheel", onFirst);
+    };
+    window.addEventListener("pointerdown", onFirst);
+    window.addEventListener("touchstart", onFirst, { passive: true });
+    window.addEventListener("wheel", onFirst, { passive: true });
+    return () => {
+      v.removeEventListener("canplay", tryPlay);
+      window.removeEventListener("pointerdown", onFirst);
+      window.removeEventListener("touchstart", onFirst);
+      window.removeEventListener("wheel", onFirst);
+    };
+  }, [armSrc]);
+
   /* Cal.com popup booking — drives every "Start a pilot" button */
   useEffect(() => {
     (async () => {
@@ -57,7 +91,11 @@ export function Hero({ ready }: { ready: boolean }) {
       const line = railLine.current;
       const sec = root.current;
       if (!line || !sec) return;
-      setVideoInset(Math.max(0, sec.getBoundingClientRect().bottom - line.getBoundingClientRect().top));
+      /* the proportional page zoom (App.tsx) scales painted output, but the
+         transform/inset values below are applied in LAYOUT px; rects and
+         innerWidth arrive in zoomed visual px, so divide them back down */
+      const z = parseFloat(document.body.style.zoom || "1") || 1;
+      setVideoInset(Math.max(0, (sec.getBoundingClientRect().bottom - line.getBoundingClientRect().top) / z));
       const h1 = title.current;
       const vid = videoRef.current;
       if (h1 && vid) {
@@ -73,11 +111,8 @@ export function Hero({ ready }: { ready: boolean }) {
           }
         }
         if (textRight > 0) {
-          const w = vid.offsetWidth;
-          /* pin the arm against the viewport edge — the measured bbox includes
-             the gripper's widest transient swing, so a 36px bleed lands the
-             typically-visible pixels flush right */
-          setVideoLeft(Math.min(textRight - 95, window.innerWidth + 70 - 0.301 * w));
+          const w = vid.offsetWidth; /* offsetWidth is already layout px */
+          setVideoLeft(Math.min(textRight / z - 95, window.innerWidth / z + 70 - 0.301 * w));
         }
       }
     };
@@ -137,7 +172,7 @@ export function Hero({ ready }: { ready: boolean }) {
       id="top"
       style={{
         position: "relative",
-        minHeight: "100svh",
+        minHeight: "calc(100svh / var(--z, 1))",
         display: "flex",
         flexDirection: "column",
         justifyContent: "flex-end",
@@ -198,6 +233,7 @@ export function Hero({ ready }: { ready: boolean }) {
             muted
             loop
             playsInline
+            preload="auto"
             style={{
               width: "min(76vw, 1120px)",
               aspectRatio: "16 / 9",

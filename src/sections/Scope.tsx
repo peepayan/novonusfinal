@@ -87,9 +87,27 @@ export function Scope() {
           <span className="chip" style={{ justifySelf: "start", alignSelf: "start" }}>
             {scope.pricingLabel}
           </span>
-          <p style={{ color: "var(--mut-light)", fontSize: 15.5, lineHeight: 1.72, maxWidth: "72ch" }}>
-            {scope.pricing}
-          </p>
+          <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: "1rem", maxWidth: "72ch" }}>
+            {scope.pricingPoints.map((pt, i) => (
+              <li
+                key={i}
+                style={{ display: "flex", gap: "0.9rem", color: "var(--mut-light)", fontSize: 15.5, lineHeight: 1.65 }}
+              >
+                <span
+                  aria-hidden
+                  style={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: "50%",
+                    background: "var(--accent)",
+                    marginTop: "0.5em",
+                    flexShrink: 0,
+                  }}
+                />
+                {pt}
+              </li>
+            ))}
+          </ul>
         </div>
 
         {/* hardware agnostic — from novonus.com */}
