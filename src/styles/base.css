@@ -580,3 +580,13 @@ h1.display {
     padding: 6px 10px;
   }
 }
+
+/* Safari paints a start-playback glyph over paused inline videos; the hero
+   arm must never show it */
+.hero-arm-video::-webkit-media-controls-start-playback-button {
+  display: none !important;
+  -webkit-appearance: none;
+}
+.hero-arm-video::-webkit-media-controls {
+  display: none !important;
+}

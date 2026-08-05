@@ -46,35 +46,46 @@ export function Hero({ ready }: { ready: boolean }) {
 
   /* Safari refuses autoplay unless the muted ATTRIBUTE is present (React
      only sets the property) and shows a play-button overlay on the poster
-     frame. Force the attributes and retry playback on readiness and on the
-     first user gesture. */
+     frame. Attributes are forced synchronously in the ref callback below;
+     here we retry playback on every readiness signal, on an interval for
+     the first seconds, and on the first user gesture. */
   useEffect(() => {
     const v = videoRef.current;
     if (!v || !armSrc) return;
-    v.muted = true;
-    v.defaultMuted = true;
-    v.setAttribute("muted", "");
-    v.setAttribute("webkit-playsinline", "");
     const tryPlay = () => {
+      if (!v.paused) return;
       const p = v.play();
       if (p) p.catch(() => {});
     };
     tryPlay();
+    v.addEventListener("loadedmetadata", tryPlay);
     v.addEventListener("canplay", tryPlay);
+    v.addEventListener("canplaythrough", tryPlay);
+    const interval = window.setInterval(tryPlay, 600);
+    const stopInterval = window.setTimeout(() => window.clearInterval(interval), 6000);
     const onFirst = () => {
       tryPlay();
       window.removeEventListener("pointerdown", onFirst);
       window.removeEventListener("touchstart", onFirst);
       window.removeEventListener("wheel", onFirst);
+      window.removeEventListener("scroll", onFirst);
     };
     window.addEventListener("pointerdown", onFirst);
     window.addEventListener("touchstart", onFirst, { passive: true });
     window.addEventListener("wheel", onFirst, { passive: true });
+    window.addEventListener("scroll", onFirst, { passive: true });
+    document.addEventListener("visibilitychange", tryPlay);
     return () => {
+      v.removeEventListener("loadedmetadata", tryPlay);
       v.removeEventListener("canplay", tryPlay);
+      v.removeEventListener("canplaythrough", tryPlay);
+      window.clearInterval(interval);
+      window.clearTimeout(stopInterval);
       window.removeEventListener("pointerdown", onFirst);
       window.removeEventListener("touchstart", onFirst);
       window.removeEventListener("wheel", onFirst);
+      window.removeEventListener("scroll", onFirst);
+      document.removeEventListener("visibilitychange", tryPlay);
     };
   }, [armSrc]);
 
@@ -227,7 +238,18 @@ export function Hero({ ready }: { ready: boolean }) {
             follows the webm's alpha, rimming the arm in violet. */}
         {armSrc && (
           <video
-            ref={videoRef}
+            className="hero-arm-video"
+            ref={(el) => {
+              videoRef.current = el;
+              /* set BEFORE Safari starts loading: the muted/playsinline
+                 ATTRIBUTES must exist when the autoplay check runs */
+              if (el) {
+                el.muted = true;
+                el.defaultMuted = true;
+                el.setAttribute("muted", "");
+                el.setAttribute("webkit-playsinline", "");
+              }
+            }}
             src={armSrc.src}
             autoPlay
             muted
