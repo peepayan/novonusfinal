@@ -363,7 +363,12 @@ export function Hero({ ready }: { ready: boolean }) {
             <button type="button" className="btn btn--ghost" onClick={() => setContactOpen(true)}>
               {hero.ctaContact}
             </button>
-            <a href="https://novonus.com/demo" className="btn btn--ghost">
+            <a
+              href="https://novonusdemo2.vercel.app"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn--ghost"
+            >
               {hero.ctaSecondary}
             </a>
           </div>
